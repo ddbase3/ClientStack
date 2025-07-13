@@ -31,7 +31,7 @@
     "name": "jquery",
     "download": [
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js",
+        "url": "https://code.jquery.com/jquery-3.7.1.min.js",
         "target": "jquery.js"
       }
     ],
@@ -50,35 +50,35 @@
     "name": "jqueryui",
     "download": [
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js",
+        "url": "https://code.jquery.com/ui/1.13.2/jquery-ui.min.js",
         "target": "jquery-ui.js"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.css",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.min.css",
         "target": "jquery-ui.css"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_444444_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_444444_256x240.png",
         "target": "images/ui-icons_444444_256x240.png"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_555555_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_555555_256x240.png",
         "target": "images/ui-icons_555555_256x240.png"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_777620_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_777620_256x240.png",
         "target": "images/ui-icons_777620_256x240.png"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_777777_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_777777_256x240.png",
         "target": "images/ui-icons_777777_256x240.png"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_cc0000_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_cc0000_256x240.png",
         "target": "images/ui-icons_cc0000_256x240.png"
       },
       {
-        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_ffffff_256x240.png",
+        "url": "https://code.jquery.com/ui/1.13.2/themes/base/images/ui-icons_ffffff_256x240.png",
         "target": "images/ui-icons_ffffff_256x240.png"
       }
     ],
