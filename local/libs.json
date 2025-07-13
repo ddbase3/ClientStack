@@ -1,0 +1,88 @@
+[
+  {
+    "name": "assetloader",
+    "repo": "https://github.com/ddbase3/AssetLoader.git",
+    "branch": "v1",
+    "tag": "v1.0.0",
+    "dir": "AssetLoader",
+    "subdir": "dist",
+    "target": "assetloader"
+  },
+  {
+    "name": "chart",
+    "download": [
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js",
+        "target": "chart.js"
+      }
+    ],
+    "target": "chart"
+  },
+  {
+    "name": "dbdesigner",
+    "repo": "https://github.com/ddbase3/DbDesigner.git",
+    "branch": "v1",
+    "tag": "v1.0.0",
+    "dir": "DbDesigner",
+    "subdir": "dist",
+    "target": "dbdesigner"
+  },
+  {
+    "name": "jquery",
+    "download": [
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js",
+        "target": "jquery.js"
+      }
+    ],
+    "target": "jquery"
+  },
+  {
+    "name": "jquerydatatable",
+    "repo": "https://github.com/ddbase3/JqueryDataTable.git",
+    "branch": "v2",
+    "tag": "v2.1.0",
+    "dir": "JqueryDataTable",
+    "subdir": "dist",
+    "target": "jquerydatatable"
+  },
+  {
+    "name": "jqueryui",
+    "download": [
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js",
+        "target": "jquery-ui.js"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.css",
+        "target": "jquery-ui.css"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_444444_256x240.png",
+        "target": "images/ui-icons_444444_256x240.png"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_555555_256x240.png",
+        "target": "images/ui-icons_555555_256x240.png"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_777620_256x240.png",
+        "target": "images/ui-icons_777620_256x240.png"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_777777_256x240.png",
+        "target": "images/ui-icons_777777_256x240.png"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_cc0000_256x240.png",
+        "target": "images/ui-icons_cc0000_256x240.png"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/images/ui-icons_ffffff_256x240.png",
+        "target": "images/ui-icons_ffffff_256x240.png"
+      }
+    ],
+    "target": "jqueryui"
+  }
+]
+

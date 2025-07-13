@@ -77,21 +77,21 @@ class DefaultAssetService implements IAssetService {
 		], true));
 
 		$this->registerAsset(new LogicalAsset('jquery', [
-			new AssetFile(DIR_PLUGIN . 'assets/jquery/jquery-3.4.1.min.js', 'js')
-		]));
+			new AssetFile(DIR_PLUGIN . 'assets/jquery/jquery.js', 'js')
+		], true));
 
 		$this->registerAsset(new LogicalAsset('jqueryui', [
-			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.min.js', 'js'),
-			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.min.css', 'css')
+			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.js', 'js'),
+			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.css', 'css')
 		]));
 
 		$this->registerAsset(new LogicalAsset('dbdesigner', [
-			new AssetFile(DIR_PLUGIN . 'assets/dbdesigner/dbdesigner.js', 'js')
+			new AssetFile(DIR_PLUGIN . 'assets/dbdesigner/dbdesigner.min.js', 'js')
 		]));
 
 		$this->registerAsset(new LogicalAsset('jquerydatatable', [
-			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquerydatatable.js', 'js'),
-			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquerydatatable.css', 'css')
+			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquery.datatable.min.js', 'js'),
+			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquery.datatable.min.css', 'css')
 		]));
 
 		$this->registerAsset(new LogicalAsset('chart', [

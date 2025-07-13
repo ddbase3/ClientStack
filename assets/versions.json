@@ -1,0 +1,14 @@
+{
+    "chart": {
+        "type": "download",
+        "timestamp": "2025-07-13T11:18:59+02:00"
+    },
+    "jquery": {
+        "type": "download",
+        "timestamp": "2025-07-13T11:18:59+02:00"
+    },
+    "jqueryui": {
+        "type": "download",
+        "timestamp": "2025-07-13T11:19:01+02:00"
+    }
+}
