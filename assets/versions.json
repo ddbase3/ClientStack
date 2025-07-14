@@ -1,14 +1,18 @@
 {
     "chart": {
         "type": "download",
-        "timestamp": "2025-07-13T21:52:57+02:00"
+        "timestamp": "2025-07-14T04:15:56+02:00"
+    },
+    "fullcalendar": {
+        "type": "download",
+        "timestamp": "2025-07-14T04:15:57+02:00"
     },
     "jquery": {
         "type": "download",
-        "timestamp": "2025-07-13T21:52:57+02:00"
+        "timestamp": "2025-07-14T04:15:57+02:00"
     },
     "jqueryui": {
         "type": "download",
-        "timestamp": "2025-07-13T21:52:57+02:00"
+        "timestamp": "2025-07-14T04:15:57+02:00"
     }
 }

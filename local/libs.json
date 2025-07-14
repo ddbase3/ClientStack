@@ -19,6 +19,16 @@
     "target": "chart"
   },
   {
+    "name": "fullcalendar",
+    "download": [
+      {
+        "url": "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js",
+        "target": "fullcalendar.js"
+      }
+    ],
+    "target": "fullcalendar"
+  },
+  {
     "name": "dbdesigner",
     "repo": "https://github.com/ddbase3/DbDesigner.git",
     "branch": "v1",
