@@ -93,6 +93,16 @@
       }
     ],
     "target": "jqueryui"
+  },
+  {
+    "name": "marked",
+    "download": [
+      {
+        "url": "https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js",
+        "target": "marked.js"
+      }
+    ],
+    "target": "marked"
   }
 ]
 
