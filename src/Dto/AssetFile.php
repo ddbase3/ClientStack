@@ -8,7 +8,8 @@ namespace ClientStack\Dto;
 class AssetFile {
 	public function __construct(
 		public string $path,
-		public string $type = 'js'
+		public string $type = 'js',
+		public ?string $version = null
 	) {}
 }
 
