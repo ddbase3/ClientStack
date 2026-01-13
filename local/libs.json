@@ -129,5 +129,33 @@
       }
     ],
     "target": "mathjax"
+  },
+  {
+    "name": "leaflet",
+    "download": [
+      {
+        "url": "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js",
+        "target": "leaflet.js"
+      },
+      {
+        "url": "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css",
+        "target": "leaflet.css"
+      }
+    ],
+    "target": "leaflet"
+  },
+  {
+    "name": "dropzone",
+    "download": [
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js",
+        "target": "dropzone.js"
+      },
+      {
+        "url": "https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css",
+        "target": "dropzone.css"
+      }
+    ],
+    "target": "dropzone"
   }
 ]
