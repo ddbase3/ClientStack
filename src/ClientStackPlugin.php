@@ -30,6 +30,8 @@ class ClientStackPlugin implements IPlugin, ICheck {
 	// Implementation of ICheck
 
 	public function checkDependencies() {
-		return [];
+		return array(
+			'uifoundationplugin_installed' => $this->container->get('uifoundationplugin') ? 'Ok' : 'uifoundationplugin not installed'
+		);
 	}
 }
