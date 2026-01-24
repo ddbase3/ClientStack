@@ -7,6 +7,7 @@ use ClientStack\ClientStackPlugin;
 use ClientStack\Api\IAssetService;
 use ClientStack\Service\DefaultAssetService;
 use Base3\Api\IContainer;
+use Base3\Test\Core\ContainerStub;
 
 class ClientStackPluginTest extends TestCase {
 
@@ -15,7 +16,7 @@ class ClientStackPluginTest extends TestCase {
 	}
 
 	public function testInitRegistersPluginAndAssetService(): void {
-		$container = new FakeContainer();
+		$container = new ContainerStub();
 		$plugin = new ClientStackPlugin($container);
 
 		$plugin->init();
@@ -27,51 +28,32 @@ class ClientStackPluginTest extends TestCase {
 		$this->assertTrue($container->has(IAssetService::class));
 		$this->assertSame(IContainer::SHARED, $container->getFlags(IAssetService::class));
 
-		$factory = $container->get(IAssetService::class);
-		$this->assertIsCallable($factory);
+		// ContainerStub resolves callables by executing them (like the real container would).
+		$service1 = $container->get(IAssetService::class);
+		$this->assertInstanceOf(DefaultAssetService::class, $service1);
 
-		$service = $factory();
-		$this->assertInstanceOf(DefaultAssetService::class, $service);
+		// SHARED => same instance
+		$service2 = $container->get(IAssetService::class);
+		$this->assertSame($service1, $service2);
 	}
 
-	public function testCheckDependenciesReturnsEmptyArray(): void {
-		$container = new FakeContainer();
+	public function testCheckDependenciesReturnsOkWhenUiFoundationPluginInstalled(): void {
+		$container = new ContainerStub();
+		$container->set('uifoundationplugin', new \stdClass(), IContainer::SHARED);
+
 		$plugin = new ClientStackPlugin($container);
 
-		$this->assertSame([], $plugin->checkDependencies());
+		$this->assertSame([
+			'uifoundationplugin_installed' => 'Ok'
+		], $plugin->checkDependencies());
 	}
 
-}
+	public function testCheckDependenciesReturnsNotInstalledWhenMissing(): void {
+		$container = new ContainerStub();
+		$plugin = new ClientStackPlugin($container);
 
-class FakeContainer implements IContainer {
-
-	private array $items = [];
-	private array $flags = [];
-
-	public function getServiceList(): array {
-		return array_keys($this->items);
+		$this->assertSame([
+			'uifoundationplugin_installed' => 'uifoundationplugin not installed'
+		], $plugin->checkDependencies());
 	}
-
-	public function set(string $name, $classDefinition, $flags = 0): IContainer {
-		$this->items[$name] = $classDefinition;
-		$this->flags[$name] = (int)$flags;
-		return $this;
-	}
-
-	public function remove(string $name) {
-		unset($this->items[$name], $this->flags[$name]);
-	}
-
-	public function has(string $name): bool {
-		return array_key_exists($name, $this->items);
-	}
-
-	public function get(string $name) {
-		return $this->items[$name] ?? null;
-	}
-
-	public function getFlags(string $name): ?int {
-		return $this->flags[$name] ?? null;
-	}
-
 }
