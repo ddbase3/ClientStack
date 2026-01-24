@@ -1,12 +1,14 @@
+<?php $this->loadBricks('JobsAdminDisplay'); ?>
+
 <div class="base3ilias-services">
-	<h3>Base3Ilias Round-Robin Jobs</h3>
+	<h3><?php echo $this->_['bricks']['jobsadmindisplay']['headline']; ?></h3>
 
 	<table class="base3ilias-services-table">
 		<thead>
 			<tr>
-				<th>Job</th>
-				<th>Priority</th>
-				<th>Active</th>
+				<th><?php echo $this->_['bricks']['jobsadmindisplay']['job']; ?></th>
+				<th><?php echo $this->_['bricks']['jobsadmindisplay']['priority']; ?></th>
+				<th><?php echo $this->_['bricks']['jobsadmindisplay']['active']; ?></th>
 			</tr>
 		</thead>
 		<tbody>

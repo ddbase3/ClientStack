@@ -9,6 +9,7 @@ use Base3\Api\IRequest;
 use Base3\Accesscontrol\Api\IAccesscontrol;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\Database\Api\IDatabase;
+use Base3\Language\Api\ILanguage;
 use Base3\Logger\Api\ILogger;
 use Base3\ServiceSelector\Api\IServiceSelector;
 use Base3\Session\Api\ISession;
@@ -39,6 +40,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 			ILogger::class,
 			IDatabase::class,
 			ISession::class,
+			ILanguage::class,
 			IAccesscontrol::class,
 			IStateStore::class
 		];
