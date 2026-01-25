@@ -11,7 +11,7 @@ use UiFoundation\Api\IAdminDisplay;
 
 final class JobsAdminDisplay implements IAdminDisplay {
 
-	private const CONFIG_GROUP = 'missionbayilias';
+	private const CONFIG_GROUP = 'job';
 
 	private const PRIO_MIN = 1;
 	private const PRIO_MAX = 10;
