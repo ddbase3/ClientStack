@@ -2,6 +2,7 @@
 
 namespace ClientStack\AdminDisplay;
 
+use Base3\Api\IAssetResolver;
 use Base3\Api\IClassMap;
 use Base3\Api\IContainer;
 use Base3\Api\IMvcView;
@@ -14,6 +15,7 @@ use Base3\Logger\Api\ILogger;
 use Base3\ServiceSelector\Api\IServiceSelector;
 use Base3\Session\Api\ISession;
 use Base3\State\Api\IStateStore;
+use Base3\Usermanager\Api\IUsermanager;
 use UiFoundation\Api\IAdminDisplay;
 
 class ServicesAdminDisplay implements IAdminDisplay {
@@ -42,7 +44,10 @@ class ServicesAdminDisplay implements IAdminDisplay {
 			ISession::class,
 			ILanguage::class,
 			IAccesscontrol::class,
-			IStateStore::class
+			IUsermanager::class,
+			IStateStore::class,
+			IMvcView::class,
+			IAssetResolver::class
 		];
 
 		$services = [];
