@@ -23,11 +23,11 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 		// no-op
 	}
 
-	public function getHelp() {
+	public function getHelp(): string {
 		return 'Agent flow viewer: scans plugin local folders for JSON files whose filename contains "flow".';
 	}
 
-	public function getOutput($out = 'html') {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {

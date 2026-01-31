@@ -29,7 +29,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 		return 'servicesadmindisplay';
 	}
 
-	public function getOutput($out = 'html') {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
 		$this->view->setTemplate('AdminDisplay/ServicesAdminDisplay.php');
 
@@ -61,7 +61,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 		return $this->view->loadTemplate();
 	}
 
-	public function getHelp() {
+	public function getHelp(): string {
 		return 'Help of ServicesAdminDisplay';
 	}
 

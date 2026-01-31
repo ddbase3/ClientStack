@@ -27,11 +27,11 @@ final class LogAdminDisplay implements IAdminDisplay {
 		// no-op
 	}
 
-	public function getHelp() {
+	public function getHelp(): string {
 		return 'System log viewer (scope selector + auto-refresh).';
 	}
 
-	public function getOutput($out = 'html') {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {

@@ -17,7 +17,7 @@ class ConfigurationAdminDisplay implements IAdminDisplay {
 		return 'configurationadmindisplay';
 	}
 
-	public function getOutput($out = 'html') {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
 		$this->view->setTemplate('AdminDisplay/ConfigurationAdminDisplay.php');
 
@@ -27,7 +27,7 @@ class ConfigurationAdminDisplay implements IAdminDisplay {
                 return $this->view->loadTemplate();
 	}
 
-	public function getHelp() {
+	public function getHelp(): string {
 		return 'Help of ConfigurationAdminDisplay';
 	}
 

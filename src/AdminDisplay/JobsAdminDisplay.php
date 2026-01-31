@@ -27,7 +27,7 @@ final class JobsAdminDisplay implements IAdminDisplay {
 		return 'jobsadmindisplay';
 	}
 
-	public function getHelp() {
+	public function getHelp(): string {
 		return 'Interactive job control panel: toggle active and adjust priority via configuration.';
 	}
 
@@ -35,7 +35,7 @@ final class JobsAdminDisplay implements IAdminDisplay {
 		// no-op
 	}
 
-	public function getOutput($out = 'html') {
+	public function getOutput(string $out = 'html', bool $final = false): string {
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {
