@@ -7,6 +7,7 @@ use Base3\Api\IClassMap;
 use Base3\Api\IContainer;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
+use Base3\Api\ISystemService;
 use Base3\Accesscontrol\Api\IAccesscontrol;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\Database\Api\IDatabase;
@@ -35,6 +36,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 
 		$list = [
 			IContainer::class,
+			ISystemService::class,
 			IRequest::class,
 			IClassMap::class,
 			IConfiguration::class,

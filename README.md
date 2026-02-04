@@ -117,4 +117,4 @@ hasAsset(string $name): bool
 
 ## 📃 License
 
-LGPL License
+GPL v3.0 License
