@@ -4,7 +4,7 @@ namespace ClientStack\AdminDisplay;
 
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
-use Base3\Configuration\Api\IConfiguration;
+use Base3\LinkTarget\Api\ILinkTargetService;
 use UiFoundation\Api\IAdminDisplay;
 
 final class AgentFlowAdminDisplay implements IAdminDisplay {
@@ -12,7 +12,7 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 	public function __construct(
 		private readonly IRequest $request,
 		private readonly IMvcView $view,
-		private readonly IConfiguration $config
+		private readonly ILinkTargetService $linkTargetService
 	) {}
 
 	public static function getName(): string {
@@ -44,9 +44,8 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 		$flowId = (string)($this->request->get('flow') ?? '');
 		$flowView = $this->loadFlowView($flowId);
 
-		$baseEndpoint = (string)($this->config->get('base')['endpoint'] ?? '');
-		$selfUrl = $this->buildSelfUrl($baseEndpoint);
-		$listEndpoint = $this->buildListEndpoint($baseEndpoint);
+		$selfUrl = $this->buildSelfUrl();
+		$listEndpoint = $this->buildListEndpoint();
 
 		$this->view->assign('self_url', $selfUrl);
 		$this->view->assign('list_endpoint', $listEndpoint);
@@ -254,30 +253,22 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 		return basename($path);
 	}
 
-	private function buildSelfUrl(string $baseEndpoint): string {
-		$baseEndpoint = trim($baseEndpoint);
-
-		if ($baseEndpoint === '') {
-			$baseEndpoint = 'base3.php';
-		}
-
-		$sep = str_contains($baseEndpoint, '?') ? '&' : '?';
-
-		return $baseEndpoint . $sep . 'name=' . rawurlencode(self::getName());
+	private function buildSelfUrl(): string {
+		return $this->linkTargetService->getLink([
+			'name' => self::getName(),
+		]);
 	}
 
-	private function buildListEndpoint(string $baseEndpoint): string {
-		$baseEndpoint = trim($baseEndpoint);
-
-		if ($baseEndpoint === '') {
-			$baseEndpoint = 'base3.php';
-		}
-
-		$sep = str_contains($baseEndpoint, '?') ? '&' : '?';
-
-		return $baseEndpoint
-			. $sep . 'name=' . rawurlencode(self::getName())
-			. '&out=json&action=list';
+	private function buildListEndpoint(): string {
+		return $this->linkTargetService->getLink(
+			[
+				'name' => self::getName(),
+				'out' => 'json'
+			],
+			[
+				'action' => 'list'
+			]
+		);
 	}
 
 	private function jsonSuccess(array $data): string {

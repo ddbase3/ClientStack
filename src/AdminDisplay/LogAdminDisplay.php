@@ -5,6 +5,7 @@ namespace ClientStack\AdminDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Configuration\Api\IConfiguration;
+use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Logger\Api\ILogger;
 use UiFoundation\Api\IAdminDisplay;
 
@@ -16,7 +17,8 @@ final class LogAdminDisplay implements IAdminDisplay {
 		private readonly IRequest $request,
 		private readonly IMvcView $view,
 		private readonly IConfiguration $config,
-		private readonly ILogger $logger
+		private readonly ILogger $logger,
+		private readonly ILinkTargetService $linkTargetService
 	) {}
 
 	public static function getName(): string {
@@ -42,12 +44,10 @@ final class LogAdminDisplay implements IAdminDisplay {
 	}
 
 	private function handleHtml(): string {
-		// ClientStack plugin path
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
 		$this->view->setTemplate('AdminDisplay/LogAdminDisplay.php');
 
-		$baseEndpoint = (string)($this->config->get('base')['endpoint'] ?? '');
-		$endpoint = $this->buildEndpointBase($baseEndpoint);
+		$endpoint = $this->buildEndpointBase();
 
 		$this->view->assign('endpoint', $endpoint);
 
@@ -85,7 +85,6 @@ final class LogAdminDisplay implements IAdminDisplay {
 			$logs = $this->logger->getLogs($scope, $num, true);
 		}
 
-		// normalize + keep consistent keys
 		$out = [];
 		foreach ($logs as $row) {
 			$out[] = [
@@ -104,16 +103,16 @@ final class LogAdminDisplay implements IAdminDisplay {
 		];
 	}
 
-	private function buildEndpointBase(string $baseEndpoint): string {
-		$baseEndpoint = trim($baseEndpoint);
-
-		if ($baseEndpoint === '') {
-			$baseEndpoint = 'base3.php';
-		}
-
-		$sep = str_contains($baseEndpoint, '?') ? '&' : '?';
-
-		return $baseEndpoint . $sep . 'name=' . rawurlencode(self::getName()) . '&out=json&action=';
+	private function buildEndpointBase(): string {
+		return $this->linkTargetService->getLink(
+			[
+				'name' => self::getName(),
+				'out' => 'json'
+			],
+			[
+				'action' => ''
+			]
+		);
 	}
 
 	private function jsonSuccess(array $data): string {

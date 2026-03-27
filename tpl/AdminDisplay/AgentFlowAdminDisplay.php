@@ -162,7 +162,6 @@ $selectedId = $selected['id'] ?? '';
 
 	<div class="af-grid">
 
-		<!-- Flow Pipeline -->
 		<div class="af-box">
 			<div class="af-box-head">
 				<div class="af-box-title">Flow Pipeline</div>
@@ -228,7 +227,6 @@ $selectedId = $selected['id'] ?? '';
 			<?php } ?>
 		</div>
 
-		<!-- Connections -->
 		<div class="af-box">
 			<div class="af-box-head">
 				<div class="af-box-title">Connections</div>
@@ -260,7 +258,6 @@ $selectedId = $selected['id'] ?? '';
 			<?php } ?>
 		</div>
 
-		<!-- Resources Index -->
 		<div class="af-box">
 			<div class="af-box-head">
 				<div class="af-box-title">Resources Index</div>
@@ -611,7 +608,6 @@ $selectedId = $selected['id'] ?? '';
 </style>
 
 <script>
-const AF_SELF_URL = <?php echo json_encode($selfUrl); ?>;
 const AF_LIST_ENDPOINT = <?php echo json_encode($listEndpoint); ?>;
 
 (async function() {
@@ -637,7 +633,11 @@ const AF_LIST_ENDPOINT = <?php echo json_encode($listEndpoint); ?>;
 
 		sel.disabled = false;
 		sel.onchange = () => {
-			if (sel.value) location.href = AF_SELF_URL + '&flow=' + encodeURIComponent(sel.value);
+			if (!sel.value) return;
+
+			const url = new URL(window.location.href);
+			url.searchParams.set('flow', sel.value);
+			window.location.href = url.toString();
 		};
 	} catch (e) {
 		sel.innerHTML = '<option>Failed to load flows</option>';
