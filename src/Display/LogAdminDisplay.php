@@ -2,14 +2,14 @@
 
 namespace ClientStack\AdminDisplay;
 
+use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Logger\Api\ILogger;
-use UiFoundation\Api\IAdminDisplay;
 
-final class LogAdminDisplay implements IAdminDisplay {
+final class LogAdminDisplay implements IDisplay {
 
 	private const DEFAULT_NUM = 100;
 
@@ -45,7 +45,7 @@ final class LogAdminDisplay implements IAdminDisplay {
 
 	private function handleHtml(): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
-		$this->view->setTemplate('AdminDisplay/LogAdminDisplay.php');
+		$this->view->setTemplate('Display/LogAdminDisplay.php');
 
 		$endpoint = $this->buildEndpointBase();
 
