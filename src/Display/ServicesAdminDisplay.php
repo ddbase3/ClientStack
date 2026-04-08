@@ -13,6 +13,7 @@ use Base3\Accesscontrol\Api\IAccesscontrol;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\Database\Api\IDatabase;
 use Base3\Language\Api\ILanguage;
+use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Logger\Api\ILogger;
 use Base3\ServiceSelector\Api\IServiceSelector;
 use Base3\Session\Api\ISession;
@@ -43,6 +44,7 @@ class ServicesAdminDisplay implements IDisplay {
 			IConfiguration::class,
 			ISettingsStore::class,
 			IServiceSelector::class,
+			ILinkTargetService::class,
 			ILogger::class,
 			IDatabase::class,
 			ISession::class,
