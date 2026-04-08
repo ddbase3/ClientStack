@@ -15,6 +15,7 @@ use Base3\Language\Api\ILanguage;
 use Base3\Logger\Api\ILogger;
 use Base3\ServiceSelector\Api\IServiceSelector;
 use Base3\Session\Api\ISession;
+use Base3\Settings\Api\ISettingsStore;
 use Base3\State\Api\IStateStore;
 use Base3\Usermanager\Api\IUsermanager;
 use UiFoundation\Api\IAdminDisplay;
@@ -40,6 +41,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 			IRequest::class,
 			IClassMap::class,
 			IConfiguration::class,
+			ISettingsStore::class,
 			IServiceSelector::class,
 			ILogger::class,
 			IDatabase::class,
