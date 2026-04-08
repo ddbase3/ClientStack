@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\AdminDisplay;
+namespace ClientStack\Display;
 
 use Base3\Api\IClassMap;
+use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Worker\Api\IJob;
-use UiFoundation\Api\IAdminDisplay;
 
-final class JobsAdminDisplay implements IAdminDisplay {
+final class JobsAdminDisplay implements IDisplay {
 
 	private const CONFIG_GROUP = 'job';
 
@@ -49,7 +49,7 @@ final class JobsAdminDisplay implements IAdminDisplay {
 
 	private function handleHtml(): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
-		$this->view->setTemplate('AdminDisplay/JobsAdminDisplay.php');
+		$this->view->setTemplate('Display/JobsAdminDisplay.php');
 
 		$baseEndpoint = $this->buildEndpointBase();
 
