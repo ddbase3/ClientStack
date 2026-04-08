@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\AdminDisplay;
+namespace ClientStack\Display;
 
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
