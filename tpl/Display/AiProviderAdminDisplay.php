@@ -89,14 +89,14 @@
 
 					<div class="apad-field">
 						<label for="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-keytype">Key type</label>
-						<input
-							type="text"
+						<select
 							id="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-keytype"
 							name="keytype"
-							list="<?php echo htmlspecialchars((string)$this->_['keyTypeListId'], ENT_QUOTES); ?>"
-							placeholder="env"
-							autocomplete="off"
 						>
+							<?php foreach(($this->_['keyTypeSuggestions'] ?? []) as $keyType): ?>
+								<option value="<?php echo htmlspecialchars((string)$keyType, ENT_QUOTES); ?>"><?php echo htmlspecialchars((string)$keyType, ENT_QUOTES); ?></option>
+							<?php endforeach; ?>
+						</select>
 					</div>
 
 					<div class="apad-field">
@@ -132,12 +132,6 @@
 	<datalist id="<?php echo htmlspecialchars((string)$this->_['driverListId'], ENT_QUOTES); ?>">
 		<?php foreach(($this->_['driverSuggestions'] ?? []) as $driver): ?>
 			<option value="<?php echo htmlspecialchars((string)$driver, ENT_QUOTES); ?>"></option>
-		<?php endforeach; ?>
-	</datalist>
-
-	<datalist id="<?php echo htmlspecialchars((string)$this->_['keyTypeListId'], ENT_QUOTES); ?>">
-		<?php foreach(($this->_['keyTypeSuggestions'] ?? []) as $keyType): ?>
-			<option value="<?php echo htmlspecialchars((string)$keyType, ENT_QUOTES); ?>"></option>
 		<?php endforeach; ?>
 	</datalist>
 </div>
@@ -363,7 +357,8 @@
 	font-size: 13px;
 }
 
-.apad-field input[type="text"] {
+.apad-field input[type="text"],
+.apad-field select {
 	width: 100%;
 	box-sizing: border-box;
 	border: 1px solid #cfcfcf;
@@ -433,7 +428,7 @@
 			label: root.querySelector("input[name='label']"),
 			driver: root.querySelector("input[name='driver']"),
 			endpoint: root.querySelector("input[name='endpoint']"),
-			keytype: root.querySelector("input[name='keytype']"),
+			keytype: root.querySelector("select[name='keytype']"),
 			keyvalue: root.querySelector("input[name='keyvalue']"),
 			enabled: root.querySelector("input[name='enabled']")
 		};
@@ -840,7 +835,7 @@
 			removeCurrent();
 		});
 
-		refs.keytype.addEventListener("input", function() {
+		refs.keytype.addEventListener("change", function() {
 			refs.keytype.value = normalizeKeyType(refs.keytype.value);
 			updateKeyTypeUi();
 		});

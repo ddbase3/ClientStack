@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\AdminDisplay;
+namespace ClientStack\Display;
 
+use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Settings\Api\ISettingsStore;
 use RuntimeException;
-use UiFoundation\Api\IAdminDisplay;
 
-final class AiProviderAdminDisplay implements IAdminDisplay {
+final class AiProviderAdminDisplay implements IDisplay {
 
 	private const SETTINGS_GROUP = 'ai-provider';
 
@@ -31,7 +31,6 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 	private const KEYTYPE_SUGGESTIONS = [
 		self::KEYTYPE_ENV,
 		self::KEYTYPE_FIXED,
-		'direct',
 	];
 
 	public function __construct(
@@ -69,7 +68,6 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 
 		$instanceId = 'aiprovadm-' . uniqid();
 		$driverListId = $instanceId . '-drivers';
-		$keyTypeListId = $instanceId . '-keytypes';
 
 		$this->view->assign('instanceId', $instanceId);
 		$this->view->assign('endpoint', $this->buildEndpointBase());
@@ -77,7 +75,6 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		$this->view->assign('driverSuggestions', self::DRIVER_SUGGESTIONS);
 		$this->view->assign('keyTypeSuggestions', self::KEYTYPE_SUGGESTIONS);
 		$this->view->assign('driverListId', $driverListId);
-		$this->view->assign('keyTypeListId', $keyTypeListId);
 
 		return $this->view->loadTemplate();
 	}
