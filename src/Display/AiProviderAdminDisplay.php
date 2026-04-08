@@ -64,7 +64,7 @@ final class AiProviderAdminDisplay implements IDisplay {
 
 	private function handleHtml(): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
-		$this->view->setTemplate('AdminDisplay/AiProviderAdminDisplay.php');
+		$this->view->setTemplate('Display/AiProviderAdminDisplay.php');
 
 		$instanceId = 'aiprovadm-' . uniqid();
 		$driverListId = $instanceId . '-drivers';
