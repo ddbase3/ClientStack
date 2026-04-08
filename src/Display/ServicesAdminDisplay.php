@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\AdminDisplay;
+namespace ClientStack\Display;
 
 use Base3\Api\IAssetResolver;
 use Base3\Api\IClassMap;
 use Base3\Api\IContainer;
+use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Api\ISystemService;
@@ -18,9 +19,8 @@ use Base3\Session\Api\ISession;
 use Base3\Settings\Api\ISettingsStore;
 use Base3\State\Api\IStateStore;
 use Base3\Usermanager\Api\IUsermanager;
-use UiFoundation\Api\IAdminDisplay;
 
-class ServicesAdminDisplay implements IAdminDisplay {
+class ServicesAdminDisplay implements IDisplay {
 
 	public function __construct(
 		private readonly IContainer $container,
@@ -33,7 +33,7 @@ class ServicesAdminDisplay implements IAdminDisplay {
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
 		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
-		$this->view->setTemplate('AdminDisplay/ServicesAdminDisplay.php');
+		$this->view->setTemplate('Display/ServicesAdminDisplay.php');
 
 		$list = [
 			IContainer::class,
