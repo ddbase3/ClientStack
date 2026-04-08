@@ -82,7 +82,7 @@
 							type="text"
 							id="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-endpoint"
 							name="endpoint"
-							placeholder="https://api.openai.com/v1"
+							placeholder="https://api.openai.com"
 							autocomplete="off"
 						>
 					</div>
