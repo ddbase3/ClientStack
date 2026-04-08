@@ -79,7 +79,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 	}
 
 	private function handleJson(): string {
-		$action = strtolower(trim((string)($this->request->get('action') ?? '')));
+		$action = strtolower(trim((string)$this->request->request('action', '')));
 
 		try {
 			return match($action) {
@@ -102,10 +102,6 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 			return $this->jsonError('Exception: ' . $e->getMessage());
 		}
 	}
-
-	// ---------------------------------------------------------------------
-	// Core logic
-	// ---------------------------------------------------------------------
 
 	/**
 	 * @return array<int, array<string, mixed>>
@@ -149,13 +145,13 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 	 * @return array<string, mixed>
 	 */
 	private function saveProvider(): array {
-		$name = $this->normalizeKey((string)($this->request->get('name') ?? ''));
-		$label = trim((string)($this->request->get('label') ?? ''));
-		$driver = $this->normalizeToken((string)($this->request->get('driver') ?? ''));
-		$endpoint = trim((string)($this->request->get('endpoint') ?? ''));
-		$keyType = $this->normalizeToken((string)($this->request->get('keytype') ?? ''));
-		$keyValue = trim((string)($this->request->get('keyvalue') ?? ''));
-		$enabled = $this->normalizeBool($this->request->get('enabled'));
+		$name = $this->normalizeKey((string)$this->request->request('name', ''));
+		$label = trim((string)$this->request->request('label', ''));
+		$driver = $this->normalizeToken((string)$this->request->request('driver', ''));
+		$endpoint = trim((string)$this->request->request('endpoint', ''));
+		$keyType = $this->normalizeToken((string)$this->request->request('keytype', ''));
+		$keyValue = trim((string)$this->request->request('keyvalue', ''));
+		$enabled = $this->normalizeBool($this->request->request('enabled', 0));
 
 		if($name === '') {
 			throw new RuntimeException('Missing settings name.');
@@ -197,7 +193,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 	}
 
 	private function removeProvider(): string {
-		$name = $this->normalizeKey((string)($this->request->get('name') ?? ''));
+		$name = $this->normalizeKey((string)$this->request->request('name', ''));
 
 		if($name === '') {
 			throw new RuntimeException('Missing settings name.');
@@ -209,12 +205,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		return $name;
 	}
 
-	// ---------------------------------------------------------------------
-	// Helpers
-	// ---------------------------------------------------------------------
-
 	/**
-	 * @param string $name
 	 * @param array<string, mixed> $settings
 	 * @return array<string, mixed>
 	 */
@@ -261,9 +252,10 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		return $this->linkTargetService->getLink(
 			[
 				'name' => self::getName(),
-				'out' => 'json',
 			],
-			[]
+			[
+				'out' => 'json',
+			]
 		);
 	}
 

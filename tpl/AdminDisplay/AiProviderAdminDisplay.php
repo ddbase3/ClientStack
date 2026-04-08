@@ -398,6 +398,7 @@
 (function() {
 	const instanceId = <?php echo json_encode((string)$this->_['instanceId']); ?>;
 	const endpointBase = <?php echo json_encode((string)$this->_['endpoint']); ?>;
+	const configGroup = <?php echo json_encode((string)$this->_['configGroup']); ?>;
 
 	function init() {
 		const root = document.getElementById(instanceId);
@@ -447,15 +448,6 @@
 		function normalizeKey(s) {
 			s = String(s ?? "").trim().toLowerCase();
 			return s.replace(/[^a-z0-9._-]+/g, "");
-		}
-
-		function buildUrl(params) {
-			const qs = new URLSearchParams(params).toString();
-			if (!qs) {
-				return endpointBase;
-			}
-
-			return endpointBase + (endpointBase.indexOf("?") === -1 ? "?" : "&") + qs;
 		}
 
 		function setLoading(active) {
@@ -617,11 +609,18 @@
 			setLoading(true);
 
 			try {
-				const response = await fetch(buildUrl(params), {
-					method: "GET",
+				const body = new URLSearchParams();
+				Object.keys(params || {}).forEach(function(key) {
+					body.append(key, params[key]);
+				});
+
+				const response = await fetch(endpointBase, {
+					method: "POST",
 					headers: {
-						"Accept": "application/json"
-					}
+						"Accept": "application/json",
+						"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+					},
+					body: body.toString()
 				});
 
 				const text = await response.text();
@@ -745,7 +744,7 @@
 
 			printOutput({
 				status: "saved",
-				group: <?php echo json_encode((string)$this->_['configGroup']); ?>,
+				group: configGroup,
 				provider: provider
 			}, "success");
 
@@ -775,7 +774,7 @@
 
 			printOutput({
 				status: "removed",
-				group: <?php echo json_encode((string)$this->_['configGroup']); ?>,
+				group: configGroup,
 				name: name
 			}, "success");
 
