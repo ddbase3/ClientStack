@@ -100,7 +100,7 @@
 					</div>
 
 					<div class="apad-field">
-						<label for="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-keyvalue">Key value</label>
+						<label for="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-keyvalue" data-role="keyvaluelabel">Key value</label>
 						<input
 							type="text"
 							id="<?php echo htmlspecialchars((string)$this->_['instanceId'], ENT_QUOTES); ?>-keyvalue"
@@ -108,6 +108,9 @@
 							placeholder="OPENAI_API_KEY"
 							autocomplete="off"
 						>
+						<div class="apad-hint apad-inline-hint" data-role="keytypehint">
+							For <span class="mono">env</span>, enter the environment variable name, e.g. <span class="mono">OPENAI_API_KEY</span>.
+						</div>
 					</div>
 
 					<div class="apad-field apad-field-checkbox">
@@ -342,6 +345,11 @@
 	color: #666;
 }
 
+.apad-inline-hint {
+	margin-top: 6px;
+	margin-bottom: 0;
+}
+
 .apad-grid {
 	display: grid;
 	grid-template-columns: 1fr;
@@ -416,6 +424,8 @@
 			form: root.querySelector("[data-role='form']"),
 			legend: root.querySelector("[data-role='legend']"),
 			namehint: root.querySelector("[data-role='namehint']"),
+			keyvaluelabel: root.querySelector("[data-role='keyvaluelabel']"),
+			keytypehint: root.querySelector("[data-role='keytypehint']"),
 			newBtn: root.querySelector("[data-role='new']"),
 			reloadBtn: root.querySelector("[data-role='reload']"),
 			deleteBtn: root.querySelector("[data-role='delete']"),
@@ -448,6 +458,14 @@
 		function normalizeKey(s) {
 			s = String(s ?? "").trim().toLowerCase();
 			return s.replace(/[^a-z0-9._-]+/g, "");
+		}
+
+		function normalizeKeyType(s) {
+			s = normalizeKey(s);
+			if (s === "direct") {
+				return "fixed";
+			}
+			return s;
 		}
 
 		function setLoading(active) {
@@ -508,6 +526,23 @@
 			}
 		}
 
+		function updateKeyTypeUi() {
+			const keyType = normalizeKeyType(refs.keytype.value);
+
+			if (keyType === "fixed") {
+				refs.keyvaluelabel.textContent = "API key";
+				refs.keyvalue.placeholder = "sk-...";
+				refs.keytypehint.innerHTML =
+					"For <span class='mono'>fixed</span>, enter the API key directly. The value will be stored in settings.";
+				return;
+			}
+
+			refs.keyvaluelabel.textContent = "Key value";
+			refs.keyvalue.placeholder = "OPENAI_API_KEY";
+			refs.keytypehint.innerHTML =
+				"For <span class='mono'>env</span>, enter the environment variable name, e.g. <span class='mono'>OPENAI_API_KEY</span>.";
+		}
+
 		function resetForm() {
 			refs.form.reset();
 			refs.name.value = "";
@@ -520,6 +555,7 @@
 
 			state.selectedName = "";
 			setEditMode(false);
+			updateKeyTypeUi();
 			highlightSelection();
 		}
 
@@ -533,17 +569,19 @@
 			refs.label.value = provider.label || "";
 			refs.driver.value = provider.driver || "";
 			refs.endpoint.value = provider.endpoint || "";
-			refs.keytype.value = provider.keytype || "env";
+			refs.keytype.value = normalizeKeyType(provider.keytype || "env");
 			refs.keyvalue.value = provider.keyvalue || "";
 			refs.enabled.checked = !!provider.enabled;
 
 			state.selectedName = provider.name || "";
 			setEditMode(true);
+			updateKeyTypeUi();
 			highlightSelection();
 		}
 
 		function maskKeyValue(provider) {
-			if ((provider.keytype || "") === "fixed") {
+			const keyType = normalizeKeyType(provider.keytype || "");
+			if (keyType === "fixed") {
 				return "••••••••";
 			}
 
@@ -585,8 +623,8 @@
 					"<td class='name-col'>" + esc(provider.name) + "</td>" +
 					"<td>" + esc(provider.label) + "</td>" +
 					"<td>" + esc(provider.driver) + "</td>" +
-					"<td title='" + esc(provider.keytype + ": " + maskKeyValue(provider)) + "'>" +
-						"<span class='mono'>" + esc(provider.keytype) + "</span><br>" +
+					"<td title='" + esc(normalizeKeyType(provider.keytype) + ": " + maskKeyValue(provider)) + "'>" +
+						"<span class='mono'>" + esc(normalizeKeyType(provider.keytype)) + "</span><br>" +
 						"<span class='mono' style='color:#777'>" + esc(maskKeyValue(provider)) + "</span>" +
 					"</td>" +
 					"<td>" + statusBadge(!!provider.enabled) + "</td>" +
@@ -687,13 +725,14 @@
 			const label = String(refs.label.value || "").trim();
 			const driver = normalizeKey(refs.driver.value);
 			const endpoint = String(refs.endpoint.value || "").trim();
-			const keytype = normalizeKey(refs.keytype.value);
+			const keytype = normalizeKeyType(refs.keytype.value);
 			const keyvalue = String(refs.keyvalue.value || "").trim();
 			const enabled = refs.enabled.checked ? "1" : "0";
 
 			refs.name.value = name;
 			refs.driver.value = driver;
 			refs.keytype.value = keytype;
+			updateKeyTypeUi();
 
 			if (!name) {
 				printOutput("Settings name is required.", "error");
@@ -716,7 +755,7 @@
 			}
 
 			if (!keytype) {
-				printOutput("Key type is required.", "error");
+				printOutput("Key type is required. Allowed: env or fixed.", "error");
 				return;
 			}
 
@@ -799,6 +838,11 @@
 
 		refs.deleteBtn.addEventListener("click", function() {
 			removeCurrent();
+		});
+
+		refs.keytype.addEventListener("input", function() {
+			refs.keytype.value = normalizeKeyType(refs.keytype.value);
+			updateKeyTypeUi();
 		});
 
 		refs.tbody.addEventListener("click", function(e) {

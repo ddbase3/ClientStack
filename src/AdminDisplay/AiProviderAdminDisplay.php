@@ -13,6 +13,9 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 
 	private const SETTINGS_GROUP = 'ai-provider';
 
+	private const KEYTYPE_ENV = 'env';
+	private const KEYTYPE_FIXED = 'fixed';
+
 	/**
 	 * @var array<int, string>
 	 */
@@ -26,8 +29,9 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 	 * @var array<int, string>
 	 */
 	private const KEYTYPE_SUGGESTIONS = [
-		'env',
-		'fixed',
+		self::KEYTYPE_ENV,
+		self::KEYTYPE_FIXED,
+		'direct',
 	];
 
 	public function __construct(
@@ -149,7 +153,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		$label = trim((string)$this->request->request('label', ''));
 		$driver = $this->normalizeToken((string)$this->request->request('driver', ''));
 		$endpoint = trim((string)$this->request->request('endpoint', ''));
-		$keyType = $this->normalizeToken((string)$this->request->request('keytype', ''));
+		$keyType = $this->normalizeKeyType((string)$this->request->request('keytype', ''));
 		$keyValue = trim((string)$this->request->request('keyvalue', ''));
 		$enabled = $this->normalizeBool($this->request->request('enabled', 0));
 
@@ -170,7 +174,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		}
 
 		if($keyType === '') {
-			throw new RuntimeException('Missing key type.');
+			throw new RuntimeException('Missing or invalid key type. Allowed: env|fixed');
 		}
 
 		if($keyValue === '') {
@@ -213,7 +217,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 		$label = trim((string)($settings['label'] ?? ''));
 		$driver = $this->normalizeToken((string)($settings['driver'] ?? ''));
 		$endpoint = trim((string)($settings['endpoint'] ?? ''));
-		$keyType = $this->normalizeToken((string)($settings['keytype'] ?? ''));
+		$keyType = $this->normalizeKeyType((string)($settings['keytype'] ?? ''));
 		$keyValue = trim((string)($settings['keyvalue'] ?? ''));
 		$enabled = $this->normalizeBool($settings['enabled'] ?? false);
 
@@ -222,7 +226,7 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 			'label' => $label,
 			'driver' => $driver,
 			'endpoint' => $endpoint,
-			'keytype' => $keyType,
+			'keytype' => $keyType === '' ? self::KEYTYPE_ENV : $keyType,
 			'keyvalue' => $keyValue,
 			'enabled' => $enabled,
 		];
@@ -237,6 +241,20 @@ final class AiProviderAdminDisplay implements IAdminDisplay {
 
 	private function normalizeToken(string $s): string {
 		return $this->normalizeKey($s);
+	}
+
+	private function normalizeKeyType(string $s): string {
+		$s = $this->normalizeToken($s);
+
+		if($s === 'direct') {
+			return self::KEYTYPE_FIXED;
+		}
+
+		if(in_array($s, [self::KEYTYPE_ENV, self::KEYTYPE_FIXED], true)) {
+			return $s;
+		}
+
+		return '';
 	}
 
 	private function normalizeBool(mixed $v): bool {
