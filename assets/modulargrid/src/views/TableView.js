@@ -1,6 +1,7 @@
 import { appendContent, clearElement, createElement } from '../utils/dom.js';
 import {
 	createRowDetailContent,
+	getActiveDetailStateSignature,
 	getRowDetailRowId,
 	isDetailRowActive,
 	resolveRowDetailOptions
@@ -442,6 +443,21 @@ function buildActiveDetailIdentityList(rows, grid, rowDetailOptions) {
 		.filter(Boolean);
 }
 
+function buildHeaderStateSignature(viewModel) {
+	return JSON.stringify({
+		sortKey: viewModel.sortKey || '',
+		sortDirection: viewModel.sortDirection || 'asc'
+	});
+}
+
+function buildTextDisplaySignature(grid) {
+	return JSON.stringify(grid.store.peek().textDisplay?.expanded || {});
+}
+
+function buildSelectionSignature(grid) {
+	return JSON.stringify(grid.store.peek().selection?.selectedRowIds || []);
+}
+
 function haveEqualArrays(a, b) {
 	if (!Array.isArray(a) || !Array.isArray(b)) {
 		return false;
@@ -502,16 +518,23 @@ function isStateAttachedToContainer(state, container) {
 		return false;
 	}
 
-	if (!(state.scroll instanceof HTMLElement) || !(state.table instanceof HTMLElement) || !(state.tbody instanceof HTMLElement)) {
+	if (!(state.scroll instanceof HTMLElement)) {
 		return false;
 	}
 
-	return container.contains(state.scroll)
-		&& state.scroll.contains(state.table)
-		&& state.table.contains(state.tbody);
+	if (!container.contains(state.scroll)) {
+		return false;
+	}
+
+	if (state.table instanceof HTMLElement && state.tbody instanceof HTMLElement) {
+		return state.scroll.contains(state.table)
+			&& state.table.contains(state.tbody);
+	}
+
+	return true;
 }
 
-function canReuseDuringLoadingMore(state, renderSignature, rowIdentities, groupingKey, viewModel) {
+function canReuseDuringLoadingMore(state, renderSignature, rowIdentities, groupingKey, viewModel, detailStateSignature) {
 	if (!state || state.mode !== 'data') {
 		return false;
 	}
@@ -528,6 +551,10 @@ function canReuseDuringLoadingMore(state, renderSignature, rowIdentities, groupi
 		return false;
 	}
 
+	if (state.detailStateSignature !== detailStateSignature) {
+		return false;
+	}
+
 	if (state.rowIdentities.length !== rowIdentities.length) {
 		return false;
 	}
@@ -535,7 +562,7 @@ function canReuseDuringLoadingMore(state, renderSignature, rowIdentities, groupi
 	return haveEqualArrays(state.rowIdentities, rowIdentities);
 }
 
-function canAppendRows(state, renderSignature, rowIdentities, activeDetailIdentities, groupingKey, viewModel) {
+function canAppendRows(state, renderSignature, rowIdentities, activeDetailIdentities, groupingKey, viewModel, detailStateSignature) {
 	if (!state || state.mode !== 'data') {
 		return false;
 	}
@@ -552,6 +579,10 @@ function canAppendRows(state, renderSignature, rowIdentities, activeDetailIdenti
 		return false;
 	}
 
+	if (state.detailStateSignature !== detailStateSignature) {
+		return false;
+	}
+
 	if (!haveEqualArrays(state.activeDetailIdentities, activeDetailIdentities)) {
 		return false;
 	}
@@ -563,7 +594,7 @@ function canAppendRows(state, renderSignature, rowIdentities, activeDetailIdenti
 	return hasMatchingPrefix(state.rowIdentities, rowIdentities);
 }
 
-function canRefreshBodyOnly(state, renderSignature, rowIdentities, groupingKey, viewModel) {
+function canRefreshBodyOnly(state, renderSignature, rowIdentities, groupingKey, headerStateSignature, viewModel) {
 	if (!state || state.mode !== 'data') {
 		return false;
 	}
@@ -576,7 +607,51 @@ function canRefreshBodyOnly(state, renderSignature, rowIdentities, groupingKey, 
 		return false;
 	}
 
-	return haveEqualArrays(state.rowIdentities, rowIdentities) && groupingKey === state.groupingKey;
+	if (state.groupingKey !== groupingKey) {
+		return false;
+	}
+
+	if (state.headerStateSignature !== headerStateSignature) {
+		return false;
+	}
+
+	return haveEqualArrays(state.rowIdentities, rowIdentities);
+}
+
+function shouldRefreshBodyOnly(previousState, activeDetailIdentities, detailStateSignature, textDisplaySignature, selectionSignature) {
+	if (!previousState) {
+		return false;
+	}
+
+	if (!haveEqualArrays(previousState.activeDetailIdentities, activeDetailIdentities)) {
+		return true;
+	}
+
+	if (previousState.detailStateSignature !== detailStateSignature) {
+		return true;
+	}
+
+	if (previousState.textDisplaySignature !== textDisplaySignature) {
+		return true;
+	}
+
+	if (previousState.selectionSignature !== selectionSignature) {
+		return true;
+	}
+
+	return false;
+}
+
+function applyRowDetailPresentationClasses(detailWrapper, presentation) {
+	if (!(detailWrapper instanceof HTMLElement) || !presentation) {
+		return;
+	}
+
+	const level = Math.max(1, Number(presentation.level) || 1);
+	const status = presentation.status || 'loaded';
+
+	detailWrapper.classList.add(`mg-row-detail-level-${level}`);
+	detailWrapper.classList.add(`mg-row-detail-${status}`);
 }
 
 function appendDataRow(tbody, row, grid, viewModel, renderColumns, rowDetailOptions, tableOptions, rowNumber) {
@@ -585,6 +660,12 @@ function appendDataRow(tbody, row, grid, viewModel, renderColumns, rowDetailOpti
 	const isActiveDetailRow = rowDetailOptions.enabled !== false && rowDetailOptions.renderInTable !== false && isDetailRowActive(row, grid, rowDetailOptions);
 	const hasExternalRowClick = typeof grid.options.onRowClick === 'function';
 	const zebraClassNames = getZebraClassNames(rowNumber, tableOptions);
+	const detailTogglePayload = {
+		rowId,
+		row,
+		viewModel,
+		level: Number(rowDetailOptions.level) || 1
+	};
 
 	const tr = createElement('tr', 'mg-row');
 
@@ -601,7 +682,7 @@ function appendDataRow(tbody, row, grid, viewModel, renderColumns, rowDetailOpti
 			}
 
 			if (canToggleDetail) {
-				grid.execute('toggleDetailRow', rowId);
+				grid.execute('toggleDetailRow', detailTogglePayload);
 			}
 
 			if (hasExternalRowClick) {
@@ -629,9 +710,9 @@ function appendDataRow(tbody, row, grid, viewModel, renderColumns, rowDetailOpti
 	tbody.appendChild(tr);
 
 	if (isActiveDetailRow) {
-		const detailContent = createRowDetailContent(row, grid, viewModel, renderColumns, rowDetailOptions);
+		const detailPresentation = createRowDetailContent(row, grid, viewModel, renderColumns, rowDetailOptions);
 
-		if (detailContent) {
+		if (detailPresentation?.content) {
 			const detailRow = createElement('tr', 'mg-detail-row');
 			const detailCell = createElement('td', 'mg-detail-cell');
 			const detailWrapper = createElement('div', 'mg-row-detail');
@@ -641,7 +722,8 @@ function appendDataRow(tbody, row, grid, viewModel, renderColumns, rowDetailOpti
 			}
 
 			detailCell.colSpan = Math.max(renderColumns.length, 1);
-			appendContent(detailWrapper, detailContent);
+			applyRowDetailPresentationClasses(detailWrapper, detailPresentation);
+			appendContent(detailWrapper, detailPresentation.content);
 			detailCell.appendChild(detailWrapper);
 			detailRow.appendChild(detailCell);
 			tbody.appendChild(detailRow);
@@ -720,16 +802,106 @@ function renderBodyIntoTbody(tbody, grid, viewModel, renderColumns, rowDetailOpt
 	};
 }
 
-function renderStableLoadingState(container) {
+function createLoadingOverlay() {
+	const overlay = createElement('div', 'mg-state mg-state-loading mg-table-loading-overlay');
+	overlay.textContent = 'Loading...';
+	overlay.style.position = 'absolute';
+	overlay.style.inset = '0';
+	overlay.style.display = 'flex';
+	overlay.style.alignItems = 'center';
+	overlay.style.justifyContent = 'center';
+	overlay.style.pointerEvents = 'none';
+	overlay.style.background = 'rgba(255, 255, 255, 0.72)';
+	overlay.style.backdropFilter = 'blur(1px)';
+	overlay.style.zIndex = '40';
+
+	return overlay;
+}
+
+function getMountedTableState(container) {
+	if (!(container instanceof HTMLElement)) {
+		return null;
+	}
+
+	const scroll = container.querySelector('.mg-table-scroll');
+
+	if (!(scroll instanceof HTMLElement)) {
+		return null;
+	}
+
+	const table = scroll.querySelector('.mg-table');
+	const tbody = table instanceof HTMLTableElement
+		? table.querySelector('tbody')
+		: null;
+	const overlay = scroll.querySelector('.mg-table-loading-overlay');
+
+	return {
+		scroll,
+		table: table instanceof HTMLTableElement ? table : null,
+		tbody: tbody instanceof HTMLElement ? tbody : null,
+		loadingOverlay: overlay instanceof HTMLElement ? overlay : null
+	};
+}
+
+function clearLoadingPresentation(state) {
+	if (!(state?.scroll instanceof HTMLElement)) {
+		return;
+	}
+
+	if (state.loadingOverlay instanceof HTMLElement && state.loadingOverlay.parentNode) {
+		state.loadingOverlay.parentNode.removeChild(state.loadingOverlay);
+	}
+}
+
+function renderStableLoadingState(container, previousState, preservedDimensions = {}) {
+	const mountedState = getMountedTableState(container);
+	const activeState = mountedState || previousState || null;
+	const height = Math.max(0, Number(preservedDimensions.height) || 0);
+	const minHeight = Math.max(0, Number(preservedDimensions.minHeight) || 0);
+
+	if (activeState?.scroll instanceof HTMLElement) {
+		const scroll = activeState.scroll;
+		let overlay = activeState.loadingOverlay;
+
+		scroll.style.position = 'relative';
+
+		if (!(overlay instanceof HTMLElement) || !scroll.contains(overlay)) {
+			overlay = createLoadingOverlay();
+			scroll.appendChild(overlay);
+		}
+
+		return {
+			...(previousState || {}),
+			...activeState,
+			mode: 'loading',
+			loadingOverlay: overlay,
+			preservedDimensions: {
+				height,
+				minHeight
+			}
+		};
+	}
+
 	clearElement(container);
 
 	const scroll = createElement('div', 'mg-table-scroll');
 	const scrollInner = createElement('div', 'mg-table-scroll-inner');
 	const loadingBox = createElement('div', 'mg-state mg-state-loading');
 
+	if (height > 0) {
+		scroll.style.height = `${height}px`;
+		scroll.style.minHeight = `${height}px`;
+		scroll.style.maxHeight = `${height}px`;
+	}
+
+	if (minHeight > 0) {
+		scrollInner.style.minHeight = `${minHeight}px`;
+	}
+
 	loadingBox.textContent = 'Loading...';
-	loadingBox.style.minHeight = '100%';
-	loadingBox.style.height = '100%';
+	loadingBox.style.width = '100%';
+	loadingBox.style.minHeight = minHeight > 0 ? `${minHeight}px` : '100%';
+	loadingBox.style.height = minHeight > 0 ? `${minHeight}px` : '100%';
 	loadingBox.style.display = 'flex';
 	loadingBox.style.alignItems = 'center';
 	loadingBox.style.justifyContent = 'center';
@@ -737,6 +909,45 @@ function renderStableLoadingState(container) {
 	scrollInner.appendChild(loadingBox);
 	scroll.appendChild(scrollInner);
 	container.appendChild(scroll);
+
+	return {
+		mode: 'loading',
+		scroll,
+		preservedDimensions: {
+			height,
+			minHeight
+		}
+	};
+}
+
+function getPreservedScrollDimensions(previousState, container) {
+	const mountedState = getMountedTableState(container);
+	const scroll = mountedState?.scroll instanceof HTMLElement
+		? mountedState.scroll
+		: previousState?.scroll instanceof HTMLElement
+			? previousState.scroll
+			: null;
+
+	if (!(scroll instanceof HTMLElement)) {
+		return {
+			height: 0,
+			minHeight: 0
+		};
+	}
+
+	const rect = scroll.getBoundingClientRect();
+	const height = Math.round(scroll.clientHeight || rect.height || scroll.offsetHeight || 0);
+	const minHeight = Math.max(
+		height,
+		Math.round(scroll.scrollHeight || 0),
+		Math.round(scroll.firstElementChild?.getBoundingClientRect?.().height || 0),
+		Math.round(scroll.firstElementChild?.scrollHeight || 0)
+	);
+
+	return {
+		height,
+		minHeight
+	};
 }
 
 function storeTableViewState(container, state) {
@@ -763,8 +974,12 @@ export class TableView {
 		const groupingState = getGroupingState(grid, groupingOptions);
 		const groupingKey = groupingState.key || '';
 		const renderSignature = buildRenderSignature(renderColumns, groupingKey, tableOptions);
+		const headerStateSignature = buildHeaderStateSignature(viewModel);
 		const rowIdentities = buildRowIdentityList(viewModel.rows || [], rowDetailOptions);
 		const activeDetailIdentities = buildActiveDetailIdentityList(viewModel.rows || [], grid, rowDetailOptions);
+		const detailStateSignature = getActiveDetailStateSignature(grid, viewModel.rows || [], rowDetailOptions);
+		const textDisplaySignature = buildTextDisplaySignature(grid);
+		const selectionSignature = buildSelectionSignature(grid);
 
 		if (viewModel.error) {
 			clearTableViewState(container);
@@ -777,9 +992,14 @@ export class TableView {
 		}
 
 		if (viewModel.loading) {
-			clearTableViewState(container);
-			renderStableLoadingState(container);
+			const preservedDimensions = getPreservedScrollDimensions(previousState, container);
+			const loadingState = renderStableLoadingState(container, previousState, preservedDimensions);
+			storeTableViewState(container, loadingState);
 			return;
+		}
+
+		if (previousState) {
+			clearLoadingPresentation(previousState);
 		}
 
 		if (renderColumns.length === 0) {
@@ -792,11 +1012,11 @@ export class TableView {
 			return;
 		}
 
-		if (canReuseDuringLoadingMore(previousState, renderSignature, rowIdentities, groupingKey, viewModel)) {
+		if (canReuseDuringLoadingMore(previousState, renderSignature, rowIdentities, groupingKey, viewModel, detailStateSignature)) {
 			return;
 		}
 
-		if (canAppendRows(previousState, renderSignature, rowIdentities, activeDetailIdentities, groupingKey, viewModel)) {
+		if (canAppendRows(previousState, renderSignature, rowIdentities, activeDetailIdentities, groupingKey, viewModel, detailStateSignature)) {
 			for (let index = previousState.rowIdentities.length; index < viewModel.rows.length; index += 1) {
 				previousState.visualRowNumber += 1;
 
@@ -818,17 +1038,22 @@ export class TableView {
 				...previousState,
 				mode: 'data',
 				renderSignature,
+				headerStateSignature,
 				groupingKey,
 				rowIdentities,
-				activeDetailIdentities
+				activeDetailIdentities,
+				detailStateSignature,
+				textDisplaySignature,
+				selectionSignature,
+				loadingOverlay: null
 			});
 
 			return;
 		}
 
 		if (
-			canRefreshBodyOnly(previousState, renderSignature, rowIdentities, groupingKey, viewModel)
-			&& !haveEqualArrays(previousState.activeDetailIdentities, activeDetailIdentities)
+			canRefreshBodyOnly(previousState, renderSignature, rowIdentities, groupingKey, headerStateSignature, viewModel)
+			&& shouldRefreshBodyOnly(previousState, activeDetailIdentities, detailStateSignature, textDisplaySignature, selectionSignature)
 		) {
 			const preservedScrollTop = previousState.scroll.scrollTop;
 
@@ -857,10 +1082,15 @@ export class TableView {
 				...previousState,
 				mode: 'data',
 				renderSignature,
+				headerStateSignature,
 				groupingKey,
 				rowIdentities,
 				activeDetailIdentities,
-				visualRowNumber: bodyState.visualRowNumber
+				detailStateSignature,
+				visualRowNumber: bodyState.visualRowNumber,
+				textDisplaySignature,
+				selectionSignature,
+				loadingOverlay: null
 			});
 
 			return;
@@ -1127,10 +1357,16 @@ export class TableView {
 			table,
 			tbody,
 			renderSignature,
+			headerStateSignature,
 			groupingKey,
 			rowIdentities,
 			activeDetailIdentities,
-			visualRowNumber: bodyState.visualRowNumber
+			detailStateSignature,
+			visualRowNumber: bodyState.visualRowNumber,
+			textDisplaySignature,
+			selectionSignature,
+			loadingOverlay: null
 		});
 	}
 }
+

@@ -161,6 +161,15 @@
 			color: #666;
 		}
 
+		.demo-remote-detail-status {
+			font-size: 13px;
+			color: #5a6980;
+		}
+
+		.demo-remote-detail-status-error {
+			color: #8a1f1f;
+		}
+
 		.demo-log {
 			margin-top: 12px;
 			padding: 8px 0 0 0;
@@ -171,6 +180,14 @@
 
 		.demo-log strong {
 			color: #222;
+		}
+
+		.infinite-grid .mg-row-detail-list-item {
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+		}
+
+		.infinite-grid .mg-row-detail-list-item-title {
+			font-size: 13px;
 		}
 
 		@media (max-width: 720px) {
@@ -198,8 +215,9 @@
 		</p>
 		<p>
 			The table view uses a fixed-height internal scroll area. It loads the first 50 records and automatically
-			requests the next batch when the scroll position approaches the bottom. The loading state is shown by
-			three pulsing dots inside the scrollable table area.
+			requests the next batch when the scroll position approaches the bottom. Clicking a row opens a server-loaded
+			detail panel. The nested child cards inside that panel are also interactive and can lazily load their own
+			follow-up detail layers.
 		</p>
 
 		<div class="infinite-grid">
@@ -211,3 +229,4 @@
 	<script type="module" src="./infinite-ajax.js"></script>
 </body>
 </html>
+
