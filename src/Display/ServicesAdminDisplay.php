@@ -12,6 +12,8 @@ use Base3\Api\ISystemService;
 use Base3\Accesscontrol\Api\IAccesscontrol;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\Database\Api\IDatabase;
+use Base3\Event\Api\IEventManager;
+use Base3\Hook\Api\IHookManager;
 use Base3\Language\Api\ILanguage;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Logger\Api\ILogger;
@@ -43,6 +45,7 @@ class ServicesAdminDisplay implements IDisplay {
 			IClassMap::class,
 			IConfiguration::class,
 			ISettingsStore::class,
+			IHookManager::class,
 			IServiceSelector::class,
 			ILinkTargetService::class,
 			ILogger::class,
@@ -51,6 +54,7 @@ class ServicesAdminDisplay implements IDisplay {
 			ILanguage::class,
 			IAccesscontrol::class,
 			IUsermanager::class,
+			IEventManager::class,
 			IStateStore::class,
 			IMvcView::class,
 			IAssetResolver::class
