@@ -161,6 +161,7 @@ function createHeaderCheckbox(grid, context, options) {
 	input.type = 'checkbox';
 	input.checked = allSelected;
 	input.indeterminate = someSelected;
+	input.setAttribute('aria-checked', someSelected ? 'mixed' : (allSelected ? 'true' : 'false'));
 
 	input.addEventListener('click', (event) => {
 		event.stopPropagation();
