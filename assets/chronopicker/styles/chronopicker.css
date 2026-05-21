@@ -1,0 +1,236 @@
+.cp-root {
+	box-sizing: border-box;
+	width: 280px;
+	border: 1px solid #cfd6df;
+	border-radius: 8px;
+	background: #ffffff;
+	box-shadow: 0 8px 22px rgba(23, 32, 42, 0.12);
+	color: #17202a;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-size: 14px;
+	line-height: 1.4;
+	overflow: hidden;
+}
+
+.cp-root *,
+.cp-root *::before,
+.cp-root *::after {
+	box-sizing: border-box;
+}
+
+.cp-display-inline {
+	box-shadow: none;
+}
+
+.cp-header {
+	display: grid;
+	grid-template-columns: 34px 1fr 34px;
+	align-items: center;
+	gap: 6px;
+	padding: 8px;
+	border-bottom: 1px solid #e6e9ee;
+	background: #f7f9fb;
+}
+
+.cp-title {
+	font-weight: 700;
+	text-align: center;
+}
+
+.cp-button,
+.cp-day {
+	appearance: none;
+	border: 1px solid #c7ced8;
+	border-radius: 5px;
+	background: #ffffff;
+	color: #17202a;
+	cursor: pointer;
+	font: inherit;
+	line-height: 1.2;
+}
+
+.cp-button {
+	padding: 5px 8px;
+}
+
+.cp-nav-button {
+	padding: 5px 0;
+	font-size: 18px;
+}
+
+.cp-button:hover,
+.cp-day:hover {
+	background: #eef3f8;
+}
+
+.cp-button:disabled,
+.cp-day:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.cp-primary-button {
+	border-color: #52677d;
+	background: #e5edf5;
+	font-weight: 600;
+}
+
+.cp-zone-main {
+	padding: 8px;
+}
+
+.cp-weekdays,
+.cp-days {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+}
+
+.cp-weekdays {
+	margin-bottom: 4px;
+}
+
+.cp-weekday {
+	padding: 4px 0;
+	color: #52677d;
+	font-size: 12px;
+	font-weight: 700;
+	text-align: center;
+}
+
+.cp-day {
+	min-height: 32px;
+	padding: 0;
+	text-align: center;
+}
+
+.cp-day-outside {
+	color: #98a2ad;
+	background: #fafbfc;
+}
+
+.cp-day-today {
+	border-color: #52677d;
+}
+
+.cp-day-selected {
+	border-color: #24578a;
+	background: #dfeaf7;
+	font-weight: 700;
+}
+
+.cp-day-disabled {
+	background: #f2f4f6;
+	color: #9da6b0;
+}
+
+.cp-footer {
+	display: grid;
+	gap: 8px;
+	padding: 8px;
+	border-top: 1px solid #e6e9ee;
+	background: #f7f9fb;
+}
+
+.cp-zone-footer:empty {
+	display: none;
+}
+
+.cp-time-controls,
+.cp-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.cp-actions {
+	justify-content: flex-end;
+}
+
+.cp-time-label {
+	font-weight: 600;
+}
+
+.cp-time-select {
+	padding: 4px 6px;
+	border: 1px solid #c7ced8;
+	border-radius: 5px;
+	background: #ffffff;
+	font: inherit;
+}
+
+.cp-error {
+	padding: 6px 8px;
+	border: 1px solid #e1a1a1;
+	border-radius: 5px;
+	background: #fff6f6;
+	color: #9d1c1c;
+	font-size: 12px;
+}
+
+.cp-input-bound {
+	background-image: linear-gradient(45deg, transparent 50%, #52677d 50%), linear-gradient(135deg, #52677d 50%, transparent 50%);
+	background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+	background-repeat: no-repeat;
+	background-size: 5px 5px, 5px 5px;
+}
+
+.cp-filter-control {
+	display: grid;
+	gap: 4px;
+	max-width: 260px;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.cp-filter-label {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.cp-filter-input,
+.cp-demo-input {
+	min-height: 34px;
+	padding: 6px 28px 6px 8px;
+	border: 1px solid #c7ced8;
+	border-radius: 5px;
+	font: inherit;
+}
+
+.cp-demo-page {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 24px;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.cp-demo-panel {
+	margin: 16px 0;
+}
+
+.cp-demo-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.cp-demo-note {
+	color: #52677d;
+}
+
+.cp-demo-output {
+	min-width: 260px;
+	padding: 10px;
+	border: 1px solid #e6e9ee;
+	border-radius: 6px;
+	background: #f7f9fb;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.cp-smoke-pass {
+	color: #0f6b3f;
+}
+
+.cp-smoke-fail {
+	color: #9d1c1c;
+}
