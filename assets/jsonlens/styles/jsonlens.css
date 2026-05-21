@@ -1,11 +1,11 @@
 .jl-root {
 	box-sizing: border-box;
-	border: 1px solid #d7dce2;
-	border-radius: 8px;
-	background: #ffffff;
-	color: #17202a;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: 14px;
+	border: 1px solid #dfdfdf;
+	border-radius: 4px;
+	background: #fff;
+	color: #222;
+	font-family: inherit;
+	font-size: 13px;
 	line-height: 1.45;
 	overflow: hidden;
 }
@@ -19,61 +19,97 @@
 .jl-toolbar {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: flex-end;
 	gap: 8px;
 	padding: 8px;
-	border-bottom: 1px solid #e6e9ee;
-	background: #f7f9fb;
+	border-bottom: 1px solid #e2e2e2;
+	background: #fafafa;
 }
 
 .jl-toolbar-group {
 	display: inline-flex;
+	flex-wrap: wrap;
 	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+
+.jl-mode-group,
+.jl-tree-actions,
+.jl-copy-actions {
 	gap: 4px;
 }
 
 .jl-button,
 .jl-node-toggle {
-	appearance: none;
-	border: 1px solid #c7ced8;
-	border-radius: 5px;
-	background: #ffffff;
-	color: #17202a;
-	cursor: pointer;
 	font: inherit;
-	line-height: 1.2;
+	line-height: 1.3;
+	border: 1px solid #cfcfcf;
+	border-radius: 4px;
+	background: #fff;
+	color: #222;
+	cursor: pointer;
 }
 
 .jl-button {
-	padding: 5px 8px;
+	padding: 4px 8px;
+	white-space: nowrap;
 }
 
 .jl-button:hover,
 .jl-node-toggle:hover {
-	background: #eef3f8;
+	background: #f5f5f5;
+}
+
+.jl-button:disabled,
+.jl-node-toggle:disabled {
+	opacity: 0.6;
+	cursor: default;
 }
 
 .jl-button-active {
-	border-color: #52677d;
-	background: #e5edf5;
+	border-color: #b8c4d2;
+	background: #f4f7fb;
 	font-weight: 600;
 }
 
-.jl-search-input {
+.jl-search {
+	display: inline-flex;
 	min-width: 160px;
-	padding: 5px 8px;
-	border: 1px solid #c7ced8;
-	border-radius: 5px;
+	max-width: 100%;
+}
+
+.jl-search-input {
+	width: 100%;
+	min-width: 0;
+	padding: 4px 8px;
+	border: 1px solid #cfcfcf;
+	border-radius: 4px;
+	background: #fff;
+	color: #222;
 	font: inherit;
+	line-height: 1.3;
+}
+
+.jl-search-input:focus-visible,
+.jl-button:focus-visible,
+.jl-node-toggle:focus-visible {
+	outline: 2px solid #8db7a0;
+	outline-offset: 2px;
 }
 
 .jl-path-display {
+	display: inline-block;
 	max-width: 340px;
-	padding: 4px 6px;
-	border-radius: 5px;
-	background: #eef3f8;
+	min-width: 0;
+	padding: 2px 8px;
+	border: 1px solid #dfdfdf;
+	border-radius: 999px;
+	background: #fafafa;
+	color: #444;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 12px;
+	line-height: 1.35;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -81,12 +117,31 @@
 
 .jl-body {
 	padding: 8px;
+	background: #fff;
 	overflow: auto;
+}
+
+.jl-empty {
+	padding: 10px 0;
+	border-top: 1px solid #dcdcdc;
+	border-bottom: 1px solid #dcdcdc;
+	background: transparent;
+	color: #666;
 }
 
 .jl-tree {
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 13px;
+	line-height: 1.45;
+	color: #222;
+}
+
+.jl-node {
+	min-width: 0;
+}
+
+.jl-node-children {
+	min-width: 0;
 }
 
 .jl-node-line {
@@ -100,7 +155,15 @@
 }
 
 .jl-node-line:hover {
-	background: #f4f7fa;
+	background: #f5f5f5;
+}
+
+.jl-node-expandable > .jl-node-line {
+	cursor: pointer;
+}
+
+.jl-node-collapsed > .jl-node-line {
+	color: #333;
 }
 
 .jl-node-toggle,
@@ -109,52 +172,78 @@
 	align-items: center;
 	justify-content: center;
 	width: 20px;
+	min-width: 20px;
 	height: 20px;
 	padding: 0;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 12px;
+	line-height: 1;
+}
+
+.jl-node-toggle {
+	border: 0;
+	background: transparent;
+	color: #555;
+}
+
+.jl-node-toggle:hover {
+	background: transparent;
+	color: #222;
 }
 
 .jl-node-spacer {
-	border: 1px solid transparent;
+	border: 0;
+	background: transparent;
 }
 
 .jl-node-key,
 .jl-token-key {
-	color: #7b3f00;
+	color: #6a4a20;
+	font-weight: 600;
 }
 
 .jl-node-summary {
-	color: #52677d;
+	color: #666;
+}
+
+.jl-token {
+	white-space: pre-wrap;
 }
 
 .jl-token-string {
-	color: #0f6b3f;
+	color: #246b43;
 }
 
 .jl-token-number {
-	color: #0b55a0;
+	color: #245a8f;
 }
 
 .jl-token-boolean {
-	color: #7a3db8;
+	color: #70458f;
 }
 
 .jl-token-null {
-	color: #7a7f87;
+	color: #777;
 }
 
 .jl-pretty,
 .jl-raw {
 	margin: 0;
-	padding: 10px;
-	border-radius: 6px;
-	background: #f7f9fb;
+	padding: 10px 12px;
+	border: 1px solid #e2e2e2;
+	border-radius: 4px;
+	background: #fafafa;
+	color: #222;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 13px;
 	line-height: 1.5;
 	overflow: auto;
 	white-space: pre;
+}
+
+.jl-code {
+	display: block;
+	min-width: 0;
 }
 
 .jl-search-hit {
@@ -165,25 +254,29 @@
 }
 
 .jl-error {
-	padding: 10px;
-	border: 1px solid #e1a1a1;
-	border-radius: 6px;
-	background: #fff6f6;
+	display: grid;
+	gap: 8px;
+	padding: 10px 12px;
+	border: 1px solid #e4c3c3;
+	border-left-width: 3px;
+	border-left-color: #c88484;
+	border-radius: 4px;
+	background: #fff8f8;
 }
 
 .jl-error-title {
-	margin-bottom: 4px;
-	font-weight: 700;
-	color: #9d1c1c;
+	font-size: 13px;
+	font-weight: 600;
+	color: #8a1f1f;
 }
 
 .jl-error-message {
-	margin-bottom: 8px;
-	color: #6f1a1a;
+	color: #8a1f1f;
+	line-height: 1.45;
 }
 
 .jl-error-raw {
-	border: 1px solid #f0cccc;
+	border-color: #e4c3c3;
 	background: #fffafa;
 }
 
@@ -193,20 +286,36 @@
 }
 
 .jl-row-detail-section {
+	display: grid;
+	gap: 6px;
 	margin: 0;
+	min-width: 0;
 }
 
 .jl-row-detail-section-title {
-	margin: 0 0 6px;
-	font-size: 14px;
+	margin: 0;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: #546274;
 }
 
 .jl-row-detail-text {
 	padding: 8px;
-	border: 1px solid #e6e9ee;
-	border-radius: 6px;
-	background: #ffffff;
+	border: 1px solid #e2e2e2;
+	border-radius: 4px;
+	background: #fff;
+	color: #222;
+	font-size: 13px;
+	line-height: 1.45;
 	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.jl-host {
+	min-width: 0;
 }
 
 .jl-demo-page {
@@ -214,6 +323,13 @@
 	margin: 0 auto;
 	padding: 24px;
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	color: #222;
+}
+
+.jl-demo-page h1,
+.jl-demo-page h2,
+.jl-demo-page h3 {
+	color: #222;
 }
 
 .jl-demo-panel {
@@ -221,13 +337,41 @@
 }
 
 .jl-demo-note {
-	color: #52677d;
+	color: #555;
+	font-size: 13px;
+	line-height: 1.45;
 }
 
 .jl-smoke-pass {
-	color: #0f6b3f;
+	color: #246b43;
+	font-weight: 600;
 }
 
 .jl-smoke-fail {
-	color: #9d1c1c;
+	color: #8a1f1f;
+	font-weight: 600;
+}
+
+@media (max-width: 720px) {
+	.jl-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.jl-toolbar-group,
+	.jl-search {
+		width: 100%;
+	}
+
+	.jl-button {
+		flex: 1 1 auto;
+	}
+
+	.jl-path-display {
+		max-width: 100%;
+	}
+
+	.jl-body {
+		padding: 8px;
+	}
 }
