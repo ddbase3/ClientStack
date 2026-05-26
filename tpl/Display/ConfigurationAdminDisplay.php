@@ -20,7 +20,7 @@
 						<?php echo $key; ?>
 					</td>
 					<td class="service-implementation">
-						<?php echo htmlspecialchars($value, ENT_QUOTES); ?>
+						<?php echo htmlspecialchars(is_array($value) ? implode(', ', $value) : $value, ENT_QUOTES); ?>
 					</td>
 				</tr>
 			<?php } ?>
