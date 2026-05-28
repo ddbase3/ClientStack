@@ -19,7 +19,7 @@ $typeOptions = $this->_['typeOptions'];
 	}
 
 	.configuration-admin-shell p {
-		margin: 0 0 16px 0;
+		margin: 0 0 12px 0;
 		max-width: 1200px;
 		color: #555;
 		line-height: 1.45;
@@ -105,11 +105,11 @@ $typeOptions = $this->_['typeOptions'];
 		vertical-align: top;
 	}
 
-	.configuration-admin-actions {
-		display: flex;
+	.configuration-admin-top-actions {
+		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		margin: 0 0 12px 0;
+		flex: 0 0 auto;
 	}
 
 	.configuration-admin-button {
@@ -122,7 +122,8 @@ $typeOptions = $this->_['typeOptions'];
 		font: inherit;
 		font-size: 13px;
 		line-height: 1.3;
-		padding: 6px 10px;
+		min-height: 28px;
+		padding: 4px 10px;
 		white-space: nowrap;
 	}
 
@@ -359,11 +360,6 @@ $typeOptions = $this->_['typeOptions'];
 		Configuration values grouped by section and key. Scalar values can be edited directly; array values are edited as JSON and saved back as PHP arrays.
 	</p>
 
-	<div class="configuration-admin-actions">
-		<button type="button" id="configuration-admin-add" class="configuration-admin-button configuration-admin-button-primary">Add configuration value</button>
-		<button type="button" id="configuration-admin-reload" class="configuration-admin-button">Reload configuration</button>
-	</div>
-
 	<div class="configuration-admin-grid">
 		<div id="configuration-admin-grid"></div>
 		<div id="configuration-admin-output" class="configuration-admin-output"></div>
@@ -471,6 +467,15 @@ $typeOptions = $this->_['typeOptions'];
 			}
 
 			return element;
+		}
+
+		function createButton(className, text) {
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = className;
+			button.textContent = text;
+
+			return button;
 		}
 
 		function renderName(value, row) {
@@ -815,22 +820,12 @@ $typeOptions = $this->_['typeOptions'];
 		}
 
 		function bindEditorEvents() {
-			const addButton = document.querySelector('#configuration-admin-add');
-			const reloadButton = document.querySelector('#configuration-admin-reload');
 			const closeButton = document.querySelector('#configuration-admin-close');
 			const cancelButton = document.querySelector('#configuration-admin-cancel');
 			const saveButton = document.querySelector('#configuration-admin-save');
 			const deleteButton = document.querySelector('#configuration-admin-delete-current');
 			const modal = getModalElement();
 			const elements = getEditorElements();
-
-			if(addButton) {
-				addButton.addEventListener('click', () => openEditor(null));
-			}
-
-			if(reloadButton) {
-				reloadButton.addEventListener('click', () => reloadConfiguration());
-			}
 
 			if(closeButton) {
 				closeButton.addEventListener('click', () => closeEditor());
@@ -880,6 +875,43 @@ $typeOptions = $this->_['typeOptions'];
 					closeEditor();
 				}
 			});
+		}
+
+		function createConfigurationActionsPlugin() {
+			return {
+				name: 'configurationActions',
+
+				layoutContributions() {
+					return [
+						{
+							zone: 'topLine1',
+							order: 5,
+							render() {
+								const wrapper = document.createElement('div');
+								wrapper.className = 'configuration-admin-top-actions';
+
+								const addButton = createButton(
+									'configuration-admin-button configuration-admin-button-primary',
+									'Add configuration value'
+								);
+
+								const reloadButton = createButton(
+									'configuration-admin-button',
+									'Reload configuration'
+								);
+
+								addButton.addEventListener('click', () => openEditor(null));
+								reloadButton.addEventListener('click', () => reloadConfiguration());
+
+								wrapper.appendChild(addButton);
+								wrapper.appendChild(reloadButton);
+
+								return wrapper;
+							}
+						}
+					];
+				}
+			};
 		}
 
 		async function initGrid() {
@@ -987,6 +1019,7 @@ $typeOptions = $this->_['typeOptions'];
 					direction: 'asc'
 				},
 				plugins: [
+					createConfigurationActionsPlugin(),
 					SearchPlugin,
 					FiltersPlugin,
 					HeaderMenuPlugin,
