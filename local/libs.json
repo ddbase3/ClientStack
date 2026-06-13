@@ -177,5 +177,14 @@
       }
     ],
     "target": "dropzone"
+  },
+  {
+    "name": "icons",
+    "repo": "https://github.com/twbs/icons.git",
+    "branch": "main",
+    "tag": "v1.0.0",
+    "dir": "icons",
+    "subdir": "icons",
+    "target": "icons"
   }
 ]
