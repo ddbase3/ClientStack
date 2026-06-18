@@ -355,7 +355,7 @@ $typeOptions = $this->_['typeOptions'];
 </style>
 
 <div class="configuration-admin-shell">
-	<h1>Base3Ilias Configuration</h1>
+	<h1>Configuration</h1>
 	<p>
 		Configuration values grouped by section and key. Scalar values can be edited directly; array values are edited as JSON and saved back as PHP arrays.
 	</p>
