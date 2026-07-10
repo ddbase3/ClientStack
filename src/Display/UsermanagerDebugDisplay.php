@@ -4,6 +4,8 @@ namespace ClientStack\Display;
 
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
+use Base3\Api\IRequest;
+use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Usermanager\Api\IUsermanager;
 use Base3\Usermanager\Permission;
 use Base3\Usermanager\Role;
@@ -11,8 +13,30 @@ use Throwable;
 
 final class UsermanagerDebugDisplay implements IDisplay {
 
+	private const ACTION_PERMISSION_PROBE = 'permission_probe';
+
+	private const PARAM_ACTION = 'action';
+	private const PARAM_SCOPE = 'base3_um_scope';
+	private const PARAM_TARGET = 'base3_um_target';
+	private const PARAM_OPERATION = 'base3_um_operation';
+	private const PARAM_MODE = 'base3_um_mode';
+
+	private const DEFAULT_SCOPE = 'ilias';
+	private const DEFAULT_OPERATION = 'read';
+
+	private const DEFAULT_ILIAS_OPERATIONS = [
+		'visible',
+		'read',
+		'write',
+		'edit_permission',
+		'delete',
+		'copy',
+	];
+
 	public function __construct(
+		private readonly IRequest $request,
 		private readonly IMvcView $view,
+		private readonly ILinkTargetService $linkTargetService,
 		private readonly IUsermanager $usermanager
 	) {}
 
@@ -25,52 +49,118 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	}
 
 	public function getHelp(): string {
-		return 'Shows the current BASE3 usermanager user, groups, roles and permissions.';
+		return 'Shows the current BASE3 usermanager user, groups, roles and target permissions.';
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		$out = strtolower($out);
+
+		if ($out === 'json' || $this->requestValue(self::PARAM_ACTION) === self::ACTION_PERMISSION_PROBE) {
+			return $this->handleJson();
+		}
+
+		return $this->handleHtml();
+	}
+
+	private function handleHtml(): string {
 		$userCall = $this->call('getUser', fn() => $this->usermanager->getUser());
 		$groupsCall = $this->call('getGroups', fn() => $this->usermanager->getGroups());
 		$rolesCall = $this->call('getRoles', fn() => $this->usermanager->getRoles());
 		$permissionsCall = $this->call('getPermissions', fn() => $this->usermanager->getPermissions());
+		$allPermissionsCall = $this->call('getAllPermissions', fn() => $this->usermanager->getAllPermissions());
 
 		$user = $this->normalizeItem($userCall['value']);
 		$groups = $this->normalizeList($groupsCall['value']);
 		$roles = $this->normalizeList($rolesCall['value']);
 		$permissions = $this->normalizeList($permissionsCall['value']);
-		$checks = $this->getChecks();
+		$allPermissions = $this->normalizeList($allPermissionsCall['value']);
+		$roleChecks = $this->getRoleChecks($roles);
+
+		$scope = $this->getScope();
+		$target = $this->getTarget();
+		$operation = $this->getOperation();
 
 		$this->view->setPath(\DIR_PLUGIN . 'ClientStack');
 		$this->view->setTemplate('Display/UsermanagerDebugDisplay.php');
 
 		$this->view->assign('generatedAt', date('c'));
 		$this->view->assign('usermanagerClass', get_class($this->usermanager));
+		$this->view->assign('endpoint', $this->buildPermissionProbeEndpoint());
+		$this->view->assign('scopeParamName', self::PARAM_SCOPE);
+		$this->view->assign('targetParamName', self::PARAM_TARGET);
+		$this->view->assign('operationParamName', self::PARAM_OPERATION);
+		$this->view->assign('modeParamName', self::PARAM_MODE);
+		$this->view->assign('defaultScope', $scope);
+		$this->view->assign('defaultTarget', $this->formatTargetForInput($target));
+		$this->view->assign('defaultOperation', $operation);
+		$this->view->assign('operationOptions', $this->getOperationOptions($allPermissions, $scope));
+		$this->view->assign('initialUsage', $this->buildUsage($scope, $operation, $target));
 		$this->view->assign('user', $user);
 		$this->view->assign('groups', $groups);
 		$this->view->assign('roles', $roles);
 		$this->view->assign('permissions', $permissions);
+		$this->view->assign('allPermissions', $allPermissions);
 		$this->view->assign('permissionScopes', $this->groupPermissionsByScope($permissions));
-		$this->view->assign('checks', $checks);
-		$this->view->assign('calls', [$userCall, $groupsCall, $rolesCall, $permissionsCall]);
-		$this->view->assign('summary', $this->getSummary($userCall, $groups, $roles, $permissions, $checks));
+		$this->view->assign('allPermissionScopes', $this->groupPermissionsByScope($allPermissions));
+		$this->view->assign('roleChecks', $roleChecks);
+		$this->view->assign('calls', [$userCall, $groupsCall, $rolesCall, $permissionsCall, $allPermissionsCall]);
+		$this->view->assign('summary', $this->getSummary($userCall, $groups, $roles, $permissions, $allPermissions, $roleChecks));
 		$this->view->assign('formatValue', fn($value) => $this->formatValue($value));
 		$this->view->assign('formatList', fn($value) => $this->formatList($value));
 
 		return $this->view->loadTemplate();
 	}
 
-	private function getChecks(): array {
-		return [
-			$this->checkRole('admin'),
-			$this->checkRole('member'),
-			$this->checkRole('visit'),
-			$this->checkPermission('system', 'admin'),
-			$this->checkPermission('entry', 'admin'),
-			$this->checkPermission('entry', 'create'),
-			$this->checkPermission('user', 'manage'),
-			$this->checkPermission('group', 'manage'),
-			$this->checkPermission('role', 'manage'),
-		];
+	private function handleJson(): string {
+		try {
+			$action = $this->requestValue(self::PARAM_ACTION);
+
+			if ($action !== self::ACTION_PERMISSION_PROBE) {
+				return $this->jsonError("Unknown action '$action'. Use: " . self::ACTION_PERMISSION_PROBE);
+			}
+
+			$scope = $this->getScope();
+			$target = $this->getTarget();
+			$operation = $this->getOperation();
+			$mode = $this->getMode();
+			$allPermissionsCall = $this->call('getAllPermissions', fn() => $this->usermanager->getAllPermissions());
+			$allPermissions = $this->normalizeList($allPermissionsCall['value']);
+			$operations = $mode === 'all' ? $this->getOperationOptions($allPermissions, $scope) : [$operation];
+			$rows = [];
+
+			foreach ($operations as $operationName) {
+				$rows[] = $this->checkPermission($scope, $operationName, $target);
+			}
+
+			return $this->jsonSuccess([
+				'scope' => $scope,
+				'target' => $target,
+				'operation' => $operation,
+				'mode' => $mode,
+				'usage' => $this->buildUsage($scope, $operation, $target),
+				'rows' => $rows,
+				'total' => count($rows),
+				'allowed' => count(array_filter($rows, fn(array $row) => (string)$row['result'] === 'yes')),
+				'errors' => count(array_filter($rows, fn(array $row) => (string)$row['status'] === 'error')),
+			]);
+		} catch (Throwable $exception) {
+			return $this->jsonError(get_class($exception) . ': ' . $exception->getMessage());
+		}
+	}
+
+	private function getRoleChecks(array $roles): array {
+		$checks = [];
+		$seen = [];
+
+		foreach ($roles as $role) {
+			$name = trim((string)($role['name'] ?? ''));
+			if ($name === '' || isset($seen[$name])) continue;
+
+			$seen[$name] = true;
+			$checks[] = $this->checkRole($name);
+		}
+
+		return $checks;
 	}
 
 	private function checkRole(string $role): array {
@@ -79,24 +169,49 @@ final class UsermanagerDebugDisplay implements IDisplay {
 
 		return [
 			'label' => 'Role: ' . $role,
-			'source' => 'IUsermanager::hasRole(Role::named(...))',
+			'source' => "\$this->usermanager->hasRole(Role::named('" . $this->escapePhpString($role) . "'))",
 			'status' => $call['ok'] ? ($allowed ? 'ok' : 'info') : 'error',
 			'result' => $call['ok'] ? ($allowed ? 'yes' : 'no') : 'error',
 			'details' => $call['ok'] ? '' : $call['error'],
 		];
 	}
 
-	private function checkPermission(string $scope, string $permission): array {
-		$call = $this->call('can(' . $scope . '/' . $permission . ')', fn() => $this->usermanager->can(Permission::for($scope, $permission, null)));
+	private function checkPermission(string $scope, string $operation, int|string|null $target): array {
+		$permission = Permission::for($scope, $operation, $target);
+		$call = $this->call('can(' . $scope . '/' . $operation . ')', fn() => $this->usermanager->can($permission));
 		$allowed = $call['ok'] && $call['value'] === true;
 
 		return [
-			'label' => 'Permission: ' . $scope . '/' . $permission,
-			'source' => 'IUsermanager::can(Permission::for(...))',
+			'label' => $operation,
+			'scope' => $scope,
+			'target' => $target,
+			'usage' => $this->buildUsage($scope, $operation, $target),
 			'status' => $call['ok'] ? ($allowed ? 'ok' : 'info') : 'error',
 			'result' => $call['ok'] ? ($allowed ? 'yes' : 'no') : 'error',
 			'details' => $call['ok'] ? '' : $call['error'],
 		];
+	}
+
+	private function getOperationOptions(array $allPermissions, string $scope): array {
+		$operations = [];
+
+		foreach ($allPermissions as $permission) {
+			$currentScope = trim((string)($permission['scope'] ?? ''));
+			$name = trim((string)($permission['permission'] ?? ''));
+
+			if ($currentScope !== $scope || $name === '') continue;
+
+			$operations[] = $name;
+		}
+
+		if (empty($operations) && $scope === 'ilias') {
+			$operations = self::DEFAULT_ILIAS_OPERATIONS;
+		}
+
+		$operations = array_values(array_unique($operations));
+		sort($operations);
+
+		return $operations;
 	}
 
 	private function call(string $label, callable $callback): array {
@@ -230,9 +345,9 @@ final class UsermanagerDebugDisplay implements IDisplay {
 		return $groups;
 	}
 
-	private function getSummary(array $userCall, array $groups, array $roles, array $permissions, array $checks): array {
+	private function getSummary(array $userCall, array $groups, array $roles, array $permissions, array $allPermissions, array $roleChecks): array {
 		$errors = $userCall['ok'] ? 0 : 1;
-		foreach ($checks as $check) {
+		foreach ($roleChecks as $check) {
 			if ((string)$check['status'] === 'error') {
 				$errors++;
 			}
@@ -247,7 +362,8 @@ final class UsermanagerDebugDisplay implements IDisplay {
 			'groups' => count($groups),
 			'roles' => count($roles),
 			'permissions' => count($permissions),
-			'checks' => count($checks),
+			'all_permissions' => count($allPermissions),
+			'role_checks' => count($roleChecks),
 			'errors' => $errors,
 		];
 	}
@@ -258,25 +374,19 @@ final class UsermanagerDebugDisplay implements IDisplay {
 		}
 
 		if (!is_array($value)) {
-			return (string)$value;
+			return $this->formatValue($value);
 		}
 
 		$parts = [];
 		foreach ($value as $item) {
 			if (is_array($item)) {
-				$name = (string)($item['name'] ?? $item['permission'] ?? $item['scope'] ?? $item['id'] ?? '');
-				if ($name !== '') {
-					$parts[] = $name;
-				}
-				continue;
-			}
-
-			if (is_scalar($item)) {
-				$parts[] = (string)$item;
+				$parts[] = (string)($item['name'] ?? $item['permission'] ?? $item['id'] ?? $item['value'] ?? json_encode($item));
+			} else {
+				$parts[] = $this->formatValue($item);
 			}
 		}
 
-		return implode(', ', $parts);
+		return implode(', ', array_filter($parts, fn($part) => $part !== ''));
 	}
 
 	private function formatValue($value): string {
@@ -292,7 +402,114 @@ final class UsermanagerDebugDisplay implements IDisplay {
 			return (string)$value;
 		}
 
-		$json = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-		return $json === false ? '' : $json;
+		return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '';
+	}
+
+	private function getScope(): string {
+		$scope = trim($this->requestValue(self::PARAM_SCOPE));
+
+		return $scope !== '' ? $scope : self::DEFAULT_SCOPE;
+	}
+
+	private function getTarget(): int|string|null {
+		$value = trim($this->requestValue(self::PARAM_TARGET));
+
+		if ($value === '') {
+			return null;
+		}
+
+		if (is_numeric($value)) {
+			return (int)$value;
+		}
+
+		return $value;
+	}
+
+	private function getOperation(): string {
+		$operation = trim($this->requestValue(self::PARAM_OPERATION));
+
+		return $operation !== '' ? $operation : self::DEFAULT_OPERATION;
+	}
+
+	private function getMode(): string {
+		$mode = trim($this->requestValue(self::PARAM_MODE));
+
+		return $mode === 'all' ? 'all' : 'single';
+	}
+
+	private function requestValue(string $key): string {
+		$value = $this->request->request($key);
+
+		if (is_scalar($value)) {
+			return trim((string)$value);
+		}
+
+		return '';
+	}
+
+	private function buildPermissionProbeEndpoint(): string {
+		return $this->linkTargetService->getLink(
+			[
+				'name' => self::getName(),
+				'out' => 'json'
+			],
+			[
+				self::PARAM_ACTION => self::ACTION_PERMISSION_PROBE
+			]
+		);
+	}
+
+	private function buildUsage(string $scope, string $operation, int|string|null $target): string {
+		return "\$allowed = \$this->usermanager->can(Permission::for("
+			. $this->phpValue($scope)
+			. ', '
+			. $this->phpValue($operation)
+			. ', '
+			. $this->phpValue($target)
+			. '));';
+	}
+
+	private function phpValue(int|string|null $value): string {
+		if ($value === null) {
+			return 'null';
+		}
+
+		if (is_int($value)) {
+			return (string)$value;
+		}
+
+		return "'" . $this->escapePhpString($value) . "'";
+	}
+
+	private function escapePhpString(string $value): string {
+		return str_replace(["\\", "'"], ["\\\\", "\\'"], $value);
+	}
+
+	private function formatTargetForInput(int|string|null $target): string {
+		return $target === null ? '' : (string)$target;
+	}
+
+	private function jsonSuccess(array $data): string {
+		if (!headers_sent()) {
+			header('Content-Type: application/json; charset=utf-8');
+		}
+
+		return json_encode([
+			'status' => 'ok',
+			'timestamp' => gmdate('c'),
+			'data' => $data,
+		], JSON_UNESCAPED_UNICODE) ?: '{}';
+	}
+
+	private function jsonError(string $message): string {
+		if (!headers_sent()) {
+			header('Content-Type: application/json; charset=utf-8');
+		}
+
+		return json_encode([
+			'status' => 'error',
+			'timestamp' => gmdate('c'),
+			'message' => $message,
+		], JSON_UNESCAPED_UNICODE) ?: '{}';
 	}
 }
