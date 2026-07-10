@@ -183,6 +183,7 @@
 								<tr>
 									<th>ID</th>
 									<th>Permission</th>
+									<th>Target</th>
 									<th>Label</th>
 									<th>Archive</th>
 									<th>Info</th>
@@ -193,6 +194,7 @@
 									<tr>
 										<td class="um-cell-mono"><?php echo htmlspecialchars((string)($permission['id'] ?? '')); ?></td>
 										<td><strong><?php echo htmlspecialchars((string)($permission['permission'] ?? $permission['value'] ?? '')); ?></strong></td>
+										<td class="um-cell-mono"><?php echo htmlspecialchars($formatValue($permission['target'] ?? '')); ?></td>
 										<td><?php echo htmlspecialchars($formatValue($permission['label'] ?? '')); ?></td>
 										<td class="um-cell-mono"><?php echo htmlspecialchars($formatValue($permission['archive'] ?? '')); ?></td>
 										<td><?php echo htmlspecialchars($formatValue($permission['info'] ?? '')); ?></td>

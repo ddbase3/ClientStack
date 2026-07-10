@@ -87,7 +87,7 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	}
 
 	private function checkPermission(string $scope, string $permission): array {
-		$call = $this->call('can(' . $scope . '/' . $permission . ')', fn() => $this->usermanager->can(Permission::for($scope, $permission)));
+		$call = $this->call('can(' . $scope . '/' . $permission . ')', fn() => $this->usermanager->can(Permission::for($scope, $permission, null)));
 		$allowed = $call['ok'] && $call['value'] === true;
 
 		return [
