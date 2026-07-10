@@ -4,6 +4,7 @@ namespace ClientStack\Display;
 
 use Base3\Api\IAssetResolver;
 use Base3\Api\IClassMap;
+use Base3\Api\IComponentResolver;
 use Base3\Api\IContainer;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
@@ -43,6 +44,7 @@ class ServicesAdminDisplay implements IDisplay {
 			ISystemService::class,
 			IRequest::class,
 			IClassMap::class,
+			IComponentResolver::class,
 			IConfiguration::class,
 			ISettingsStore::class,
 			IHookManager::class,
