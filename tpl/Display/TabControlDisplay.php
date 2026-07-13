@@ -283,10 +283,6 @@
 		);
 	}
 
-	function getPanel(target) {
-		return Array.from(content.querySelectorAll("[data-base3-tab-panel]"))
-			.find((panel) => panel.dataset.base3TabTarget === target) || null;
-	}
 
 	function setLoading(state) {
 		root.setAttribute("aria-busy", state ? "true" : "false");
@@ -384,25 +380,33 @@
 		return panel;
 	}
 
+	function removePanels(nextTarget, nextUrl) {
+		for(const panel of Array.from(content.querySelectorAll("[data-base3-tab-panel]"))) {
+			const target = String(panel.dataset.base3TabTarget || "");
+			const url = String(panel.dataset.base3TabUrl || "");
+
+			panel.dispatchEvent(new CustomEvent("base3:tab-control:before-unmount", {
+				bubbles: true,
+				detail: { target, url, nextTarget, nextUrl }
+			}));
+
+			panel.remove();
+		}
+	}
+
 	async function loadTarget(target, url) {
 		if(!target || !url || !getConfiguredLink(target)) {
 			return;
 		}
 
-		let panel = getPanel(target);
-		if(panel && panel.dataset.base3TabUrl === url) {
-			setMessage("");
-			setActive(target);
-			panel.dispatchEvent(new CustomEvent("base3:tab-control:activated", {
-				bubbles: true,
-				detail: { target, url }
-			}));
-			return;
-		}
+		let panel = null;
 
 		if(requestController) {
 			requestController.abort();
 		}
+
+		removePanels(target, url);
+		setActive(target);
 
 		requestController = new AbortController();
 		const currentRequest = ++requestNumber;
@@ -430,19 +434,14 @@
 				return;
 			}
 
-			const isNewPanel = !panel;
-			panel = panel || createPanel(target);
+			panel = createPanel(target);
 
 			panel.dispatchEvent(new CustomEvent("base3:tab-control:before-content", {
 				bubbles: true,
 				detail: { target, url }
 			}));
 
-			await setPanelContent(
-				panel,
-				html,
-				isNewPanel || panel.dataset.base3TabScriptsLoaded !== "1"
-			);
+			await setPanelContent(panel, html, true);
 
 			panel.dataset.base3TabUrl = url;
 			setActive(target);
