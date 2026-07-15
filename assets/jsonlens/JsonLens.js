@@ -80,6 +80,7 @@ export class JsonLens {
 			setState: (patch) => this.setState(patch),
 			execute: (commandName, payload) => this.execute(commandName, payload),
 			requestRender: () => this.requestRender(),
+			requestViewRender: () => this.requestViewRender(),
 			getOptions: () => this.options,
 			getPluginOptions: (pluginName) => this.getPluginOptions(pluginName),
 			registerView: (view) => this.registerView(view)
@@ -264,6 +265,14 @@ export class JsonLens {
 		this.render();
 	}
 
+	requestViewRender() {
+		if (!this.initialized || !this.body) {
+			return;
+		}
+
+		this.renderBody();
+	}
+
 	render() {
 		clearElement(this.target);
 
@@ -279,9 +288,14 @@ export class JsonLens {
 			className: 'jl-body'
 		});
 
-		this.renderView(this.body);
+		this.renderBody();
 		this.root.appendChild(this.body);
 		this.target.appendChild(this.root);
+	}
+
+	renderBody() {
+		clearElement(this.body);
+		this.renderView(this.body);
 	}
 
 	buildRootClassName() {

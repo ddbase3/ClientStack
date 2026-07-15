@@ -13,6 +13,9 @@ export const PathPlugin = {
 						className: 'jl-path-display',
 						text: `Path: ${state.activePath || '$'}`
 					});
+				},
+				update(element, { state }) {
+					element.textContent = `Path: ${state.activePath || '$'}`;
 				}
 			}
 		];

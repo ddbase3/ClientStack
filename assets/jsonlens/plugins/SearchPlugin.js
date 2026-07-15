@@ -13,7 +13,8 @@ export const SearchPlugin = {
 					term
 				}
 			});
-			context.requestRender();
+
+			context.requestViewRender();
 		}
 	},
 
