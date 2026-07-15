@@ -1,174 +1,176 @@
-<div class="clientstack-log">
-	<h3>System Log</h3>
+<?php $logAdminId = 'clientstack-log-' . bin2hex(random_bytes(6)); ?>
 
-	<div class="log-meta">
-		<div><strong>Quelle:</strong> <span class="mono">ILogger::getLogs()</span></div>
-		<div><strong>Letztes Update:</strong> <span id="log-lastupdate" class="mono">–</span></div>
-	</div>
+<div id="<?php echo $logAdminId; ?>" class="clientstack-log">
+        <h3>System Log</h3>
 
-	<div class="log-actions">
-		<label class="log-scope">
-			Scope:
-			<select id="log-scope" onchange="logRefresh(true)"></select>
-		</label>
+        <div class="log-meta">
+                <div><strong>Quelle:</strong> <span class="mono">ILogger::getLogs()</span></div>
+                <div><strong>Letztes Update:</strong> <span id="log-lastupdate" class="mono">–</span></div>
+        </div>
 
-		<button type="button" onclick="logRefresh(true)">Jetzt aktualisieren</button>
+        <div class="log-actions">
+                <label class="log-scope">
+                        Scope:
+                        <select id="log-scope"></select>
+                </label>
 
-		<label class="log-autorefresh">
-			<input type="checkbox" id="log-autorefresh" checked onchange="logToggleAutoRefresh()">
-			Auto-Refresh (3s)
-		</label>
+                <button type="button" data-log-refresh>Jetzt aktualisieren</button>
 
-		<label id="log-loading">Bitte warten…</label>
-	</div>
+                <label class="log-autorefresh">
+                        <input type="checkbox" id="log-autorefresh" checked>
+                        Auto-Refresh (3s)
+                </label>
 
-	<div class="log-tablewrap">
-		<table class="log-table">
-			<thead>
-				<tr>
-					<th>Zeit</th>
-					<th>Scope</th>
-					<th>Level</th>
-					<th>Log</th>
-				</tr>
-			</thead>
-			<tbody id="log-body">
-				<tr><td colspan="4" class="log-muted">–</td></tr>
-			</tbody>
-		</table>
-	</div>
+                <label id="log-loading">Bitte warten…</label>
+        </div>
+
+        <div class="log-tablewrap">
+                <table class="log-table">
+                        <thead>
+                                <tr>
+                                        <th>Zeit</th>
+                                        <th>Scope</th>
+                                        <th>Level</th>
+                                        <th>Log</th>
+                                </tr>
+                        </thead>
+                        <tbody id="log-body">
+                                <tr><td colspan="4" class="log-muted">–</td></tr>
+                        </tbody>
+                </table>
+        </div>
 </div>
 
 <style>
 .clientstack-log {
-	background: #ffffff;
-	border: 1px solid #d6d6d6;
-	padding: 16px;
-	border-radius: 4px;
-	max-width: 100%;
-	font-family: Arial, sans-serif;
-	color: #333;
+        background: #ffffff;
+        border: 1px solid #d6d6d6;
+        padding: 16px;
+        border-radius: 4px;
+        max-width: 100%;
+        font-family: Arial, sans-serif;
+        color: #333;
 }
 
 .clientstack-log h3 {
-	margin-top: 0;
-	margin-bottom: 12px;
-	font-size: 1.1em;
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 1.1em;
 }
 
 .log-meta {
-	margin-bottom: 12px;
-	font-size: 13px;
-	color: #555;
-	display: flex;
-	gap: 18px;
-	flex-wrap: wrap;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: #555;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
 }
 
 .mono {
-	font-family: Consolas, monospace;
+        font-family: Consolas, monospace;
 }
 
 .log-actions {
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	margin-bottom: 12px;
-	flex-wrap: wrap;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
 }
 
 .log-actions button {
-	padding: 8px 16px;
-	border: 1px solid #ccc;
-	background: #f0f0f0;
-	color: #333;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 14px;
-	transition: background 0.2s, border-color 0.2s;
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        background: #f0f0f0;
+        color: #333;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s, border-color 0.2s;
 }
 
 .log-actions button:hover {
-	background: #e6e6e6;
-	border-color: #bbb;
+        background: #e6e6e6;
+        border-color: #bbb;
 }
 
 .log-scope {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 13px;
-	color: #555;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
 }
 
 .log-scope select {
-	padding: 6px 10px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	background: #fff;
-	color: #333;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        color: #333;
 }
 
 .log-autorefresh {
-	font-size: 13px;
-	color: #555;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	user-select: none;
+        font-size: 13px;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        user-select: none;
 }
 
 #log-loading {
-	display: none;
-	color: #666;
-	display: flex;
-	align-items: center;
-	font-style: italic;
-	font-size: 13px;
-	gap: 6px;
-	user-select: none;
+        display: none;
+        color: #666;
+        display: flex;
+        align-items: center;
+        font-style: italic;
+        font-size: 13px;
+        gap: 6px;
+        user-select: none;
 }
 
 /* table */
 .log-tablewrap {
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
 }
 
 .log-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 13px;
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
 }
 
 .log-table th,
 .log-table td {
-	border-top: 1px solid #eee;
-	padding: 8px 10px;
-	vertical-align: top;
-	text-align: left;
+        border-top: 1px solid #eee;
+        padding: 8px 10px;
+        vertical-align: top;
+        text-align: left;
 }
 
 .log-table thead th {
-	border-top: 0;
-	border-bottom: 1px solid #ddd;
-	font-weight: bold;
-	white-space: nowrap;
+        border-top: 0;
+        border-bottom: 1px solid #ddd;
+        font-weight: bold;
+        white-space: nowrap;
 }
 
 .log-muted {
-	color: #777;
-	font-style: italic;
+        color: #777;
+        font-style: italic;
 }
 
 .log-pill {
-	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 999px;
-	border: 1px solid #ccc;
-	background: #f6f6f6;
-	font-size: 12px;
-	white-space: nowrap;
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #ccc;
+        background: #f6f6f6;
+        font-size: 12px;
+        white-space: nowrap;
 }
 
 .log-pill.info { border-color: #8d8; background: #f6fff6; color: #2d6a2d; }
@@ -178,142 +180,165 @@
 .log-pill.debug { border-color: #ccc; background: #f6f6f6; color: #555; }
 
 .log-cell-mono {
-	font-family: Consolas, monospace;
+        font-family: Consolas, monospace;
 }
 
 .log-cell-wrap {
-	white-space: normal;
-	word-break: break-word;
+        white-space: normal;
+        word-break: break-word;
 }
 </style>
 
 <script>
-	const LOG_ENDPOINT = <?php echo json_encode((string)$this->_['endpoint']); ?>;
+(function() {
+        const root = document.getElementById(<?php echo json_encode($logAdminId); ?>);
+        if (!root) {
+                return;
+        }
 
-	let logTimer = null;
-	let logScopesLoaded = false;
+        const LOG_ENDPOINT = <?php echo json_encode((string)$this->_['endpoint']); ?>;
 
-	function logSetLoading(state) {
-		document.getElementById("log-loading").style.display = state ? "flex" : "none";
-	}
+        let logTimer = null;
+        let logScopesLoaded = false;
 
-	function logEsc(s) {
-		const div = document.createElement("div");
-		div.textContent = String(s ?? "");
-		return div.innerHTML;
-	}
+        function logSetLoading(state) {
+                root.querySelector("#log-loading").style.display = state ? "flex" : "none";
+        }
 
-	function logLevelPill(level) {
-		const l = String(level || "").toLowerCase();
-		const cls = "log-pill " + (l || "info");
-		return '<span class="' + cls + '">' + logEsc(l || "info") + '</span>';
-	}
+        function logEsc(s) {
+                const div = document.createElement("div");
+                div.textContent = String(s ?? "");
+                return div.innerHTML;
+        }
 
-	function logRenderScopes(scopes, current) {
-		const sel = document.getElementById("log-scope");
-		sel.innerHTML = "";
+        function logLevelPill(level) {
+                const l = String(level || "").toLowerCase();
+                const cls = "log-pill " + (l || "info");
+                return '<span class="' + cls + '">' + logEsc(l || "info") + '</span>';
+        }
 
-		for (const s of scopes) {
-			const opt = document.createElement("option");
-			opt.value = s;
-			opt.textContent = s;
-			if (current && s === current) opt.selected = true;
-			sel.appendChild(opt);
-		}
-	}
+        function logRenderScopes(scopes, current) {
+                const sel = root.querySelector("#log-scope");
+                sel.innerHTML = "";
 
-	function logRenderRows(rows) {
-		const body = document.getElementById("log-body");
+                for (const s of scopes) {
+                        const opt = document.createElement("option");
+                        opt.value = s;
+                        opt.textContent = s;
+                        if (current && s === current) opt.selected = true;
+                        sel.appendChild(opt);
+                }
+        }
 
-		if (!rows || rows.length === 0) {
-			body.innerHTML = '<tr><td colspan="4" class="log-muted">Keine Logs gefunden.</td></tr>';
-			return;
-		}
+        function logRenderRows(rows) {
+                const body = root.querySelector("#log-body");
 
-		let html = "";
-		for (const r of rows) {
-			const ts = r.timestamp || "–";
-			const sc = r.scope || "–";
-			const lvl = r.level || "info";
-			const msg = r.log || "";
+                if (!rows || rows.length === 0) {
+                        body.innerHTML = '<tr><td colspan="4" class="log-muted">Keine Logs gefunden.</td></tr>';
+                        return;
+                }
 
-			html += "<tr>" +
-				'<td class="log-cell-mono" title="' + logEsc(ts) + '">' + logEsc(ts) + "</td>" +
-				'<td class="log-cell-mono">' + logEsc(sc) + "</td>" +
-				"<td>" + logLevelPill(lvl) + "</td>" +
-				'<td class="log-cell-wrap">' + logEsc(msg) + "</td>" +
-			"</tr>";
-		}
+                let html = "";
+                for (const r of rows) {
+                        const ts = r.timestamp || "–";
+                        const sc = r.scope || "–";
+                        const lvl = r.level || "info";
+                        const msg = r.log || "";
 
-		body.innerHTML = html;
-	}
+                        html += "<tr>" +
+                                '<td class="log-cell-mono" title="' + logEsc(ts) + '">' + logEsc(ts) + "</td>" +
+                                '<td class="log-cell-mono">' + logEsc(sc) + "</td>" +
+                                "<td>" + logLevelPill(lvl) + "</td>" +
+                                '<td class="log-cell-wrap">' + logEsc(msg) + "</td>" +
+                        "</tr>";
+                }
 
-	async function logRefresh(forceScopes = false) {
-		logSetLoading(true);
+                body.innerHTML = html;
+        }
 
-		try {
-			const sel = document.getElementById("log-scope");
-			const currentScope = sel && sel.value ? sel.value : "";
+        async function logRefresh(forceScopes = false) {
+                logSetLoading(true);
 
-			const url = new URL(LOG_ENDPOINT + "tail", window.location.href);
-			if (currentScope) url.searchParams.set("scope", currentScope);
+                try {
+                        const sel = root.querySelector("#log-scope");
+                        const currentScope = sel && sel.value ? sel.value : "";
 
-			const response = await fetch(url.toString(), {
-				method: "GET",
-				headers: { "Accept": "application/json" }
-			});
+                        const url = new URL(LOG_ENDPOINT + "tail", window.location.href);
+                        if (currentScope) url.searchParams.set("scope", currentScope);
 
-			const text = await response.text();
-			let json;
+                        const response = await fetch(url.toString(), {
+                                method: "GET",
+                                headers: { "Accept": "application/json" }
+                        });
 
-			try {
-				json = JSON.parse(text);
-			} catch (e) {
-				logSetLoading(false);
-				return;
-			}
+                        const text = await response.text();
+                        let json;
 
-			if (json.status !== "ok") {
-				logSetLoading(false);
-				return;
-			}
+                        try {
+                                json = JSON.parse(text);
+                        } catch (e) {
+                                logSetLoading(false);
+                                return;
+                        }
 
-			document.getElementById("log-lastupdate").textContent = json.timestamp || "–";
+                        if (json.status !== "ok") {
+                                logSetLoading(false);
+                                return;
+                        }
 
-			// scopes only once (or forced)
-			if (!logScopesLoaded || forceScopes) {
-				logRenderScopes(json.data.scopes || [], json.data.scope || "");
-				logScopesLoaded = true;
-			}
+                        root.querySelector("#log-lastupdate").textContent = json.timestamp || "–";
 
-			// keep selected scope stable
-			if (json.data.scope && document.getElementById("log-scope").value !== json.data.scope) {
-				document.getElementById("log-scope").value = json.data.scope;
-			}
+                        // scopes only once (or forced)
+                        if (!logScopesLoaded || forceScopes) {
+                                logRenderScopes(json.data.scopes || [], json.data.scope || "");
+                                logScopesLoaded = true;
+                        }
 
-			logRenderRows(json.data.logs || []);
+                        // keep selected scope stable
+                        if (json.data.scope && root.querySelector("#log-scope").value !== json.data.scope) {
+                                root.querySelector("#log-scope").value = json.data.scope;
+                        }
 
-		} catch (err) {
-			// silent UI (wie bei embedding queue)
-		}
+                        logRenderRows(json.data.logs || []);
 
-		logSetLoading(false);
-	}
+                } catch (err) {
+                        // silent UI (wie bei embedding queue)
+                }
 
-	function logToggleAutoRefresh() {
-		const enabled = document.getElementById("log-autorefresh").checked;
+                logSetLoading(false);
+        }
 
-		if (logTimer) {
-			clearInterval(logTimer);
-			logTimer = null;
-		}
+        function logToggleAutoRefresh() {
+                const enabled = root.querySelector("#log-autorefresh").checked;
 
-		if (enabled) {
-			logTimer = setInterval(() => logRefresh(false), 3000);
-		}
-	}
+                if (logTimer) {
+                        clearInterval(logTimer);
+                        logTimer = null;
+                }
 
-	// init
-	logToggleAutoRefresh();
-	logRefresh(true);
+                if (enabled) {
+                        logTimer = setInterval(() => {
+                                if (!root.isConnected) {
+                                        clearInterval(logTimer);
+                                        logTimer = null;
+                                        return;
+                                }
+
+                                logRefresh(false);
+                        }, 3000);
+                }
+        }
+
+        const scopeSelect = root.querySelector("#log-scope");
+        const refreshButton = root.querySelector("[data-log-refresh]");
+        const autoRefresh = root.querySelector("#log-autorefresh");
+
+        scopeSelect.addEventListener("change", () => logRefresh(true));
+        refreshButton.addEventListener("click", () => logRefresh(true));
+        autoRefresh.addEventListener("change", logToggleAutoRefresh);
+
+        // init
+        logToggleAutoRefresh();
+        logRefresh(true);
+})();
 </script>
