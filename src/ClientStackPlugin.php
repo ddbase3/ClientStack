@@ -10,7 +10,9 @@ use Base3\Api\IPlugin;
 use Base3\Core\Check;
 use ClientStack\Api\IAssetService;
 use ClientStack\Display\CkEditorRichTextEditorDisplay;
+use ClientStack\Display\ClassicChatbotDisplay;
 use ClientStack\Service\DefaultAssetService;
+use UiFoundation\Api\IChatbotDisplay;
 use UiFoundation\Api\IRichTextEditorDisplay;
 
 class ClientStackPlugin implements IPlugin, ICheck {
@@ -32,6 +34,14 @@ class ClientStackPlugin implements IPlugin, ICheck {
 			->set(
 				IRichTextEditorDisplay::class,
 				fn($c) => new CkEditorRichTextEditorDisplay(
+					$c->get(IMvcView::class),
+					$c->get(IAssetResolver::class)
+				),
+				IContainer::SHARED | IContainer::NOOVERWRITE
+			)
+			->set(
+				IChatbotDisplay::class,
+				fn($c) => new ClassicChatbotDisplay(
 					$c->get(IMvcView::class),
 					$c->get(IAssetResolver::class)
 				),

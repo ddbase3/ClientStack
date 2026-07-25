@@ -118,3 +118,27 @@ hasAsset(string $name): bool
 ## 📃 License
 
 GPL v3.0 License
+
+## Classic Chatbot client
+
+ClientStack owns the preserved classic BASE3 Chatbot browser client.
+
+The development source is maintained as a standalone Git repository under:
+
+```text
+dev/ClassicChatbot/
+```
+
+The deployed browser files live under:
+
+```text
+assets/classicchatbot/
+```
+
+Deploy the current repository source with:
+
+```bash
+./deploy-classic-chatbot.sh
+```
+
+`ClientStack\Display\ClassicChatbotDisplay` implements `UiFoundation\Api\IChatbotDisplay`. `ClientStackPlugin` registers it as the replaceable default using `IContainer::NOOVERWRITE`.

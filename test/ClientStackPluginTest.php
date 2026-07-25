@@ -7,6 +7,7 @@ use ClientStack\ClientStackPlugin;
 use ClientStack\Api\IAssetService;
 use ClientStack\Service\DefaultAssetService;
 use Base3\Api\IContainer;
+use UiFoundation\Api\IChatbotDisplay;
 use Base3\Test\Core\ContainerStub;
 
 class ClientStackPluginTest extends TestCase {
@@ -28,6 +29,12 @@ class ClientStackPluginTest extends TestCase {
 		$this->assertTrue($container->has(IAssetService::class));
 		$this->assertSame(IContainer::SHARED, $container->getFlags(IAssetService::class));
 
+		$this->assertTrue($container->has(IChatbotDisplay::class));
+		$this->assertSame(
+			IContainer::SHARED | IContainer::NOOVERWRITE,
+			$container->getFlags(IChatbotDisplay::class)
+		);
+
 		// ContainerStub resolves callables by executing them (like the real container would).
 		$service1 = $container->get(IAssetService::class);
 		$this->assertInstanceOf(DefaultAssetService::class, $service1);
@@ -35,6 +42,17 @@ class ClientStackPluginTest extends TestCase {
 		// SHARED => same instance
 		$service2 = $container->get(IAssetService::class);
 		$this->assertSame($service1, $service2);
+	}
+
+	public function testInitKeepsExistingChatbotDisplayBinding(): void {
+		$container = new ContainerStub();
+		$customDisplay = $this->createStub(IChatbotDisplay::class);
+		$container->set(IChatbotDisplay::class, $customDisplay, IContainer::SHARED);
+
+		$plugin = new ClientStackPlugin($container);
+		$plugin->init();
+
+		$this->assertSame($customDisplay, $container->get(IChatbotDisplay::class));
 	}
 
 	public function testCheckDependenciesReturnsOkWhenUiFoundationPluginInstalled(): void {
