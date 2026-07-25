@@ -142,3 +142,25 @@ Deploy the current repository source with:
 ```
 
 `ClientStack\Display\ClassicChatbotDisplay` implements `UiFoundation\Api\IChatbotDisplay`. `ClientStackPlugin` registers it as the replaceable default using `IContainer::NOOVERWRITE`.
+
+## Modular Chatbot client
+
+The new native ES module client is developed as a separate Git repository under:
+
+```text
+dev/ModularChatbot/
+```
+
+It is deployed unchanged to:
+
+```text
+assets/modularchatbot/
+```
+
+Deploy it with:
+
+```bash
+./deploy-modular-chatbot.sh
+```
+
+`ClientStack\Display\ModularChatbotDisplay` is discoverable as `modularchatbotdisplay`. The active `IChatbotDisplay` binding remains the preserved classic client until a project explicitly selects the modular display.

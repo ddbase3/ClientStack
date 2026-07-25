@@ -12,6 +12,7 @@ use ClientStack\Api\IAssetService;
 use ClientStack\Display\CkEditorRichTextEditorDisplay;
 use ClientStack\Display\ClassicChatbotDisplay;
 use ClientStack\Service\DefaultAssetService;
+use ClientStack\Display\ModularChatbotDisplay;
 use UiFoundation\Api\IChatbotDisplay;
 use UiFoundation\Api\IRichTextEditorDisplay;
 
@@ -41,7 +42,7 @@ class ClientStackPlugin implements IPlugin, ICheck {
 			)
 			->set(
 				IChatbotDisplay::class,
-				fn($c) => new ClassicChatbotDisplay(
+				fn($c) => new ModularChatbotDisplay(
 					$c->get(IMvcView::class),
 					$c->get(IAssetResolver::class)
 				),
