@@ -10,7 +10,11 @@
 	];
 	$pluginConfig = [
 		'markdown' => [
-			'scriptUrl' => $this->_['markedUrl']
+			'scriptUrl' => $this->_['markedUrl'],
+			'preserveMathJax' => !empty($this->_['useMathJax'])
+		],
+		'mathjax' => [
+			'scriptUrl' => $this->_['mathJaxUrl']
 		],
 		'reference' => [
 			'mode' => $this->_['referenceMode'],
@@ -138,6 +142,9 @@
 		];
 <?php if(!empty($this->_['useMarkdown'])) { ?>
 		plugins.push(client.MarkdownPlugin);
+<?php } ?>
+<?php if(!empty($this->_['useMathJax'])) { ?>
+		plugins.push(client.MathJaxPlugin);
 <?php } ?>
 <?php if(!empty($this->_['useIcons'])) { ?>
 		plugins.push(client.MessageActionsPlugin);

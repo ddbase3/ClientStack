@@ -32,6 +32,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'config_group' => '',
 			'config_name' => '',
 			'use_markdown' => true,
+			'use_mathjax' => false,
 			'use_icons' => true,
 			'use_voice' => true,
 			'use_threads' => true,
@@ -58,6 +59,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('configGroup', (string)$config['config_group']);
 		$this->view->assign('configName', (string)$config['config_name']);
 		$this->view->assign('useMarkdown', (bool)$config['use_markdown']);
+		$this->view->assign('useMathJax', (bool)$config['use_mathjax']);
 		$this->view->assign('useIcons', (bool)$config['use_icons']);
 		$this->view->assign('useVoice', (bool)$config['use_voice']);
 		$this->view->assign('useThreads', (bool)$config['use_threads']);
@@ -79,6 +81,10 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign(
 			'markedUrl',
 			$this->assetResolver->resolve('plugin/ClientStack/assets/marked/marked.js')
+		);
+		$this->view->assign(
+			'mathJaxUrl',
+			$this->assetResolver->resolve('plugin/ClientStack/assets/mathjax/tex-mml-chtml.js')
 		);
 		$this->view->assign('icons', [
 			'send' => $this->resolveIcon('send'),

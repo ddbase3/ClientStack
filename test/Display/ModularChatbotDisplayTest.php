@@ -23,6 +23,7 @@ class ModularChatbotDisplayTest extends TestCase {
 			'turn_prepare_url' => '/chatbot/prepare',
 			'speech_to_text_session_url' => '/chatbot/stt-session',
 			'text_to_speech_url' => '/chatbot/tts',
+			'use_mathjax' => true,
 			'use_voice' => false
 		]);
 
@@ -36,10 +37,15 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('/chatbot/prepare', $view->getAssigned('turnPrepareUrl'));
 		$this->assertSame('/chatbot/stt-session', $view->getAssigned('speechToTextSessionUrl'));
 		$this->assertSame('/chatbot/tts', $view->getAssigned('textToSpeechUrl'));
+		$this->assertTrue($view->getAssigned('useMathJax'));
 		$this->assertFalse($view->getAssigned('useVoice'));
 		$this->assertSame(
 			'/resolved/plugin/ClientStack/assets/modularchatbot/index.js',
 			$view->getAssigned('moduleUrl')
+		);
+		$this->assertSame(
+			'/resolved/plugin/ClientStack/assets/mathjax/tex-mml-chtml.js',
+			$view->getAssigned('mathJaxUrl')
 		);
 		$this->assertSame('FAKE_TEMPLATE_OUTPUT', $output);
 	}
