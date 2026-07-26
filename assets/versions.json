@@ -20,8 +20,11 @@
         "timestamp": "2026-04-12T16:49:11+02:00"
     },
     "mathjax": {
-        "type": "download",
-        "timestamp": "2026-04-12T16:49:12+02:00"
+        "type": "repo",
+        "tag": "4.1.2",
+        "branch": null,
+        "commit": "0efeedbff908ae2641a5f83950c09f22c787ce16",
+        "timestamp": "2026-05-03 18:57:40 -0400"
     },
     "leaflet": {
         "type": "download",
