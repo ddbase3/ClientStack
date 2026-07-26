@@ -21,6 +21,8 @@ class ModularChatbotDisplayTest extends TestCase {
 			'service_url' => '/chatbot/service',
 			'service' => 'chatbotservice',
 			'turn_prepare_url' => '/chatbot/prepare',
+			'speech_to_text_service' => 'mistral-realtime',
+			'speech_to_text_session_url' => '/chatbot/stt-session',
 			'use_voice' => false
 		]);
 
@@ -32,6 +34,8 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('/chatbot/service', $view->getAssigned('serviceUrl'));
 		$this->assertSame('chatbotservice', $view->getAssigned('serviceId'));
 		$this->assertSame('/chatbot/prepare', $view->getAssigned('turnPrepareUrl'));
+		$this->assertSame('mistral-realtime', $view->getAssigned('speechToTextService'));
+		$this->assertSame('/chatbot/stt-session', $view->getAssigned('speechToTextSessionUrl'));
 		$this->assertFalse($view->getAssigned('useVoice'));
 		$this->assertSame(
 			'/resolved/plugin/ClientStack/assets/modularchatbot/index.js',

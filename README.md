@@ -164,3 +164,15 @@ Deploy it with:
 ```
 
 `ClientStack\Display\ModularChatbotDisplay` is discoverable as `modularchatbotdisplay`. The active `IChatbotDisplay` binding remains the preserved classic client until a project explicitly selects the modular display.
+
+### Realtime speech transcription
+
+ModularChatbot supports live Mistral transcription through
+`MistralRealtimeSpeechToTextProvider`. The provider requests a short-lived
+session from Chatbot, captures mono microphone audio with `AudioWorklet`, sends
+16 kHz PCM frames over the provider WebSocket, and writes incremental transcript
+text into the instance-local composer.
+
+Browser speech recognition remains the default when no configured speech service
+is selected. The Voice plugin keeps the same manual microphone and automatic
+dialog-mode lifecycle for both input providers.

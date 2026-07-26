@@ -27,7 +27,12 @@
 			]
 		],
 		'voice' => [
-			'stt' => true,
+			'stt' => [
+				'enabled' => true,
+				'provider' => !empty($this->_['speechToTextSessionUrl']) ? 'mistral-realtime' : 'browser',
+				'serviceId' => $this->_['speechToTextService'],
+				'sessionUrl' => $this->_['speechToTextSessionUrl']
+			],
 			'tts' => true,
 			'dialog' => true,
 			'lang' => $this->_['defaultLang'],

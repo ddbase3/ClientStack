@@ -39,7 +39,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'reference_mode' => 'url',
 			'reference' => [],
 			'reference_provider' => '',
-			'default_lang' => 'auto'
+			'default_lang' => 'auto',
+			'speech_to_text_service' => '',
+			'speech_to_text_session_url' => ''
 		], $this->data);
 
 		$id = trim((string)$config['id']);
@@ -64,6 +66,8 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('reference', is_array($config['reference']) ? $config['reference'] : []);
 		$this->view->assign('referenceProvider', (string)$config['reference_provider']);
 		$this->view->assign('defaultLang', (string)$config['default_lang']);
+		$this->view->assign('speechToTextService', (string)$config['speech_to_text_service']);
+		$this->view->assign('speechToTextSessionUrl', (string)$config['speech_to_text_session_url']);
 		$this->view->assign(
 			'moduleUrl',
 			$this->assetResolver->resolve('plugin/ClientStack/assets/modularchatbot/index.js')
