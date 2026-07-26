@@ -29,10 +29,12 @@
 		'voice' => [
 			'stt' => true,
 			'tts' => true,
+			'dialog' => true,
 			'lang' => $this->_['defaultLang'],
 			'icons' => [
 				'microphone' => $this->_['icons']['microphone'],
-				'speaker' => $this->_['icons']['speaker']
+				'speaker' => $this->_['icons']['speaker'],
+				'dialogue' => $this->_['icons']['dialogue']
 			]
 		]
 	];

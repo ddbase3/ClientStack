@@ -86,6 +86,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'thumbsdownfill' => $this->resolveIcon('thumbsdownfill'),
 			'microphone' => $this->resolveIcon('microphone'),
 			'speaker' => $this->resolveIcon('speaker'),
+			'dialogue' => $this->resolveIcon('dialogue'),
 			'list' => $this->resolveIcon('list'),
 			'plus' => $this->resolveIcon('plus')
 		]);
