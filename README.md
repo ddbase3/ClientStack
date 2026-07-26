@@ -176,3 +176,7 @@ text into the instance-local composer.
 Browser speech recognition remains the default when no configured speech service
 is selected. The Voice plugin keeps the same manual microphone and automatic
 dialog-mode lifecycle for both input providers.
+
+Speech endpoint URLs contain only the chatbot `config_group` and `config_name`.
+The backend resolves the selected STT or TTS service from that instance record;
+the modular client neither receives nor chooses provider service ids.

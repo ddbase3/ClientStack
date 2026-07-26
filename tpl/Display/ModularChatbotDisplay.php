@@ -29,11 +29,14 @@
 		'voice' => [
 			'stt' => [
 				'enabled' => true,
-				'provider' => !empty($this->_['speechToTextSessionUrl']) ? 'mistral-realtime' : 'browser',
-				'serviceId' => $this->_['speechToTextService'],
+				'provider' => !empty($this->_['speechToTextSessionUrl']) ? 'backend' : 'browser',
 				'sessionUrl' => $this->_['speechToTextSessionUrl']
 			],
-			'tts' => true,
+			'tts' => [
+				'enabled' => true,
+				'provider' => !empty($this->_['textToSpeechUrl']) ? 'backend' : 'browser',
+				'speechUrl' => $this->_['textToSpeechUrl']
+			],
 			'dialog' => true,
 			'lang' => $this->_['defaultLang'],
 			'icons' => [
