@@ -1,5 +1,6 @@
 <?php
 	$jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+	$strings = $this->_['strings'];
 	$clientConfig = [
 		'serviceUrl' => $this->_['serviceUrl'],
 		'serviceId' => $this->_['serviceId'],
@@ -24,11 +25,29 @@
 		'message-actions' => [
 			'icons' => $this->_['icons']
 		],
-		'threads' => [
+		'conversation' => [
+			'enabled' => !empty($this->_['conversationEnabled']),
+			'multiple' => !empty($this->_['chatHistoryEnabled']),
+			'panelMode' => $this->_['chatHistoryPanelMode'],
+			'automaticTitles' => !empty($this->_['automaticChatTitles']),
+			'urls' => [
+				'state' => $this->_['conversationStateUrl'],
+				'create' => $this->_['conversationCreateUrl'],
+				'materialize' => $this->_['conversationMaterializeUrl'],
+				'activate' => $this->_['conversationActivateUrl'],
+				'rename' => $this->_['conversationRenameUrl'],
+				'delete' => $this->_['conversationDeleteUrl'],
+				'title' => $this->_['conversationTitleUrl']
+			],
 			'icons' => [
 				'list' => $this->_['icons']['list'],
-				'plus' => $this->_['icons']['plus']
-			]
+				'plus' => $this->_['icons']['plus'],
+				'edit' => $this->_['icons']['edit'],
+				'delete' => $this->_['icons']['delete'],
+				'save' => $this->_['icons']['check'],
+				'close' => $this->_['icons']['close']
+			],
+			'strings' => $strings
 		],
 		'voice' => [
 			'stt' => [
@@ -50,60 +69,96 @@
 			]
 		]
 	];
+	$id = htmlspecialchars($this->_['id'], ENT_QUOTES);
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($this->_['cssUrl'], ENT_QUOTES); ?>" />
 
 <section
-	id="<?php echo htmlspecialchars($this->_['id'], ENT_QUOTES); ?>"
+	id="<?php echo $id; ?>"
 	class="base3-chatbot"
 	role="region"
-	aria-label="Chatbot"
+	aria-label="<?php echo htmlspecialchars($strings['regionLabel'], ENT_QUOTES); ?>"
 	data-chatbot-state="loading"
 >
-	<p class="base3-chatbot-base-prompt" data-chatbot-base-prompt></p>
+	<div class="base3-chatbot-conversation-backdrop" data-chatbot-conversation-backdrop hidden></div>
+
+	<nav
+		id="<?php echo $id; ?>-conversations"
+		class="base3-chatbot-conversation-panel"
+		data-chatbot-conversation-panel
+		aria-label="<?php echo htmlspecialchars($strings['conversationNavigation'], ENT_QUOTES); ?>"
+		aria-hidden="true"
+		hidden
+	>
+		<div class="base3-chatbot-conversation-toolbar">
+			<h2><?php echo htmlspecialchars($strings['conversationsHeading']); ?></h2>
+			<button
+				type="button"
+				class="base3-chatbot-conversation-collapse"
+				data-chatbot-conversation-collapse
+				aria-label="<?php echo htmlspecialchars($strings['closeConversations'], ENT_QUOTES); ?>"
+			>
+				<img src="<?php echo htmlspecialchars($this->_['icons']['close'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
+			</button>
+		</div>
+		<ul class="base3-chatbot-conversation-list" data-chatbot-conversation-list></ul>
+	</nav>
+
+	<h2
+		class="base3-chatbot-opening-message"
+		data-chatbot-opening-message
+		hidden
+	></h2>
 
 	<div class="base3-chatbot-main" data-chatbot-main>
 		<div
 			class="base3-chatbot-messages is-empty"
 			data-chatbot-messages
 			role="log"
-			aria-label="Chatverlauf"
+			aria-label="<?php echo htmlspecialchars($strings['chatLogLabel'], ENT_QUOTES); ?>"
 			aria-relevant="additions"
 			tabindex="0"
 		></div>
-		<div class="base3-chatbot-suggestions" data-chatbot-suggestions aria-label="Vorschläge"></div>
+		<div
+			class="base3-chatbot-suggestions"
+			data-chatbot-suggestions
+			aria-label="<?php echo htmlspecialchars($strings['suggestionsLabel'], ENT_QUOTES); ?>"
+		></div>
 	</div>
 
 	<aside
 		class="base3-chatbot-canvas"
 		data-chatbot-canvas
-		aria-label="Canvas"
+		aria-label="<?php echo htmlspecialchars($strings['canvasLabel'], ENT_QUOTES); ?>"
 		aria-hidden="true"
 		hidden
 	>
 		<header class="base3-chatbot-canvas-header">
-			<div class="base3-chatbot-canvas-title" data-chatbot-canvas-title>Canvas</div>
+			<div class="base3-chatbot-canvas-title" data-chatbot-canvas-title>
+				<?php echo htmlspecialchars($strings['canvasTitle']); ?>
+			</div>
 			<button
 				type="button"
 				class="base3-chatbot-canvas-close"
 				data-chatbot-canvas-close
-				aria-label="Canvas schließen"
+				aria-label="<?php echo htmlspecialchars($strings['closeCanvas'], ENT_QUOTES); ?>"
 			>×</button>
 		</header>
 		<div class="base3-chatbot-canvas-content" data-chatbot-canvas-content></div>
 	</aside>
 
 	<div class="base3-chatbot-composer" data-chatbot-composer>
-		<label class="base3-chatbot-visually-hidden" for="<?php echo htmlspecialchars($this->_['id'], ENT_QUOTES); ?>-input">
-			Nachricht
+		<label class="base3-chatbot-visually-hidden" for="<?php echo $id; ?>-input">
+			<?php echo htmlspecialchars($strings['messageLabel']); ?>
 		</label>
 		<textarea
-			id="<?php echo htmlspecialchars($this->_['id'], ENT_QUOTES); ?>-input"
+			id="<?php echo $id; ?>-input"
 			class="base3-chatbot-input"
 			data-chatbot-input
 			name="prompt"
 			rows="1"
-			aria-label="Nachricht eingeben"
+			aria-label="<?php echo htmlspecialchars($strings['messageInputLabel'], ENT_QUOTES); ?>"
+			aria-describedby="<?php echo $id; ?>-ai-notice"
 		></textarea>
 
 		<div class="base3-chatbot-actions">
@@ -116,13 +171,37 @@
 					type="button"
 					class="base3-chatbot-send"
 					data-chatbot-send
-					aria-label="Nachricht senden"
-			>
+					aria-label="<?php echo htmlspecialchars($strings['sendMessage'], ENT_QUOTES); ?>"
+				>
 					<img src="<?php echo htmlspecialchars($this->_['icons']['send'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
 				</button>
 			</div>
 		</div>
 	</div>
+
+	<p id="<?php echo $id; ?>-ai-notice" class="base3-chatbot-ai-notice">
+		<?php echo htmlspecialchars($this->_['aiNoticeText']); ?>
+	</p>
+
+	<div class="base3-chatbot-visually-hidden" data-chatbot-status role="status" aria-live="polite"></div>
+
+	<dialog
+		class="base3-chatbot-delete-dialog"
+		data-chatbot-conversation-delete-dialog
+		aria-labelledby="<?php echo $id; ?>-delete-dialog-title"
+		aria-describedby="<?php echo $id; ?>-delete-dialog-text"
+	>
+		<h2 id="<?php echo $id; ?>-delete-dialog-title"><?php echo htmlspecialchars($strings['deleteDialogTitle']); ?></h2>
+		<p id="<?php echo $id; ?>-delete-dialog-text" data-chatbot-conversation-delete-text></p>
+		<div class="base3-chatbot-dialog-actions">
+			<button type="button" class="base3-chatbot-button" data-chatbot-conversation-delete-cancel>
+				<?php echo htmlspecialchars($strings['cancel']); ?>
+			</button>
+			<button type="button" class="base3-chatbot-button base3-chatbot-button-danger" data-chatbot-conversation-delete-confirm>
+				<?php echo htmlspecialchars($strings['deleteConfirm']); ?>
+			</button>
+		</div>
+	</dialog>
 </section>
 
 <script type="module">
@@ -149,11 +228,13 @@
 <?php if(!empty($this->_['useIcons'])) { ?>
 		plugins.push(client.MessageActionsPlugin);
 <?php } ?>
-<?php if(!empty($this->_['useThreads'])) { ?>
-		plugins.push(client.ThreadsPlugin);
-<?php } ?>
 <?php if(!empty($this->_['useVoice'])) { ?>
 		plugins.push(client.VoicePlugin);
+<?php } ?>
+<?php if(!empty($this->_['conversationEnabled'])) { ?>
+		if(client.ConversationPlugin) {
+			plugins.push(client.ConversationPlugin);
+		}
 <?php } ?>
 
 		await client.mountChatbot(root, {
@@ -165,7 +246,7 @@
 		root.dataset.chatbotState = 'error';
 		const errorMessage = document.createElement('p');
 		errorMessage.className = 'base3-chatbot-error';
-		errorMessage.textContent = 'Der Chatbot konnte nicht initialisiert werden.';
+		errorMessage.textContent = <?php echo json_encode($strings['initializationError'], $jsonFlags); ?>;
 		root.querySelector('[data-chatbot-messages]').appendChild(errorMessage);
 		console.error(error);
 	}
