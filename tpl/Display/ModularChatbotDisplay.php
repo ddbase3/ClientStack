@@ -11,11 +11,7 @@
 	];
 	$pluginConfig = [
 		'markdown' => [
-			'scriptUrl' => $this->_['markedUrl'],
-			'preserveMathJax' => !empty($this->_['useMathJax'])
-		],
-		'mathjax' => [
-			'scriptUrl' => $this->_['mathJaxUrl']
+			'scriptUrl' => $this->_['markedUrl']
 		],
 		'reference' => [
 			'mode' => $this->_['referenceMode'],
@@ -69,6 +65,11 @@
 			]
 		]
 	];
+	$extensionPluginOptions = is_array($this->_['extensionPluginOptions'] ?? null)
+		? $this->_['extensionPluginOptions']
+		: [];
+	$pluginConfig = array_replace_recursive($pluginConfig, $extensionPluginOptions);
+	$extensions = is_array($this->_['extensions'] ?? null) ? $this->_['extensions'] : [];
 	$id = htmlspecialchars($this->_['id'], ENT_QUOTES);
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($this->_['cssUrl'], ENT_QUOTES); ?>" />
@@ -209,6 +210,7 @@
 	const moduleUrl = <?php echo json_encode($this->_['moduleUrl'], $jsonFlags); ?>;
 	const baseConfig = <?php echo json_encode($clientConfig, $jsonFlags); ?>;
 	const pluginOptions = <?php echo json_encode($pluginConfig, $jsonFlags); ?>;
+	const extensionDefinitions = <?php echo json_encode($extensions, $jsonFlags); ?>;
 
 	try {
 		const client = await import(moduleUrl);
@@ -222,15 +224,29 @@
 <?php if(!empty($this->_['useMarkdown'])) { ?>
 		plugins.push(client.MarkdownPlugin);
 <?php } ?>
-<?php if(!empty($this->_['useMathJax'])) { ?>
-		plugins.push(client.MathJaxPlugin);
-<?php } ?>
 <?php if(!empty($this->_['useIcons'])) { ?>
 		plugins.push(client.MessageActionsPlugin);
 <?php } ?>
 <?php if(!empty($this->_['useVoice'])) { ?>
 		plugins.push(client.VoicePlugin);
 <?php } ?>
+
+		for(const definition of extensionDefinitions) {
+			const extensionModule = await import(definition.moduleUrl);
+			const extensionPlugin = extensionModule[definition.exportName];
+			if(!extensionPlugin || typeof extensionPlugin !== 'object') {
+				throw new Error(`Chatbot extension "${definition.name}" did not export "${definition.exportName}".`);
+			}
+			if(extensionPlugin.name !== definition.name) {
+				throw new Error(`Chatbot extension "${definition.name}" exported plugin name "${extensionPlugin.name || ''}".`);
+			}
+
+			plugins.push(extensionPlugin);
+			pluginOptions[definition.name] = {
+				...(pluginOptions[definition.name] || {}),
+				...(definition.options || {})
+			};
+		}
 <?php if(!empty($this->_['conversationEnabled'])) { ?>
 		if(client.ConversationPlugin) {
 			plugins.push(client.ConversationPlugin);

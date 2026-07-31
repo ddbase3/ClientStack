@@ -67,7 +67,6 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'config_group' => '',
 			'config_name' => '',
 			'use_markdown' => true,
-			'use_mathjax' => false,
 			'use_icons' => true,
 			'use_voice' => true,
 			'conversation_enabled' => false,
@@ -88,7 +87,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'reference_provider' => '',
 			'default_lang' => 'auto',
 			'speech_to_text_session_url' => '',
-			'text_to_speech_url' => ''
+			'text_to_speech_url' => '',
+			'extensions' => [],
+			'extension_plugin_options' => []
 		], $this->data);
 
 		$id = trim((string)$config['id']);
@@ -106,7 +107,6 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('configGroup', (string)$config['config_group']);
 		$this->view->assign('configName', (string)$config['config_name']);
 		$this->view->assign('useMarkdown', (bool)$config['use_markdown']);
-		$this->view->assign('useMathJax', (bool)$config['use_mathjax']);
 		$this->view->assign('useIcons', (bool)$config['use_icons']);
 		$this->view->assign('useVoice', (bool)$config['use_voice']);
 		$this->view->assign('conversationEnabled', (bool)$config['conversation_enabled']);
@@ -128,6 +128,11 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('defaultLang', (string)$config['default_lang']);
 		$this->view->assign('speechToTextSessionUrl', $this->normalizeClientUrl((string)$config['speech_to_text_session_url']));
 		$this->view->assign('textToSpeechUrl', $this->normalizeClientUrl((string)$config['text_to_speech_url']));
+		$this->view->assign('extensions', $this->normalizeExtensions($config['extensions']));
+		$this->view->assign(
+			'extensionPluginOptions',
+			is_array($config['extension_plugin_options']) ? $config['extension_plugin_options'] : []
+		);
 		$this->view->assign('strings', $this->getStrings());
 		$this->view->assign(
 			'moduleUrl',
@@ -140,10 +145,6 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign(
 			'markedUrl',
 			$this->assetResolver->resolve('plugin/ClientStack/assets/marked/marked.js')
-		);
-		$this->view->assign(
-			'mathJaxUrl',
-			$this->assetResolver->resolve('plugin/ClientStack/assets/mathjax/tex-mml-chtml.js')
 		);
 		$this->view->assign('icons', [
 			'send' => $this->resolveIcon('send'),
@@ -168,6 +169,45 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 
 	public function getHelp(): string {
 		return 'Renders the modular native ES module Chatbot client.';
+	}
+
+	/** @return array<int,array<string,mixed>> */
+	private function normalizeExtensions(mixed $extensions): array {
+		if(!is_array($extensions)) {
+			return [];
+		}
+
+		$result = [];
+		foreach($extensions as $extension) {
+			if(!is_array($extension)) {
+				throw new \InvalidArgumentException('Chatbot extension definition must be an array.');
+			}
+
+			$name = trim((string)($extension['name'] ?? ''));
+			$moduleUrl = $this->normalizeClientUrl((string)($extension['module_url'] ?? ''));
+			$exportName = trim((string)($extension['export_name'] ?? ''));
+			if(
+				preg_match('/^[a-z0-9._-]+$/', $name) !== 1
+				|| $moduleUrl === ''
+				|| preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $exportName) !== 1
+			) {
+				throw new \InvalidArgumentException('Chatbot extension definition is invalid.');
+			}
+
+			$options = $extension['options'] ?? [];
+			if(!is_array($options)) {
+				throw new \InvalidArgumentException('Chatbot extension options must be an array.');
+			}
+
+			$result[] = [
+				'name' => $name,
+				'moduleUrl' => $moduleUrl,
+				'exportName' => $exportName,
+				'options' => $options
+			];
+		}
+
+		return $result;
 	}
 
 	/** @return array<string,string> */

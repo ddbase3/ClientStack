@@ -25,7 +25,12 @@ class ModularChatbotDisplayTest extends TestCase {
 			'turn_prepare_url' => '/chatbot/prepare',
 			'speech_to_text_session_url' => '/chatbot/stt-session',
 			'text_to_speech_url' => '/chatbot/tts',
-			'use_mathjax' => true,
+			'extensions' => [[
+				'name' => 'custom-renderer',
+				'module_url' => '/plugin/CustomChatbotExtension/CustomRendererPlugin.js',
+				'export_name' => 'CustomRendererPlugin',
+				'options' => ['mode' => 'compact']
+			]],
 			'use_voice' => false,
 			'conversation_enabled' => true,
 			'chat_history_enabled' => true,
@@ -52,7 +57,9 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('/chatbot/prepare', $view->getAssigned('turnPrepareUrl'));
 		$this->assertSame('/chatbot/stt-session', $view->getAssigned('speechToTextSessionUrl'));
 		$this->assertSame('/chatbot/tts', $view->getAssigned('textToSpeechUrl'));
-		$this->assertTrue($view->getAssigned('useMathJax'));
+		$this->assertSame('custom-renderer', $view->getAssigned('extensions')[0]['name'] ?? null);
+		$this->assertSame('CustomRendererPlugin', $view->getAssigned('extensions')[0]['exportName'] ?? null);
+		$this->assertSame([], $view->getAssigned('extensionPluginOptions'));
 		$this->assertFalse($view->getAssigned('useVoice'));
 		$this->assertTrue($view->getAssigned('conversationEnabled'));
 		$this->assertTrue($view->getAssigned('chatHistoryEnabled'));
@@ -66,10 +73,6 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame(
 			'/resolved/plugin/ClientStack/assets/modularchatbot/index.js',
 			$view->getAssigned('moduleUrl')
-		);
-		$this->assertSame(
-			'/resolved/plugin/ClientStack/assets/mathjax/tex-mml-chtml.js',
-			$view->getAssigned('mathJaxUrl')
 		);
 		$this->assertSame(
 			'/resolved/plugin/ClientStack/assets/modularchatbot/icons/edit.svg',
@@ -109,6 +112,17 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertIsString($template);
 		$this->assertStringContainsString('data-chatbot-opening-message', $template);
 		$this->assertStringNotContainsString('data-chatbot-base-prompt', $template);
+	}
+
+	public function testTemplateInstallsResponseExtensionsBeforeConversationHydration(): void {
+		$template = file_get_contents(DIR_PLUGIN . 'ClientStack/tpl/Display/ModularChatbotDisplay.php');
+
+		$this->assertIsString($template);
+		$extensionPosition = strpos($template, 'for(const definition of extensionDefinitions)');
+		$conversationPosition = strpos($template, 'plugins.push(client.ConversationPlugin)');
+		$this->assertIsInt($extensionPosition);
+		$this->assertIsInt($conversationPosition);
+		$this->assertLessThan($conversationPosition, $extensionPosition);
 	}
 
 	public function testGetHelpReturnsExpectedText(): void {
