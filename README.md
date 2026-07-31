@@ -182,3 +182,15 @@ dialog-mode lifecycle for both input providers.
 Speech endpoint URLs contain only the chatbot `config_group` and `config_name`.
 The backend resolves the selected STT or TTS service from that instance record;
 the modular client neither receives nor chooses provider service ids.
+
+## Mermaid diagrams
+
+ClientStack owns the local Mermaid browser bundle and the corresponding BASE3 display.
+
+The runtime asset is stored at:
+
+```text
+assets/mermaid/mermaid.min.js
+```
+
+`ClientStack\Display\MermaidDisplay` is discoverable as `mermaiddisplay` and loads the bundle through the shared AssetLoader. Consumers must resolve Mermaid through ClientStack and do not require a separate Mermaid BASE3 plugin.

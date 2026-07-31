@@ -105,6 +105,16 @@
     "target": "marked"
   },
   {
+    "name": "mermaid",
+    "download": [
+      {
+        "url": "https://cdn.jsdelivr.net/npm/mermaid@11.13.0/dist/mermaid.min.js",
+        "target": "mermaid.min.js"
+      }
+    ],
+    "target": "mermaid"
+  },
+  {
     "name": "mathjax",
     "repo": "https://github.com/mathjax/MathJax.git",
     "tag": "4.1.2",
