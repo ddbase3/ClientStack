@@ -30,17 +30,17 @@ final class TabControlDisplay implements IDisplay {
 	public function getOutput(string $out = 'html', bool $final = false): string {
 		$displayInstances = [];
 		$tabs = $this->normalizeTabs($this->data['tabs'] ?? [], $displayInstances);
-		$activeDisplayName = $this->resolveActiveDisplayName(
+		$activeEntryName = $this->resolveActiveEntryName(
 			$tabs,
 			isset($this->data['active']) && is_scalar($this->data['active'])
 				? trim((string) $this->data['active'])
 				: ''
 		);
 
-		$activeTabName = $this->resolveActiveTabName($tabs, $activeDisplayName);
-		$activeDisplay = $this->getDisplayConfig($tabs, $activeDisplayName);
+		$activeTabName = $this->resolveActiveTabName($tabs, $activeEntryName);
+		$activeDisplay = $this->getDisplayConfig($tabs, $activeEntryName);
 		$content = $this->renderDisplay(
-			$displayInstances[$activeDisplayName] ?? null,
+			$displayInstances[$activeEntryName] ?? null,
 			$activeDisplay['data'] ?? null
 		);
 
@@ -49,7 +49,7 @@ final class TabControlDisplay implements IDisplay {
 		$this->view->assign('controlId', 'base3-tab-control-' . bin2hex(random_bytes(6)));
 		$this->view->assign('tabs', $tabs);
 		$this->view->assign('activeTab', $activeTabName);
-		$this->view->assign('activeDisplay', $activeDisplayName);
+		$this->view->assign('activeDisplay', $activeEntryName);
 		$this->view->assign('activeUrl', (string) ($activeDisplay['url'] ?? ''));
 		$this->view->assign('content', $content);
 		$this->view->assign(
@@ -78,7 +78,7 @@ final class TabControlDisplay implements IDisplay {
 
 		$tabs = [];
 		$usedTabNames = [];
-		$usedDisplayNames = [];
+		$usedEntryNames = [];
 
 		foreach($tabsData as $tabData) {
 			if(!is_array($tabData)) {
@@ -102,12 +102,22 @@ final class TabControlDisplay implements IDisplay {
 					continue;
 				}
 
-				$displayName = $this->readName($displayData, 'name');
-				if($displayName === '' || $displayName === self::getName() || isset($usedDisplayNames[$displayName])) {
+				$entryName = $this->readName($displayData, 'name');
+				$displayName = $this->readName($displayData, 'display');
+				if($displayName === '') {
+					$displayName = $entryName;
+				}
+
+				if(
+					$entryName === ''
+					|| $displayName === ''
+					|| $displayName === self::getName()
+					|| isset($usedEntryNames[$entryName])
+				) {
 					continue;
 				}
 
-				$display = $this->getDisplayInstance($displayName);
+				$display = $this->createDisplayInstance($displayName);
 				if(!$display instanceof IDisplay) {
 					continue;
 				}
@@ -125,8 +135,9 @@ final class TabControlDisplay implements IDisplay {
 				}
 
 				$displays[] = [
-					'name' => $displayName,
-					'label' => $this->readLabel($displayData, $displayName),
+					'name' => $entryName,
+					'display' => $displayName,
+					'label' => $this->readLabel($displayData, $entryName),
 					'data' => $displayData['data'] ?? null,
 					'url' => $this->linkTargetService->getLink(
 						[
@@ -137,8 +148,8 @@ final class TabControlDisplay implements IDisplay {
 					),
 				];
 
-				$displayInstances[$displayName] = $display;
-				$usedDisplayNames[$displayName] = true;
+				$displayInstances[$entryName] = $display;
+				$usedEntryNames[$entryName] = true;
 			}
 
 			if(count($displays) === 0) {
@@ -157,16 +168,15 @@ final class TabControlDisplay implements IDisplay {
 		return $tabs;
 	}
 
-	private function getDisplayInstance(string $name): ?IDisplay {
+	private function createDisplayInstance(string $name): ?IDisplay {
 		$instance = $this->classmap->getInstanceByInterfaceName(IDisplay::class, $name);
-
 		return $instance instanceof IDisplay ? $instance : null;
 	}
 
 	/**
 	 * @param array<int, array<string, mixed>> $tabs
 	 */
-	private function resolveActiveDisplayName(array $tabs, string $requestedName): string {
+	private function resolveActiveEntryName(array $tabs, string $requestedName): string {
 		foreach($tabs as $tab) {
 			foreach($tab['displays'] as $display) {
 				if((string) $display['name'] === $requestedName) {
@@ -185,10 +195,10 @@ final class TabControlDisplay implements IDisplay {
 	/**
 	 * @param array<int, array<string, mixed>> $tabs
 	 */
-	private function resolveActiveTabName(array $tabs, string $activeDisplayName): string {
+	private function resolveActiveTabName(array $tabs, string $activeEntryName): string {
 		foreach($tabs as $tab) {
 			foreach($tab['displays'] as $display) {
-				if((string) $display['name'] === $activeDisplayName) {
+				if((string) $display['name'] === $activeEntryName) {
 					return (string) $tab['name'];
 				}
 			}
@@ -200,10 +210,10 @@ final class TabControlDisplay implements IDisplay {
 	/**
 	 * @param array<int, array<string, mixed>> $tabs
 	 */
-	private function getDisplayConfig(array $tabs, string $displayName): ?array {
+	private function getDisplayConfig(array $tabs, string $entryName): ?array {
 		foreach($tabs as $tab) {
 			foreach($tab['displays'] as $display) {
-				if((string) $display['name'] === $displayName) {
+				if((string) $display['name'] === $entryName) {
 					return $display;
 				}
 			}
