@@ -162,6 +162,8 @@
 			aria-describedby="<?php echo $id; ?>-ai-notice"
 		></textarea>
 
+		<div class="base3-chatbot-composer-overlay" data-chatbot-slot="composer-overlay"></div>
+
 		<div class="base3-chatbot-actions">
 			<div class="base3-chatbot-actions-left">
 				<div class="base3-chatbot-slot" data-chatbot-slot="composer-start"></div>
