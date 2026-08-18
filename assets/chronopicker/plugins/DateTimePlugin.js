@@ -29,7 +29,7 @@ function renderTimeControls(context, state, options) {
 	const hourSelect = createElement('select', {
 		className: 'cp-time-select',
 		attrs: {
-			'aria-label': 'Hour'
+			'aria-label': context.getString('hour')
 		},
 		onChange: (event) => context.execute('setTime', {
 			hour: Number(event.target.value),
@@ -39,7 +39,7 @@ function renderTimeControls(context, state, options) {
 	const minuteSelect = createElement('select', {
 		className: 'cp-time-select',
 		attrs: {
-			'aria-label': 'Minute'
+			'aria-label': context.getString('minute')
 		},
 		onChange: (event) => context.execute('setTime', {
 			hour: selected.getHours(),
@@ -57,7 +57,7 @@ function renderTimeControls(context, state, options) {
 
 	wrapper.appendChild(createElement('span', {
 		className: 'cp-time-label',
-		text: 'Time'
+		text: context.getString('time')
 	}));
 	wrapper.appendChild(hourSelect);
 	wrapper.appendChild(createElement('span', {

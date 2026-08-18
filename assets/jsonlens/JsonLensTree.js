@@ -59,9 +59,9 @@ export class JsonLensTree {
 			line.appendChild(createButton({
 				className: 'jl-node-toggle',
 				text: collapsed ? '+' : '-',
-				title: collapsed ? 'Expand node' : 'Collapse node',
+				title: collapsed ? context.getString('expandNode') : context.getString('collapseNode'),
 				attrs: {
-					'aria-label': collapsed ? 'Expand node' : 'Collapse node'
+					'aria-label': collapsed ? context.getString('expandNode') : context.getString('collapseNode')
 				},
 				onClick: (event) => {
 					event.stopPropagation();
@@ -82,7 +82,7 @@ export class JsonLensTree {
 		}
 
 		if (expandable) {
-			line.appendChild(this.renderSummary(value, collapsed));
+			line.appendChild(this.renderSummary(value, collapsed, context));
 		} else {
 			line.appendChild(this.renderPrimitive(value, options));
 		}
@@ -125,18 +125,18 @@ export class JsonLensTree {
 		return label;
 	}
 
-	static renderSummary(value, collapsed) {
+	static renderSummary(value, collapsed, context) {
 		const summary = createElement('span', {
 			className: 'jl-node-summary'
 		});
 
 		if (Array.isArray(value)) {
-			summary.textContent = collapsed ? `Array(${value.length})` : '[';
+			summary.textContent = collapsed ? context.getString('arraySummary', { count: value.length }) : '[';
 			return summary;
 		}
 
 		const keys = Object.keys(value);
-		summary.textContent = collapsed ? `Object(${keys.length})` : '{';
+		summary.textContent = collapsed ? context.getString('objectSummary', { count: keys.length }) : '{';
 
 		return summary;
 	}

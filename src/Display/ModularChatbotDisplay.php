@@ -13,8 +13,8 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		'conversationNavigation' => 'Chat conversations',
 		'conversationsHeading' => 'Chats',
 		'closeConversations' => 'Close chat list',
-		'showConversations' => 'Show chat list',
-		'newConversation' => 'Start new chat',
+		'showConversations' => 'Show conversations',
+		'newConversation' => 'Start new conversation',
 		'renameConversation' => 'Rename chat',
 		'deleteConversation' => 'Delete chat',
 		'titleLabel' => 'Chat title',
@@ -31,7 +31,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		'busy' => 'The current request must finish first.',
 		'requestFailed' => 'The chat request failed.',
 		'conversationUnavailable' => 'Chat history is not available.',
-		'conversationLoading' => 'Loading chats…',
+		'conversationLoading' => 'Loading chats...',
 		'chatLogLabel' => 'Chat history',
 		'suggestionsLabel' => 'Suggestions',
 		'canvasLabel' => 'Canvas',
@@ -40,7 +40,48 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		'messageLabel' => 'Message',
 		'messageInputLabel' => 'Enter message',
 		'sendMessage' => 'Send message',
-		'initializationError' => 'The chatbot could not be initialized.'
+		'initializationError' => 'The chatbot could not be initialized.',
+		'emptyResponse' => 'No visible response could be generated. Please try the request again.',
+		'requestError' => 'A technical error occurred. The request could not be completed.',
+		'technicalDetails' => 'Technical details',
+		'thinking' => 'Preparing response',
+		'interactionRequired' => 'Confirmation required',
+		'approve' => 'Approve',
+		'deny' => 'Cancel',
+		'yesLabel' => 'Yes',
+		'noLabel' => 'No',
+		'agentStage' => 'Stage',
+		'agentTool' => 'Tool',
+		'agentFailed' => 'failed',
+		'agentCompleted' => 'completed',
+		'agentRunning' => 'running',
+		'agentCached' => 'cached',
+		'agentActivity' => 'Agent activity',
+		'agentSteps' => 'Work steps',
+		'agentParameters' => 'Parameters',
+		'agentTurnId' => 'Turn ID',
+		'agentLoop' => 'loop {iteration}',
+		'agentAiIfNeeded' => 'AI if needed',
+		'agentNoAi' => 'no AI',
+		'agentDone' => 'done',
+		'agentPreparing' => 'Preparing request',
+		'agentCreatingResponse' => 'Creating response',
+		'agentReviewingResult' => 'Reviewing result',
+		'agentPlanning' => 'Planning approach',
+		'agentPreparingContext' => 'Preparing context',
+		'agentProcessingInformation' => 'Processing information',
+		'agentPreparingNextStep' => 'Preparing next step',
+		'agentProcessingRequest' => 'Processing request',
+		'agentReviewingNextStep' => 'Reviewing next step',
+		'agentRetrievingInformation' => 'Retrieving information',
+		'copyResponse' => 'Copy response',
+		'responseHelpful' => 'Response helpful',
+		'responseNotHelpful' => 'Response not helpful',
+		'listening' => 'Listening...',
+		'startStopVoiceInput' => 'Start or stop voice input',
+		'toggleVoiceOutput' => 'Turn voice output on or off',
+		'toggleDialogMode' => 'Turn dialog mode on or off',
+		'extensionLoading' => 'Creating content...'
 	];
 
 	private array $data = [];
@@ -93,7 +134,8 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'extensions' => [],
 			'extension_plugin_options' => [],
 			'additional_stylesheet' => '',
-			'message_icons' => []
+			'message_icons' => [],
+			'strings' => []
 		], $this->data);
 
 		$id = trim((string)$config['id']);
@@ -155,7 +197,10 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'extensionPluginOptions',
 			is_array($config['extension_plugin_options']) ? $config['extension_plugin_options'] : []
 		);
-		$this->view->assign('strings', $this->getStrings());
+		$this->view->assign(
+			'strings',
+			$this->getStrings(is_array($config['strings']) ? $config['strings'] : [])
+		);
 		$this->view->assign(
 			'moduleUrl',
 			$this->resolveVersionedAsset('plugin/ClientStack/assets/modularchatbot/index.js')
@@ -234,19 +279,25 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 	}
 
 	/** @return array<string,string> */
-	private function getStrings(): array {
+	private function getStrings(array $overrides = []): array {
 		$bricks = $this->view->getBricks('modularchatbot');
-		if(!is_array($bricks)) {
-			return self::DEFAULT_STRINGS;
-		}
-
 		$strings = self::DEFAULT_STRINGS;
-		foreach($strings as $key => $default) {
-			$value = $bricks[$key] ?? null;
-			if(is_scalar($value) && trim((string)$value) !== '') {
-				$strings[$key] = trim((string)$value);
+
+		if(is_array($bricks)) {
+			foreach($strings as $key => $default) {
+				$value = $bricks[$key] ?? null;
+				if(is_scalar($value) && trim((string)$value) !== '') {
+					$strings[$key] = trim((string)$value);
+				}
 			}
 		}
+
+		foreach($overrides as $key => $value) {
+			if(array_key_exists($key, $strings) && is_scalar($value) && trim((string)$value) !== '') {
+				$strings[$key] = (string)$value;
+			}
+		}
+
 		return $strings;
 	}
 

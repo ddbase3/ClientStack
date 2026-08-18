@@ -31,7 +31,7 @@ export const ConversationPlugin = {
 			return payload;
 		}
 		if (!state.draftId) {
-			throw new Error(state.options.strings?.conversationUnavailable || 'Chat history is not available.');
+			throw new Error(state.options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 		}
 
 		const conversationState = await state.api.materialize(
@@ -51,7 +51,14 @@ export const ConversationPlugin = {
 	},
 
 	async install(context) {
-		const options = context.getPluginOptions();
+		const pluginOptions = context.getPluginOptions();
+		const options = {
+			...pluginOptions,
+			strings: {
+				...(context.getOptions().strings || {}),
+				...(pluginOptions.strings || {})
+			}
+		};
 		if (options.enabled !== true) {
 			return;
 		}
@@ -129,11 +136,11 @@ export const ConversationPlugin = {
 		state.applyState = applyState;
 		const runOperation = async (operation, settings = {}) => {
 			if (!state.available) {
-				context.chatbot.announce(options.strings?.conversationUnavailable || 'Chat history is not available.');
+				context.chatbot.announce(options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 				return null;
 			}
 			if (state.busy || context.isSending()) {
-				context.chatbot.announce(options.strings?.busy || 'The current request must finish first.');
+				context.chatbot.announce(options.strings?.busy || context.getString('busy'));
 				return null;
 			}
 
@@ -155,7 +162,7 @@ export const ConversationPlugin = {
 				}
 				if (error?.name !== 'AbortError') {
 					context.events.emit('chatbot:error', error);
-					context.chatbot.announce(error?.message || options.strings?.requestFailed || 'Conversation request failed.');
+					context.chatbot.announce(error?.message || options.strings?.requestFailed || context.getString('requestFailed'));
 				}
 				return null;
 			} finally {
@@ -211,14 +218,14 @@ export const ConversationPlugin = {
 		if (options.multiple === true) {
 			toggleButton = context.ui.addControl('composer-start', {
 				id: `${context.chatbot.instanceId}-conversation-list`,
-				label: options.strings?.showConversations || 'Show conversations',
+				label: options.strings?.showConversations || context.getString('showConversations'),
 				icon: options.icons?.list || '',
 				order: 10,
 				onActivate: () => state.view.toggle()
 			});
 			newButton = context.ui.addControl('composer-start', {
 				id: `${context.chatbot.instanceId}-conversation-new`,
-				label: options.strings?.newConversation || 'Start new conversation',
+				label: options.strings?.newConversation || context.getString('newConversation'),
 				icon: options.icons?.plus || '',
 				order: 20,
 				onActivate: async () => {
@@ -240,16 +247,16 @@ export const ConversationPlugin = {
 
 		if (!api.isAvailable()) {
 			state.view.setAvailable(false);
-			state.view.renderStatus(options.strings?.conversationUnavailable || 'Chat history is not available.');
+			state.view.renderStatus(options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 			context.events.emit('chatbot:error', new Error('Conversation endpoints are incomplete.'));
-			context.chatbot.announce(options.strings?.conversationUnavailable || 'Chat history is not available.');
+			context.chatbot.announce(options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 			return;
 		}
 
 		state.available = true;
 		state.view.setAvailable(true);
 		state.view.enable();
-		state.view.renderStatus(options.strings?.conversationLoading || 'Loading chats…');
+		state.view.renderStatus(options.strings?.conversationLoading || context.getString('conversationLoading'));
 		const initialOpeningLoading = showOpeningLoading();
 		setBusy(true);
 		let initialState = null;
@@ -260,9 +267,9 @@ export const ConversationPlugin = {
 				context.replaceMessages([]);
 			}
 			if (error?.name !== 'AbortError') {
-				state.view.renderStatus(error?.message || options.strings?.conversationUnavailable || 'Chat history is not available.');
+				state.view.renderStatus(error?.message || options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 				context.events.emit('chatbot:error', error);
-				context.chatbot.announce(options.strings?.conversationUnavailable || 'Chat history is not available.');
+				context.chatbot.announce(options.strings?.conversationUnavailable || context.getString('conversationUnavailable'));
 			}
 			return;
 		} finally {

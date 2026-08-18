@@ -1,5 +1,5 @@
 import { createButton, createElement } from '../utils/dom.js';
-import { getMonthMatrix, isSameDay, isWithinRange, weekdayNames } from '../utils/dateMath.js';
+import { getMonthMatrix, isSameDay, isWithinRange } from '../utils/dateMath.js';
 
 export const DatePickerPlugin = {
 	name: 'datePicker',
@@ -22,7 +22,7 @@ function renderCalendar(context, state, options) {
 		className: 'cp-calendar',
 		attrs: {
 			role: 'grid',
-			'aria-label': 'Calendar'
+			'aria-label': context.getString('calendar')
 		}
 	});
 	const weekdays = createElement('div', {
@@ -32,7 +32,15 @@ function renderCalendar(context, state, options) {
 		className: 'cp-days'
 	});
 	const matrix = getMonthMatrix(state.viewYear, state.viewMonth, options.weekStartsOn);
-	const labels = rotateWeekdays(weekdayNames, options.weekStartsOn);
+	const labels = rotateWeekdays([
+		context.getString('weekdaySunday'),
+		context.getString('weekdayMonday'),
+		context.getString('weekdayTuesday'),
+		context.getString('weekdayWednesday'),
+		context.getString('weekdayThursday'),
+		context.getString('weekdayFriday'),
+		context.getString('weekdaySaturday')
+	], options.weekStartsOn);
 
 	for (const label of labels) {
 		weekdays.appendChild(createElement('div', {

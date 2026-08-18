@@ -51,20 +51,20 @@ export const ClipboardPlugin = {
 
 					group.appendChild(createButton({
 						className: 'jl-button',
-						text: 'Copy',
-						title: 'Copy complete JSON',
+						text: context.getString('copy'),
+						title: context.getString('copyAllTitle'),
 						onClick: () => context.execute('copyAll')
 					}));
 					group.appendChild(createButton({
 						className: 'jl-button',
-						text: 'Copy path',
-						title: 'Copy active JSON path',
+						text: context.getString('copyPath'),
+						title: context.getString('copyPathTitle'),
 						onClick: () => context.execute('copyPath')
 					}));
 					group.appendChild(createButton({
 						className: 'jl-button',
-						text: 'Copy value',
-						title: 'Copy active value',
+						text: context.getString('copyValue'),
+						title: context.getString('copyValueTitle'),
 						onClick: () => context.execute('copyValue')
 					}));
 

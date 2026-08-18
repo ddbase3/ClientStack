@@ -31,7 +31,7 @@ export const SearchPlugin = {
 						className: 'jl-search-input',
 						attrs: {
 							type: 'search',
-							placeholder: 'Search JSON',
+							placeholder: context.getString('searchPlaceholder'),
 							value: state.search?.term || ''
 						},
 						onInput: (event) => context.execute('setSearchTerm', event.target.value)

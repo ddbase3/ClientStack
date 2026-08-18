@@ -308,12 +308,12 @@ export class ConversationView {
 		const actions = document.createElement('div');
 		actions.className = 'base3-chatbot-conversation-actions';
 		const edit = createButton(
-			this.strings.renameConversation || 'Rename chat',
+			this.strings.renameConversation || this.context.getString('renameConversation'),
 			'base3-chatbot-conversation-action',
 			this.icons.edit
 		);
 		const remove = createButton(
-			this.strings.deleteConversation || 'Delete chat',
+			this.strings.deleteConversation || this.context.getString('deleteConversation'),
 			'base3-chatbot-conversation-action',
 			this.icons.delete
 		);
@@ -342,7 +342,7 @@ export class ConversationView {
 		const label = document.createElement('label');
 		label.className = 'base3-chatbot-visually-hidden';
 		label.htmlFor = `${this.context.chatbot.instanceId}-conversation-title-${conversation.id}`;
-		label.textContent = this.strings.titleLabel || 'Conversation title';
+		label.textContent = this.strings.titleLabel || this.context.getString('titleLabel');
 		const input = document.createElement('input');
 		input.id = label.htmlFor;
 		input.type = 'text';
@@ -351,13 +351,13 @@ export class ConversationView {
 		input.maxLength = 255;
 		input.required = true;
 		const save = createButton(
-			this.strings.saveTitle || 'Save title',
+			this.strings.saveTitle || this.context.getString('saveTitle'),
 			'base3-chatbot-conversation-action',
 			this.icons.save
 		);
 		save.type = 'submit';
 		const cancel = createButton(
-			this.strings.cancel || 'Cancel',
+			this.strings.cancel || this.context.getString('cancel'),
 			'base3-chatbot-conversation-action',
 			this.icons.close
 		);

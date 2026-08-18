@@ -8,6 +8,21 @@ const TOKENS = {
 	mm: '(?<mm>\\d{2})'
 };
 
+const DEFAULT_STRINGS = {
+	invalidDateObject: 'Invalid Date object.',
+	expectedFormat: 'Expected format {format}.',
+	hourOutOfRange: 'Hour must be between 00 and 23.',
+	minuteOutOfRange: 'Minute must be between 00 and 59.',
+	invalidDate: 'Date is not valid.'
+};
+
+function getString(options, key, replacements = {}) {
+	const value = options.strings?.[key] ?? DEFAULT_STRINGS[key] ?? key;
+	return Object.entries(replacements).reduce((text, [name, replacement]) => {
+		return text.split(`{${name}}`).join(String(replacement));
+	}, String(value));
+}
+
 export function parseChronoValue(value, options = {}) {
 	const mode = options.mode || 'date';
 	const format = options.format || (mode === 'datetime' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD');
@@ -23,7 +38,7 @@ export function parseChronoValue(value, options = {}) {
 
 	if (value instanceof Date) {
 		if (Number.isNaN(value.getTime())) {
-			return invalid('Invalid Date object.');
+			return invalid(getString(options, 'invalidDateObject'));
 		}
 
 		return {
@@ -39,7 +54,7 @@ export function parseChronoValue(value, options = {}) {
 	const match = regex.exec(text);
 
 	if (!match) {
-		return invalid(`Expected format ${format}.`);
+		return invalid(getString(options, 'expectedFormat', { format }));
 	}
 
 	const groups = match.groups || {};
@@ -50,17 +65,17 @@ export function parseChronoValue(value, options = {}) {
 	const minute = Number(groups.mm || 0);
 
 	if (hour < 0 || hour > 23) {
-		return invalid('Hour must be between 00 and 23.');
+		return invalid(getString(options, 'hourOutOfRange'));
 	}
 
 	if (minute < 0 || minute > 59) {
-		return invalid('Minute must be between 00 and 59.');
+		return invalid(getString(options, 'minuteOutOfRange'));
 	}
 
 	const date = createLocalDate(year, month, day, hour, minute);
 
 	if (!isExactDate(date, year, month, day, hour, minute)) {
-		return invalid('Date is not valid.');
+		return invalid(getString(options, 'invalidDate'));
 	}
 
 	return {

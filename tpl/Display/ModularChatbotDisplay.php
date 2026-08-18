@@ -8,7 +8,8 @@
 		'configGroup' => $this->_['configGroup'],
 		'configName' => $this->_['configName'],
 		'transportMode' => $this->_['transportMode'],
-		'messageIcons' => $this->_['messageIcons']
+		'messageIcons' => $this->_['messageIcons'],
+		'strings' => $strings
 	];
 	$pluginConfig = [
 		'markdown' => [

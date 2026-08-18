@@ -22,6 +22,35 @@ const DEFAULT_PLUGINS = [
 	PathPlugin
 ];
 
+const DEFAULT_STRINGS = {
+	tree: 'Tree',
+	pretty: 'Pretty',
+	raw: 'Raw',
+	expandAll: 'Expand all',
+	collapseAll: 'Collapse all',
+	noJsonValue: 'No JSON value.',
+	missingView: 'No JsonLens view registered for mode "{mode}".',
+	invalidJson: 'Invalid JSON',
+	copy: 'Copy',
+	copyAllTitle: 'Copy complete JSON',
+	copyPath: 'Copy path',
+	copyPathTitle: 'Copy active JSON path',
+	copyValue: 'Copy value',
+	copyValueTitle: 'Copy active value',
+	searchPlaceholder: 'Search JSON',
+	path: 'Path: {path}',
+	expandNode: 'Expand node',
+	collapseNode: 'Collapse node',
+	arraySummary: 'Array({count})',
+	objectSummary: 'Object({count})'
+};
+
+function formatString(value, replacements = {}) {
+	return Object.entries(replacements).reduce((text, [key, replacement]) => {
+		return text.split(`{${key}}`).join(String(replacement));
+	}, String(value ?? ''));
+}
+
 export class JsonLens {
 	constructor(target, options = {}) {
 		this.target = target ? resolveElement(target) : null;
@@ -47,7 +76,12 @@ export class JsonLens {
 			adapter: null,
 			plugins: DEFAULT_PLUGINS,
 			pluginOptions: {},
-			...options
+			strings: DEFAULT_STRINGS,
+			...options,
+			strings: {
+				...DEFAULT_STRINGS,
+				...(options.strings || {})
+			}
 		};
 	}
 
@@ -83,6 +117,7 @@ export class JsonLens {
 			requestViewRender: () => this.requestViewRender(),
 			getOptions: () => this.options,
 			getPluginOptions: (pluginName) => this.getPluginOptions(pluginName),
+			getString: (key, replacements = {}) => this.getString(key, replacements),
 			registerView: (view) => this.registerView(view)
 		};
 	}
@@ -245,6 +280,10 @@ export class JsonLens {
 		return this.options.pluginOptions?.[pluginName] || {};
 	}
 
+	getString(key, replacements = {}) {
+		return formatString(this.options.strings?.[key] ?? DEFAULT_STRINGS[key] ?? key, replacements);
+	}
+
 	getState() {
 		return this.store.getState();
 	}
@@ -340,9 +379,9 @@ export class JsonLens {
 		});
 		const state = this.getState();
 		const modes = [
-			{ name: 'tree', label: 'Tree' },
-			{ name: 'pretty', label: 'Pretty' },
-			{ name: 'raw', label: 'Raw' }
+			{ name: 'tree', label: this.getString('tree') },
+			{ name: 'pretty', label: this.getString('pretty') },
+			{ name: 'raw', label: this.getString('raw') }
 		];
 
 		for (const mode of modes) {
@@ -370,13 +409,13 @@ export class JsonLens {
 
 		group.appendChild(createButton({
 			className: 'jl-button',
-			text: 'Expand all',
+			text: this.getString('expandAll'),
 			onClick: () => this.execute('expandAll')
 		}));
 
 		group.appendChild(createButton({
 			className: 'jl-button',
-			text: 'Collapse all',
+			text: this.getString('collapseAll'),
 			onClick: () => this.execute('collapseAll')
 		}));
 
@@ -390,7 +429,7 @@ export class JsonLens {
 		if (!result) {
 			container.appendChild(createElement('div', {
 				className: 'jl-empty',
-				text: 'No JSON value.'
+				text: this.getString('noJsonValue')
 			}));
 			return;
 		}
@@ -405,7 +444,7 @@ export class JsonLens {
 		if (!view) {
 			container.appendChild(createElement('div', {
 				className: 'jl-empty',
-				text: `No JsonLens view registered for mode "${state.mode}".`
+				text: this.getString('missingView', { mode: state.mode })
 			}));
 			return;
 		}
@@ -426,7 +465,8 @@ export class JsonLens {
 		return {
 			getState: () => this.getState(),
 			execute: (commandName, payload) => this.execute(commandName, payload),
-			options: this.options
+			options: this.options,
+			getString: (key, replacements = {}) => this.getString(key, replacements)
 		};
 	}
 
@@ -437,7 +477,7 @@ export class JsonLens {
 
 		error.appendChild(createElement('div', {
 			className: 'jl-error-title',
-			text: 'Invalid JSON'
+			text: this.getString('invalidJson')
 		}));
 		error.appendChild(createElement('div', {
 			className: 'jl-error-message',

@@ -49,9 +49,9 @@ function addActions(context, message) {
 
 	const options = context.getPluginOptions();
 	const icons = options.icons || {};
-	const copy = createIconButton('Antwort kopieren', icons.copy || '');
-	const like = createIconButton('Antwort hilfreich', icons.thumbsup || '');
-	const dislike = createIconButton('Antwort nicht hilfreich', icons.thumbsdown || '');
+	const copy = createIconButton(context.getString('copyResponse'), icons.copy || '');
+	const like = createIconButton(context.getString('responseHelpful'), icons.thumbsup || '');
+	const dislike = createIconButton(context.getString('responseNotHelpful'), icons.thumbsdown || '');
 	const initialFeedback = String(message.feedback || message.element.dataset.feedback || '');
 	message.element.dataset.feedback = ['like', 'dislike'].includes(initialFeedback) ? initialFeedback : 'none';
 

@@ -1,5 +1,19 @@
 let internalId = 0;
 
+const DEFAULT_STRINGS = {
+	close: 'Close',
+	closeDialog: 'Close dialog',
+	unsavedChangesConfirm: 'There are unsaved changes. Close anyway?',
+	unsavedChangesStatus: 'Please save or discard your changes before closing.',
+	button: 'Button {index}'
+};
+
+function formatString(value, replacements = {}) {
+	return Object.entries(replacements).reduce((text, [key, replacement]) => {
+		return text.split(`{${key}}`).join(String(replacement));
+	}, String(value ?? ''));
+}
+
 export class DialogEvent {
 	constructor(type, options = {}) {
 		this.type = type;
@@ -488,6 +502,7 @@ export class ModularDialog {
 			requestRender: () => this.requestRender(),
 			getOptions: () => this.options,
 			getPluginOptions: (pluginName) => this.options.pluginOptions?.[pluginName] || {},
+			getString: (key, replacements = {}) => this.getString(key, replacements),
 			registerSlot: (name, options) => this.registerSlot(name, options),
 			setSlot: (name, content, options) => this.setSlot(name, content, options),
 			appendToSlot: (name, content, options) => this.appendToSlot(name, content, options),
@@ -495,6 +510,10 @@ export class ModularDialog {
 			clearSlot: (name) => this.clearSlot(name),
 			renderSlot: (name, options) => this.renderSlot(name, options)
 		};
+	}
+
+	getString(key, replacements = {}) {
+		return formatString(this.options.strings?.[key] ?? DEFAULT_STRINGS[key] ?? key, replacements);
 	}
 
 	init() {
@@ -1025,7 +1044,7 @@ export function CloseButtonPlugin(pluginOptions = {}) {
 	return {
 		name: 'closeButton',
 		install(context) {
-			options = { slot: 'header.end', order: 1000, label: 'Close', ariaLabel: 'Close dialog', className: '', ...pluginOptions, ...context.getPluginOptions('closeButton') };
+			options = { slot: 'header.end', order: 1000, label: context.getString('close'), ariaLabel: context.getString('closeDialog'), className: '', ...pluginOptions, ...context.getPluginOptions('closeButton') };
 		},
 		slotContributions(context) {
 			return [{
@@ -1098,9 +1117,9 @@ export function ButtonBarPlugin(pluginOptions = {}) {
 		name: 'buttonBar',
 		install(context) {
 			options = { slot: 'footer.end', order: 10, reportErrorsToStatus: true, ...pluginOptions, ...context.getPluginOptions('buttonBar') };
-			context.setState({ buttons: normalizeButtons(options.buttons ?? context.getOptions().buttons ?? []), buttonStates: {} });
+			context.setState({ buttons: normalizeButtons(options.buttons ?? context.getOptions().buttons ?? [], context), buttonStates: {} });
 			context.commands.register('setButtons', (payload) => {
-				context.setState({ buttons: normalizeButtons(payload && payload.buttons ? payload.buttons : payload), buttonStates: {} });
+				context.setState({ buttons: normalizeButtons(payload && payload.buttons ? payload.buttons : payload, context), buttonStates: {} });
 				context.requestRender();
 			});
 			context.commands.register('enableButton', (payload) => updateButtonState(context, resolveButtonKey(payload), { disabled: false }));
@@ -1266,7 +1285,7 @@ export function DirtyGuardPlugin(pluginOptions = {}) {
 	return {
 		name: 'dirtyGuard',
 		install(context) {
-			const options = { dirty: false, confirm: false, message: 'There are unsaved changes. Close anyway?', statusMessage: 'Please save or discard your changes before closing.', ...pluginOptions, ...context.getPluginOptions('dirtyGuard') };
+			const options = { dirty: false, confirm: false, message: context.getString('unsavedChangesConfirm'), statusMessage: context.getString('unsavedChangesStatus'), ...pluginOptions, ...context.getPluginOptions('dirtyGuard') };
 			context.setState({ dirty: Boolean(options.dirty) });
 			context.commands.register('setDirty', (payload) => {
 				const dirty = payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'dirty') ? Boolean(payload.dirty) : Boolean(payload);
@@ -1484,13 +1503,18 @@ function normalizeDialogOptions(options = {}) {
 		content: null,
 		plugins: [],
 		pluginOptions: {},
+		strings: DEFAULT_STRINGS,
 		defaultPlugins: true,
 		zIndexBase: 9000,
 		ariaLabel: null,
 		ariaLabelledBy: null,
 		ariaDescribedBy: null,
 		...options,
-		id
+		id,
+		strings: {
+			...DEFAULT_STRINGS,
+			...(options.strings || {})
+		}
 	};
 }
 
@@ -1698,12 +1722,16 @@ function normalizeStatus(payload) {
 	return { message: payload == null ? '' : String(payload), type: '', html: false };
 }
 
-function normalizeButtons(buttons = []) {
+function normalizeButtons(buttons = [], context = null) {
 	if (!Array.isArray(buttons) && buttons && typeof buttons === 'object') {
 		return Object.entries(buttons).map(([key, button]) => ({ key, ...(button || {}) }));
 	}
 
-	return (buttons || []).map((button, index) => ({ key: button.key || button.name || `button-${index + 1}`, label: button.label || button.text || button.key || `Button ${index + 1}`, ...button }));
+	return (buttons || []).map((button, index) => ({
+		key: button.key || button.name || `button-${index + 1}`,
+		label: button.label || button.text || button.key || context?.getString('button', { index: index + 1 }) || `Button ${index + 1}`,
+		...button
+	}));
 }
 
 function resolveButtonKey(payload) {

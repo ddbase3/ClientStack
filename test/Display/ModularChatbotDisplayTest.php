@@ -52,7 +52,10 @@ class ModularChatbotDisplayTest extends TestCase {
 			'conversation_activate_url' => '/chatbot/conversations/activate',
 			'conversation_rename_url' => '/chatbot/conversations/rename',
 			'conversation_delete_url' => '/chatbot/conversations/delete',
-			'conversation_title_url' => '/chatbot/conversations/title'
+			'conversation_title_url' => '/chatbot/conversations/title',
+			'strings' => [
+				'thinking' => 'Custom thinking'
+			]
 		]);
 
 		$output = $display->getOutput();
@@ -85,6 +88,7 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('/chatbot/conversations/materialize', $view->getAssigned('conversationMaterializeUrl'));
 		$this->assertSame('/chatbot/conversations/title', $view->getAssigned('conversationTitleUrl'));
 		$this->assertSame('Verläufe anzeigen', $view->getAssigned('strings')['showConversations'] ?? null);
+		$this->assertSame('Custom thinking', $view->getAssigned('strings')['thinking'] ?? null);
 		$this->assertSame(
 			'/resolved/plugin/ClientStack/assets/modularchatbot/index.js',
 			$view->getAssigned('moduleUrl')

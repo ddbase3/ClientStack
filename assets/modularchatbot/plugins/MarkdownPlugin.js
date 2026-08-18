@@ -185,7 +185,7 @@ export const MarkdownPlugin = {
 			context,
 			renderContext,
 			marked,
-			options?.strings?.extensionLoading || 'Inhalt wird erstellt …'
+			options?.strings?.extensionLoading || context.getString('extensionLoading')
 		);
 		formatJsonCodeBlocks(renderContext.element);
 		patchExternalLinks(renderContext.element);

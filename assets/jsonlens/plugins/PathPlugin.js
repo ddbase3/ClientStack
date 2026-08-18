@@ -3,7 +3,7 @@ import { createElement } from '../utils/dom.js';
 export const PathPlugin = {
 	name: 'path',
 
-	layoutContributions() {
+	layoutContributions(context) {
 		return [
 			{
 				zone: 'toolbar',
@@ -11,11 +11,11 @@ export const PathPlugin = {
 				render({ state }) {
 					return createElement('div', {
 						className: 'jl-path-display',
-						text: `Path: ${state.activePath || '$'}`
+						text: context.getString('path', { path: state.activePath || '$' })
 					});
 				},
 				update(element, { state }) {
-					element.textContent = `Path: ${state.activePath || '$'}`;
+					element.textContent = context.getString('path', { path: state.activePath || '$' });
 				}
 			}
 		];

@@ -7,7 +7,7 @@ import { DatePickerPlugin } from './plugins/DatePickerPlugin.js';
 import { DateTimePlugin } from './plugins/DateTimePlugin.js';
 import { KeyboardPlugin } from './plugins/KeyboardPlugin.js';
 import { createButton, createElement, clearElement, resolveElement } from './utils/dom.js';
-import { addMonths, createLocalDate, monthNames } from './utils/dateMath.js';
+import { addMonths, createLocalDate } from './utils/dateMath.js';
 import { formatChronoValue } from './utils/format.js';
 import { parseChronoValue } from './utils/parse.js';
 
@@ -16,6 +16,43 @@ const DEFAULT_PLUGINS = [
 	DateTimePlugin,
 	KeyboardPlugin
 ];
+
+const DEFAULT_STRINGS = {
+	previousMonth: 'Previous month',
+	nextMonth: 'Next month',
+	today: 'Today',
+	clear: 'Clear',
+	done: 'Done',
+	calendar: 'Calendar',
+	time: 'Time',
+	hour: 'Hour',
+	minute: 'Minute',
+	monthJanuary: 'January',
+	monthFebruary: 'February',
+	monthMarch: 'March',
+	monthApril: 'April',
+	monthMay: 'May',
+	monthJune: 'June',
+	monthJuly: 'July',
+	monthAugust: 'August',
+	monthSeptember: 'September',
+	monthOctober: 'October',
+	monthNovember: 'November',
+	monthDecember: 'December',
+	weekdaySunday: 'Sun',
+	weekdayMonday: 'Mon',
+	weekdayTuesday: 'Tue',
+	weekdayWednesday: 'Wed',
+	weekdayThursday: 'Thu',
+	weekdayFriday: 'Fri',
+	weekdaySaturday: 'Sat'
+};
+
+function formatString(value, replacements = {}) {
+	return Object.entries(replacements).reduce((text, [key, replacement]) => {
+		return text.split(`{${key}}`).join(String(replacement));
+	}, String(value ?? ''));
+}
 
 export class ChronoPicker {
 	constructor(target, options = {}) {
@@ -54,11 +91,16 @@ export class ChronoPicker {
 			max: null,
 			plugins: DEFAULT_PLUGINS,
 			pluginOptions: {},
+			strings: DEFAULT_STRINGS,
 			onChange: null,
 			...options,
 			mode,
 			displayMode,
-			format
+			format,
+			strings: {
+				...DEFAULT_STRINGS,
+				...(options.strings || {})
+			}
 		};
 	}
 
@@ -87,7 +129,8 @@ export class ChronoPicker {
 			execute: (commandName, payload) => this.execute(commandName, payload),
 			requestRender: () => this.requestRender(),
 			getOptions: () => this.options,
-			getPluginOptions: (pluginName) => this.getPluginOptions(pluginName)
+			getPluginOptions: (pluginName) => this.getPluginOptions(pluginName),
+			getString: (key, replacements = {}) => this.getString(key, replacements)
 		};
 	}
 
@@ -278,7 +321,8 @@ export class ChronoPicker {
 	setValue(value, options = {}) {
 		const result = parseChronoValue(value, {
 			mode: this.options.mode,
-			format: this.options.format
+			format: this.options.format,
+			strings: this.options.strings
 		});
 
 		if (!result.ok) {
@@ -389,6 +433,27 @@ export class ChronoPicker {
 		return this.options.pluginOptions?.[pluginName] || {};
 	}
 
+	getString(key, replacements = {}) {
+		return formatString(this.options.strings?.[key] ?? DEFAULT_STRINGS[key] ?? key, replacements);
+	}
+
+	getMonthNames() {
+		return [
+			this.getString('monthJanuary'),
+			this.getString('monthFebruary'),
+			this.getString('monthMarch'),
+			this.getString('monthApril'),
+			this.getString('monthMay'),
+			this.getString('monthJune'),
+			this.getString('monthJuly'),
+			this.getString('monthAugust'),
+			this.getString('monthSeptember'),
+			this.getString('monthOctober'),
+			this.getString('monthNovember'),
+			this.getString('monthDecember')
+		];
+	}
+
 	requestRender() {
 		if (!this.initialized) {
 			return;
@@ -434,17 +499,17 @@ export class ChronoPicker {
 		header.appendChild(createButton({
 			className: 'cp-button cp-nav-button',
 			text: '‹',
-			title: 'Previous month',
+			title: this.getString('previousMonth'),
 			onClick: () => this.execute('previousMonth')
 		}));
 		header.appendChild(createElement('div', {
 			className: 'cp-title',
-			text: `${monthNames[state.viewMonth - 1]} ${state.viewYear}`
+			text: `${this.getMonthNames()[state.viewMonth - 1]} ${state.viewYear}`
 		}));
 		header.appendChild(createButton({
 			className: 'cp-button cp-nav-button',
 			text: '›',
-			title: 'Next month',
+			title: this.getString('nextMonth'),
 			onClick: () => this.execute('nextMonth')
 		}));
 
@@ -487,19 +552,19 @@ export class ChronoPicker {
 
 		actions.appendChild(createButton({
 			className: 'cp-button',
-			text: 'Today',
+			text: this.getString('today'),
 			onClick: () => this.execute('today')
 		}));
 		actions.appendChild(createButton({
 			className: 'cp-button',
-			text: 'Clear',
+			text: this.getString('clear'),
 			onClick: () => this.execute('clear')
 		}));
 
 		if (this.isInputMode()) {
 			actions.appendChild(createButton({
 				className: 'cp-button cp-primary-button',
-				text: 'Done',
+				text: this.getString('done'),
 				onClick: () => this.execute('close')
 			}));
 		}

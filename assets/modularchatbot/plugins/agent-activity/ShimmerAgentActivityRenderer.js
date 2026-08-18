@@ -1,38 +1,38 @@
-function stageText(activity) {
+function stageText(activity, context) {
 	const source = `${activity.label} ${activity.description}`.toLowerCase();
 
 	if (/final|output|response|answer|compose/.test(source)) {
-		return 'Antwort wird erstellt';
+		return context.getString('agentCreatingResponse');
 	}
 	if (/verify|review|check|guard|validat/.test(source)) {
-		return 'Ergebnis wird geprüft';
+		return context.getString('agentReviewingResult');
 	}
 	if (/plan|strategy|orchestrat|decid/.test(source)) {
-		return 'Vorgehen wird geplant';
+		return context.getString('agentPlanning');
 	}
 	if (/context|memory|prompt|prepare|input/.test(source)) {
-		return 'Kontext wird vorbereitet';
+		return context.getString('agentPreparingContext');
 	}
 	if (/tool|execute|action|retriev|search/.test(source)) {
-		return 'Informationen werden verarbeitet';
+		return context.getString('agentProcessingInformation');
 	}
 	if (activity.status === 'completed') {
-		return 'Nächster Schritt wird vorbereitet';
+		return context.getString('agentPreparingNextStep');
 	}
 
-	return 'Anfrage wird verarbeitet';
+	return context.getString('agentProcessingRequest');
 }
 
-function resolveText(activity) {
+function resolveText(activity, context) {
 	if (activity.status === 'failed') {
-		return 'Nächster Schritt wird geprüft';
+		return context.getString('agentReviewingNextStep');
 	}
 	if (activity.kind === 'tool') {
 		return activity.status === 'completed'
-			? 'Informationen werden verarbeitet'
-			: 'Informationen werden abgerufen';
+			? context.getString('agentProcessingInformation')
+			: context.getString('agentRetrievingInformation');
 	}
-	return stageText(activity);
+	return stageText(activity, context);
 }
 
 function setText(state, text) {
@@ -43,7 +43,7 @@ function setText(state, text) {
 export const ShimmerAgentActivityRenderer = {
 	name: 'shimmer',
 
-	createState(assistant) {
+	createState(assistant, context) {
 		const thinking = assistant?.thinking?.isConnected ? assistant.thinking : null;
 		const element = thinking || document.createElement('div');
 		element.classList.add('base3-chatbot-activity', 'base3-chatbot-activity-shimmer');
@@ -65,7 +65,7 @@ export const ShimmerAgentActivityRenderer = {
 
 		const text = document.createElement('span');
 		text.className = 'base3-chatbot-activity-shimmer-text';
-		text.textContent = 'Anfrage wird vorbereitet';
+		text.textContent = context.getString('agentPreparing');
 		if (!icon.isConnected) {
 			element.appendChild(icon);
 		}
@@ -86,12 +86,12 @@ export const ShimmerAgentActivityRenderer = {
 		state.turnId = turnId;
 	},
 
-	update(state, activity) {
-		setText(state, resolveText(activity));
+	update(state, activity, context) {
+		setText(state, resolveText(activity, context));
 	},
 
-	onToken(state) {
-		setText(state, 'Antwort wird erstellt');
+	onToken(state, context) {
+		setText(state, context.getString('agentCreatingResponse'));
 	},
 
 	complete(state) {

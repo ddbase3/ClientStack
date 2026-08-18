@@ -35,16 +35,16 @@ function resolveStatus(eventName, payload) {
 	return 'running';
 }
 
-function resolveLabel(eventName, payload) {
+function resolveLabel(eventName, payload, context) {
 	if (eventName.startsWith('stage.')) {
-		return String(payload.label || payload.name || payload.stage || payload.id || 'Stage');
+		return String(payload.label || payload.name || payload.stage || payload.id || context.getString('agentStage'));
 	}
-	return String(payload.label || payload.tool || 'Tool');
+	return String(payload.label || payload.tool || context.getString('agentTool'));
 }
 
-function resolveDescription(eventName, payload, status) {
+function resolveDescription(eventName, payload, status, context) {
 	if (status === 'failed') {
-		return String(payload.error || payload.message || 'fehlgeschlagen');
+		return String(payload.error || payload.message || context.getString('agentFailed'));
 	}
 
 	const description = String(payload.description || '').trim();
@@ -53,7 +53,7 @@ function resolveDescription(eventName, payload, status) {
 	}
 
 	if (status === 'completed') {
-		return payload.cached ? 'cached' : 'abgeschlossen';
+		return payload.cached ? context.getString('agentCached') : context.getString('agentCompleted');
 	}
 
 	const args = payload.args && typeof payload.args === 'object' ? payload.args : null;
@@ -64,10 +64,10 @@ function resolveDescription(eventName, payload, status) {
 		}
 	}
 
-	return 'wird ausgeführt';
+	return context.getString('agentRunning');
 }
 
-function normalizeActivity(eventName, payload) {
+function normalizeActivity(eventName, payload, context) {
 	const data = normalizePayload(payload);
 	const status = resolveStatus(eventName, data);
 
@@ -76,8 +76,8 @@ function normalizeActivity(eventName, payload) {
 		kind: eventName.startsWith('stage.') ? 'stage' : 'tool',
 		key: resolveKey(eventName, data),
 		status,
-		label: resolveLabel(eventName, data),
-		description: resolveDescription(eventName, data, status),
+		label: resolveLabel(eventName, data, context),
+		description: resolveDescription(eventName, data, status, context),
 		args: data.args && typeof data.args === 'object' ? data.args : null,
 		iteration: Number(data.iteration || 0),
 		callIndex: Number(data.call_index || 0),
@@ -100,9 +100,9 @@ function preservesThinking(renderer) {
 	return renderer?.name === 'shimmer';
 }
 
-function ensureState(renderer, assistant) {
+function ensureState(renderer, assistant, context) {
 	if (!assistant.activityState) {
-		assistant.activityState = renderer.createState(assistant);
+		assistant.activityState = renderer.createState(assistant, context);
 	}
 	return assistant.activityState;
 }
@@ -116,21 +116,21 @@ export function createAgentActivityPlugin(renderer) {
 			context.events.on('message:token', ({ assistant }) => {
 				const state = assistant?.activityState;
 				if (state) {
-					renderer.onToken(state);
+					renderer.onToken(state, context);
 				}
 			});
 
 			context.events.on('message:completed', (message) => {
 				const state = message?.activityState;
 				if (state) {
-					renderer.complete(state, { error: false });
+					renderer.complete(state, { error: false }, context);
 				}
 			});
 
 			context.events.on('message:error', (message) => {
 				const state = message?.activityState;
 				if (state) {
-					renderer.complete(state, { error: true });
+					renderer.complete(state, { error: true }, context);
 				}
 			});
 		},
@@ -143,7 +143,7 @@ export function createAgentActivityPlugin(renderer) {
 					if (!preservesThinking(renderer)) {
 						context.chatbot.hideThinking(assistant);
 					}
-					const state = ensureState(renderer, assistant);
+					const state = ensureState(renderer, assistant, context);
 					renderer.setTurnId(state, resolveTurnId(payload));
 					context.chatbot.scrollToBottom();
 				}
@@ -160,8 +160,8 @@ export function createAgentActivityPlugin(renderer) {
 			if (!preservesThinking(renderer)) {
 				context.chatbot.hideThinking(assistant);
 			}
-			const state = ensureState(renderer, assistant);
-			renderer.update(state, normalizeActivity(eventName, payload));
+			const state = ensureState(renderer, assistant, context);
+			renderer.update(state, normalizeActivity(eventName, payload, context), context);
 			context.chatbot.scrollToBottom();
 			return true;
 		}

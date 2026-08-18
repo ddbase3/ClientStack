@@ -7,9 +7,71 @@ import { SseChatTransport } from './transport/SseChatTransport.js?build=conversa
 import { createElement, resolveElement, scrollElementToBottom } from './utils/dom.js?build=conversation-draft-1';
 
 const defaultStrings = {
-	emptyResponse: 'Es konnte keine sichtbare Antwort erzeugt werden. Bitte versuche die Anfrage erneut.',
-	requestError: 'Es ist ein technischer Fehler aufgetreten. Die Anfrage konnte nicht vollständig abgeschlossen werden.'
+	emptyResponse: 'No visible response could be generated. Please try the request again.',
+	requestError: 'A technical error occurred. The request could not be completed.',
+	technicalDetails: 'Technical details',
+	thinking: 'Preparing response',
+	interactionRequired: 'Confirmation required',
+	approve: 'Approve',
+	deny: 'Cancel',
+	yesLabel: 'Yes',
+	noLabel: 'No',
+	agentStage: 'Stage',
+	agentTool: 'Tool',
+	agentFailed: 'failed',
+	agentCompleted: 'completed',
+	agentRunning: 'running',
+	agentCached: 'cached',
+	agentActivity: 'Agent activity',
+	agentSteps: 'Work steps',
+	agentParameters: 'Parameters',
+	agentTurnId: 'Turn ID',
+	agentLoop: 'loop {iteration}',
+	agentAiIfNeeded: 'AI if needed',
+	agentNoAi: 'no AI',
+	agentDone: 'done',
+	agentPreparing: 'Preparing request',
+	agentCreatingResponse: 'Creating response',
+	agentReviewingResult: 'Reviewing result',
+	agentPlanning: 'Planning approach',
+	agentPreparingContext: 'Preparing context',
+	agentProcessingInformation: 'Processing information',
+	agentPreparingNextStep: 'Preparing next step',
+	agentProcessingRequest: 'Processing request',
+	agentReviewingNextStep: 'Reviewing next step',
+	agentRetrievingInformation: 'Retrieving information',
+	copyResponse: 'Copy response',
+	responseHelpful: 'Response helpful',
+	responseNotHelpful: 'Response not helpful',
+	listening: 'Listening...',
+	startStopVoiceInput: 'Start or stop voice input',
+	toggleVoiceOutput: 'Turn voice output on or off',
+	toggleDialogMode: 'Turn dialog mode on or off',
+	extensionLoading: 'Creating content...',
+	conversationUnavailable: 'Chat history is not available.',
+	busy: 'The current request must finish first.',
+	requestFailed: 'The chat request failed.',
+	showConversations: 'Show conversations',
+	newConversation: 'Start new conversation',
+	renameConversation: 'Rename chat',
+	deleteConversation: 'Delete chat',
+	titleLabel: 'Chat title',
+	saveTitle: 'Save title',
+	cancel: 'Cancel',
+	conversationLoading: 'Loading chats...',
+	conversationLoaded: 'Chat loaded.',
+	conversationCreated: 'New chat created.',
+	conversationRenamed: 'Chat renamed.',
+	conversationDeleted: 'Chat deleted.',
+	deleteQuestionPrefix: 'Delete the chat "',
+	deleteQuestionSuffix: '"?'
 };
+
+function formatString(value, replacements = {}) {
+	return Object.entries(replacements).reduce((text, [key, replacement]) => {
+		return text.split(`{${key}}`).join(String(replacement));
+	}, String(value ?? ''));
+}
 
 const defaultOptions = {
 	serviceUrl: '',
@@ -142,6 +204,10 @@ export class Chatbot {
 
 		this.elements = this.resolveElements();
 		this.registerBuiltInCommands();
+	}
+
+	getString(key, replacements = {}) {
+		return formatString(this.options.strings?.[key] ?? defaultStrings[key] ?? key, replacements);
 	}
 
 	resolveElements() {
@@ -772,7 +838,7 @@ export class Chatbot {
 			: String(payload || '');
 		if (technicalMessage && technicalMessage !== userMessage) {
 			const details = createElement('details', { className: 'base3-chatbot-error-details' });
-			details.appendChild(createElement('summary', { text: 'Technische Details' }));
+			details.appendChild(createElement('summary', { text: this.getString('technicalDetails') }));
 			details.appendChild(createElement('pre', { text: technicalMessage }));
 			assistant.content.appendChild(details);
 		}
@@ -857,7 +923,7 @@ export class Chatbot {
 			className: 'base3-chatbot-thinking',
 			attributes: {
 				role: 'status',
-				'aria-label': 'Antwort wird vorbereitet'
+				'aria-label': this.getString('thinking')
 			}
 		});
 		const thinkingIcon = this.createConfiguredIcon(
@@ -944,7 +1010,7 @@ export class Chatbot {
 			explicit_decision: decision
 		};
 		return this.send({
-			text: decision === 'approve' ? 'Zustimmen' : 'Abbrechen',
+			text: decision === 'approve' ? this.getString('approve') : this.getString('deny'),
 			displayUserMessage: false,
 			interactionDecision: true
 		});
