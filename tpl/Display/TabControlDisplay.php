@@ -18,45 +18,57 @@
 			<?php echo htmlspecialchars($emptyMessage); ?>
 		</div>
 	<?php else: ?>
-		<nav class="base3-tab-control-primary" aria-label="Primary navigation">
-			<?php foreach($tabs as $tab): ?>
-				<?php $firstDisplay = (array) $tab['displays'][0]; ?>
-				<button
-					type="button"
-					class="base3-tab-control-primary-button"
-					data-base3-tab-link
-					data-base3-tab-target="<?php echo htmlspecialchars((string) $firstDisplay['name']); ?>"
-					data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
-					data-base3-tab-url="<?php echo htmlspecialchars((string) $firstDisplay['url']); ?>"
-					aria-selected="<?php echo (string) $tab['name'] === $activeTab ? 'true' : 'false'; ?>"
-				>
-					<?php echo htmlspecialchars((string) $tab['label']); ?>
-				</button>
-			<?php endforeach; ?>
-		</nav>
+		<div class="base3-tab-control-tabbar base3-tab-control-primary-bar" data-base3-tab-overflow-bar>
+			<nav class="base3-tab-control-primary" aria-label="Primary navigation" data-base3-tab-strip>
+				<?php foreach($tabs as $tab): ?>
+					<?php $firstDisplay = (array) $tab['displays'][0]; ?>
+					<button
+						type="button"
+						class="base3-tab-control-primary-button"
+						data-base3-tab-link
+						data-base3-tab-target="<?php echo htmlspecialchars((string) $firstDisplay['name']); ?>"
+						data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
+						data-base3-tab-url="<?php echo htmlspecialchars((string) $firstDisplay['url']); ?>"
+						aria-selected="<?php echo (string) $tab['name'] === $activeTab ? 'true' : 'false'; ?>"
+					>
+						<?php echo htmlspecialchars((string) $tab['label']); ?>
+					</button>
+				<?php endforeach; ?>
+			</nav>
+			<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
+				<summary class="base3-tab-control-overflow-toggle" aria-label="More tabs" title="More tabs">…</summary>
+				<div class="base3-tab-control-overflow-menu" data-base3-tab-overflow-menu></div>
+			</details>
+		</div>
 
 		<div class="base3-tab-control-secondary-wrap">
 			<?php foreach($tabs as $tab): ?>
-				<nav
-					class="base3-tab-control-secondary"
+				<div
+					class="base3-tab-control-tabbar base3-tab-control-secondary-bar"
 					data-base3-tab-group="<?php echo htmlspecialchars((string) $tab['name']); ?>"
-					aria-label="Secondary navigation"
+					data-base3-tab-overflow-bar
 					<?php echo (string) $tab['name'] === $activeTab ? '' : ' hidden'; ?>
 				>
-					<?php foreach((array) $tab['displays'] as $display): ?>
-						<button
-							type="button"
-							class="base3-tab-control-secondary-button"
-							data-base3-tab-link
-							data-base3-tab-target="<?php echo htmlspecialchars((string) $display['name']); ?>"
-							data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
-							data-base3-tab-url="<?php echo htmlspecialchars((string) $display['url']); ?>"
-							aria-selected="<?php echo (string) $display['name'] === $activeDisplay ? 'true' : 'false'; ?>"
-						>
-							<?php echo htmlspecialchars((string) $display['label']); ?>
-						</button>
-					<?php endforeach; ?>
-				</nav>
+					<nav class="base3-tab-control-secondary" aria-label="Secondary navigation" data-base3-tab-strip>
+						<?php foreach((array) $tab['displays'] as $display): ?>
+							<button
+								type="button"
+								class="base3-tab-control-secondary-button"
+								data-base3-tab-link
+								data-base3-tab-target="<?php echo htmlspecialchars((string) $display['name']); ?>"
+								data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
+								data-base3-tab-url="<?php echo htmlspecialchars((string) $display['url']); ?>"
+								aria-selected="<?php echo (string) $display['name'] === $activeDisplay ? 'true' : 'false'; ?>"
+							>
+								<?php echo htmlspecialchars((string) $display['label']); ?>
+							</button>
+						<?php endforeach; ?>
+					</nav>
+					<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
+						<summary class="base3-tab-control-overflow-toggle" aria-label="More tabs" title="More tabs">…</summary>
+						<div class="base3-tab-control-overflow-menu" data-base3-tab-overflow-menu></div>
+					</details>
+				</div>
 			<?php endforeach; ?>
 		</div>
 
@@ -98,29 +110,121 @@
 	color: var(--base3-tab-text);
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-primary,
-#<?php echo $controlId; ?> .base3-tab-control-secondary {
+#<?php echo $controlId; ?> .base3-tab-control-tabbar {
+	position: relative;
 	display: flex;
 	align-items: stretch;
-	gap: 4px;
-	overflow-x: auto;
-	overscroll-behavior-x: contain;
-	scrollbar-width: thin;
+	min-width: 0;
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-primary {
+#<?php echo $controlId; ?> .base3-tab-control-primary-bar {
 	padding: 0 2px;
 	border-bottom: 1px solid var(--base3-tab-border);
 }
 
+#<?php echo $controlId; ?> .base3-tab-control-primary,
+#<?php echo $controlId; ?> .base3-tab-control-secondary {
+	flex: 1 1 auto;
+	display: flex;
+	align-items: stretch;
+	gap: 4px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-primary-button,
+#<?php echo $controlId; ?> .base3-tab-control-secondary-button {
+	flex: 0 0 auto;
+}
+
 #<?php echo $controlId; ?> .base3-tab-control-secondary-wrap {
-	padding: 8px 0;
+	padding: 8px;
 	border-bottom: 1px solid var(--base3-tab-border);
 	background: var(--base3-tab-muted-surface);
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-secondary {
-	padding: 0 8px;
+#<?php echo $controlId; ?> .base3-tab-control-overflow {
+	position: relative;
+	flex: 0 0 auto;
+	align-self: stretch;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow[hidden] {
+	display: none !important;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.35rem;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 0 0.55rem;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--base3-tab-muted-text);
+	cursor: pointer;
+	font: inherit;
+	font-size: 1.15rem;
+	font-weight: 700;
+	line-height: 1;
+	list-style: none;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-toggle::-webkit-details-marker {
+	display: none;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-toggle:hover,
+#<?php echo $controlId; ?> .base3-tab-control-overflow-toggle:focus-visible,
+#<?php echo $controlId; ?> .base3-tab-control-overflow[open] > .base3-tab-control-overflow-toggle,
+#<?php echo $controlId; ?> .base3-tab-control-overflow.has-active > .base3-tab-control-overflow-toggle {
+	background: var(--base3-tab-hover-surface);
+	color: var(--base3-tab-accent);
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu {
+	position: absolute;
+	top: calc(100% + 4px);
+	right: 0;
+	z-index: 100;
+	display: grid;
+	gap: 2px;
+	min-width: 13rem;
+	max-width: min(26rem, calc(100vw - 2rem));
+	padding: 4px;
+	border: 1px solid var(--base3-tab-border);
+	border-radius: 5px;
+	background: var(--base3-tab-surface);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button,
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button {
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 7px 10px;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: var(--base3-tab-text);
+	text-align: left;
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button:hover,
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button:focus-visible,
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button:hover,
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button:focus-visible {
+	background: var(--base3-tab-hover-surface);
+}
+
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button[aria-selected="true"],
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button[aria-selected="true"] {
+	background: var(--base3-tab-hover-surface);
+	color: var(--base3-tab-accent);
 }
 
 #<?php echo $controlId; ?> .base3-tab-control-primary-button,
@@ -258,6 +362,89 @@
 	const message = root.querySelector("[data-base3-tab-message]");
 	let requestController = null;
 	let requestNumber = 0;
+	let overflowFrame = 0;
+	let overflowObserver = null;
+
+	function getOverflowBars() {
+		return Array.from(root.querySelectorAll("[data-base3-tab-overflow-bar]"));
+	}
+
+	function closeOverflowMenus() {
+		for(const overflow of root.querySelectorAll("[data-base3-tab-overflow]")) {
+			overflow.open = false;
+		}
+	}
+
+	function updateOverflowActive(bar) {
+		const overflow = bar.querySelector("[data-base3-tab-overflow]");
+		const menu = bar.querySelector("[data-base3-tab-overflow-menu]");
+		if(!overflow || !menu) {
+			return;
+		}
+		overflow.classList.toggle("has-active", Boolean(menu.querySelector('[aria-selected="true"]')));
+	}
+
+	function layoutOverflowBar(bar) {
+		if(bar.hidden) {
+			return;
+		}
+
+		const strip = bar.querySelector("[data-base3-tab-strip]");
+		const overflow = bar.querySelector("[data-base3-tab-overflow]");
+		const menu = bar.querySelector("[data-base3-tab-overflow-menu]");
+		if(!strip || !overflow || !menu) {
+			return;
+		}
+
+		while(menu.firstElementChild) {
+			strip.appendChild(menu.firstElementChild);
+		}
+		overflow.hidden = true;
+		overflow.open = false;
+		overflow.classList.remove("has-active");
+
+		if(strip.scrollWidth <= strip.clientWidth + 1) {
+			return;
+		}
+
+		overflow.hidden = false;
+		while(strip.lastElementChild && strip.scrollWidth > strip.clientWidth + 1) {
+			menu.insertBefore(strip.lastElementChild, menu.firstElementChild);
+		}
+		updateOverflowActive(bar);
+	}
+
+	function layoutOverflow() {
+		for(const bar of getOverflowBars()) {
+			layoutOverflowBar(bar);
+		}
+	}
+
+	function scheduleOverflowLayout() {
+		if(overflowFrame) {
+			return;
+		}
+		overflowFrame = window.requestAnimationFrame(() => {
+			overflowFrame = 0;
+			layoutOverflow();
+		});
+	}
+
+	function installOverflowLayout() {
+		if(typeof ResizeObserver !== "undefined") {
+			overflowObserver = new ResizeObserver(scheduleOverflowLayout);
+			overflowObserver.observe(root);
+			for(const bar of getOverflowBars()) {
+				overflowObserver.observe(bar);
+			}
+		}
+
+		window.addEventListener("resize", scheduleOverflowLayout);
+		if(document.fonts && document.fonts.ready) {
+			document.fonts.ready.then(scheduleOverflowLayout);
+		}
+		scheduleOverflowLayout();
+	}
 
 	function getLinks() {
 		return Array.from(root.querySelectorAll("[data-base3-tab-link]"));
@@ -324,6 +511,7 @@
 		for(const panel of content.querySelectorAll("[data-base3-tab-panel]")) {
 			panel.hidden = panel.dataset.base3TabTarget !== target;
 		}
+		scheduleOverflowLayout();
 	}
 
 	function copyScriptAttributes(source, target) {
@@ -492,7 +680,10 @@
 		}
 
 		event.preventDefault();
+		closeOverflowMenus();
 		loadTarget(target, url);
 	});
+
+	installOverflowLayout();
 })();
 </script>

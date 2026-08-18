@@ -44,21 +44,36 @@ export const ShimmerAgentActivityRenderer = {
 	name: 'shimmer',
 
 	createState(assistant) {
-		const element = document.createElement('div');
-		element.className = 'base3-chatbot-activity base3-chatbot-activity-shimmer';
+		const thinking = assistant?.thinking?.isConnected ? assistant.thinking : null;
+		const element = thinking || document.createElement('div');
+		element.classList.add('base3-chatbot-activity', 'base3-chatbot-activity-shimmer');
 		element.setAttribute('role', 'status');
 		element.setAttribute('aria-live', 'polite');
 
-		const icon = document.createElement('span');
-		icon.className = 'base3-chatbot-activity-shimmer-icon';
-		icon.setAttribute('aria-hidden', 'true');
-		icon.textContent = '✦';
+		let icon = element.querySelector('.base3-chatbot-thinking-icon');
+		if (!icon) {
+			icon = document.createElement('span');
+			icon.className = 'base3-chatbot-activity-shimmer-icon';
+			icon.setAttribute('aria-hidden', 'true');
+			icon.textContent = '✦';
+		}
+
+		const dots = element.querySelector('.base3-chatbot-thinking-dots');
+		if (dots) {
+			dots.remove();
+		}
 
 		const text = document.createElement('span');
 		text.className = 'base3-chatbot-activity-shimmer-text';
 		text.textContent = 'Anfrage wird vorbereitet';
-		element.append(icon, text);
-		assistant.activity.appendChild(element);
+		if (!icon.isConnected) {
+			element.appendChild(icon);
+		}
+		element.appendChild(text);
+
+		if (!thinking) {
+			assistant.activity.appendChild(element);
+		}
 
 		return {
 			element,

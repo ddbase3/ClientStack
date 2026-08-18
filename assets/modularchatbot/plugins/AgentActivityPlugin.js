@@ -1,5 +1,5 @@
 import { DetailedAgentActivityRenderer } from './agent-activity/DetailedAgentActivityRenderer.js?build=agent-activity-renderers-1';
-import { ShimmerAgentActivityRenderer } from './agent-activity/ShimmerAgentActivityRenderer.js?build=agent-activity-renderers-1';
+import { ShimmerAgentActivityRenderer } from './agent-activity/ShimmerAgentActivityRenderer.js?build=agent-activity-renderers-2';
 
 const activityEvents = [
 	'stage.started',
@@ -96,6 +96,10 @@ function resolveTurnId(payload) {
 	return String(payload || '').trim();
 }
 
+function preservesThinking(renderer) {
+	return renderer?.name === 'shimmer';
+}
+
 function ensureState(renderer, assistant) {
 	if (!assistant.activityState) {
 		assistant.activityState = renderer.createState(assistant);
@@ -136,9 +140,12 @@ export function createAgentActivityPlugin(renderer) {
 
 			if (eventName === 'msgid') {
 				if (assistant) {
-					context.chatbot.hideThinking(assistant);
+					if (!preservesThinking(renderer)) {
+						context.chatbot.hideThinking(assistant);
+					}
 					const state = ensureState(renderer, assistant);
 					renderer.setTurnId(state, resolveTurnId(payload));
+					context.chatbot.scrollToBottom();
 				}
 				return false;
 			}
@@ -150,9 +157,12 @@ export function createAgentActivityPlugin(renderer) {
 				return true;
 			}
 
-			context.chatbot.hideThinking(assistant);
+			if (!preservesThinking(renderer)) {
+				context.chatbot.hideThinking(assistant);
+			}
 			const state = ensureState(renderer, assistant);
 			renderer.update(state, normalizeActivity(eventName, payload));
+			context.chatbot.scrollToBottom();
 			return true;
 		}
 	};

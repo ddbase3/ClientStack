@@ -32,6 +32,7 @@ function formatValue(value) {
 }
 
 function renderInteraction(context, assistant, interaction) {
+	context.chatbot.showAssistant(assistant);
 	assistant.content.replaceChildren();
 	const container = document.createElement('div');
 	container.className = 'base3-chatbot-interaction';

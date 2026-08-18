@@ -37,7 +37,13 @@ async function sendFeedback(context, messageId, type) {
 }
 
 function addActions(context, message) {
-	if (message.interaction || message.error || !message.actions || message.actions.children.length > 0) {
+	if (
+		message.interaction
+		|| message.error
+		|| message.element?.classList.contains('base3-chatbot-initial-message')
+		|| !message.actions
+		|| message.actions.children.length > 0
+	) {
 		return;
 	}
 

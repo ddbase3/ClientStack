@@ -36,7 +36,16 @@ class ModularChatbotDisplayTest extends TestCase {
 			'chat_history_enabled' => true,
 			'chat_history_panel_mode' => 'open',
 			'automatic_chat_titles' => true,
+			'first_message_mode' => 'contextual_ai',
 			'ai_notice_text' => 'AI can make mistakes.',
+			'ai_notice_position' => 'below_composer',
+			'additional_stylesheet' => 'plugin/Customer/assets/css/chatbot.css',
+			'message_icons' => [
+				'user' => '',
+				'assistant' => '',
+				'thinking' => 'plugin/Customer/assets/icons/thinking.svg',
+				'opening' => 'plugin/Customer/assets/icons/opening.svg'
+			],
 			'conversation_state_url' => '/chatbot/conversations/state',
 			'conversation_create_url' => '/chatbot/conversations/create',
 			'conversation_materialize_url' => '/chatbot/conversations/materialize',
@@ -65,7 +74,13 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertTrue($view->getAssigned('chatHistoryEnabled'));
 		$this->assertSame('open', $view->getAssigned('chatHistoryPanelMode'));
 		$this->assertTrue($view->getAssigned('automaticChatTitles'));
+		$this->assertSame('contextual_ai', $view->getAssigned('firstMessageMode'));
 		$this->assertSame('AI can make mistakes.', $view->getAssigned('aiNoticeText'));
+		$this->assertSame('below_composer', $view->getAssigned('aiNoticePosition'));
+		$this->assertSame('/resolved/plugin/Customer/assets/css/chatbot.css', $view->getAssigned('additionalStylesheetUrl'));
+		$this->assertSame('', $view->getAssigned('messageIcons')['user'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/thinking.svg', $view->getAssigned('messageIcons')['thinking'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/opening.svg', $view->getAssigned('messageIcons')['opening'] ?? null);
 		$this->assertSame('/chatbot/conversations/state', $view->getAssigned('conversationStateUrl'));
 		$this->assertSame('/chatbot/conversations/materialize', $view->getAssigned('conversationMaterializeUrl'));
 		$this->assertSame('/chatbot/conversations/title', $view->getAssigned('conversationTitleUrl'));
@@ -78,7 +93,21 @@ class ModularChatbotDisplayTest extends TestCase {
 			'/resolved/plugin/ClientStack/assets/modularchatbot/icons/edit.svg',
 			$view->getAssigned('icons')['edit'] ?? null
 		);
+		$this->assertSame('/resolved/plugin/ClientStack/assets/modularchatbot/icons/info.svg', $view->getAssigned('icons')['info'] ?? null);
 		$this->assertSame('FAKE_TEMPLATE_OUTPUT', $output);
+	}
+
+
+	public function testInvalidAiNoticePositionFallsBackToAboveComposer(): void {
+		$view = new ModularChatbotFakeMvcView();
+		$display = new ModularChatbotDisplay($view, new ModularChatbotFakeAssetResolver());
+		$display->setData([
+			'ai_notice_position' => 'sideways'
+		]);
+
+		$display->getOutput();
+
+		$this->assertSame('above_composer', $view->getAssigned('aiNoticePosition'));
 	}
 
 	public function testClientUrlsAreDecodedBeforeTheyEnterJavaScriptConfiguration(): void {

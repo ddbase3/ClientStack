@@ -7,7 +7,8 @@
 		'turnPrepareUrl' => $this->_['turnPrepareUrl'],
 		'configGroup' => $this->_['configGroup'],
 		'configName' => $this->_['configName'],
-		'transportMode' => $this->_['transportMode']
+		'transportMode' => $this->_['transportMode'],
+		'messageIcons' => $this->_['messageIcons']
 	];
 	$pluginConfig = [
 		'markdown' => [
@@ -26,6 +27,7 @@
 			'multiple' => !empty($this->_['chatHistoryEnabled']),
 			'panelMode' => $this->_['chatHistoryPanelMode'],
 			'automaticTitles' => !empty($this->_['automaticChatTitles']),
+			'firstMessageMode' => $this->_['firstMessageMode'],
 			'urls' => [
 				'state' => $this->_['conversationStateUrl'],
 				'create' => $this->_['conversationCreateUrl'],
@@ -73,6 +75,9 @@
 	$id = htmlspecialchars($this->_['id'], ENT_QUOTES);
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($this->_['cssUrl'], ENT_QUOTES); ?>" />
+<?php if(!empty($this->_['additionalStylesheetUrl'])) { ?>
+<link rel="stylesheet" href="<?php echo htmlspecialchars($this->_['additionalStylesheetUrl'], ENT_QUOTES); ?>" />
+<?php } ?>
 
 <section
 	id="<?php echo $id; ?>"
@@ -80,6 +85,7 @@
 	role="region"
 	aria-label="<?php echo htmlspecialchars($strings['regionLabel'], ENT_QUOTES); ?>"
 	data-chatbot-state="loading"
+	data-ai-notice-position="<?php echo htmlspecialchars($this->_['aiNoticePosition'], ENT_QUOTES); ?>"
 >
 	<div class="base3-chatbot-conversation-backdrop" data-chatbot-conversation-backdrop hidden></div>
 
@@ -106,7 +112,7 @@
 	</nav>
 
 	<h2
-		class="base3-chatbot-opening-message"
+		class="base3-chatbot-opening-message base3-chatbot-initial-message"
 		data-chatbot-opening-message
 		hidden
 	></h2>
@@ -183,7 +189,8 @@
 	</div>
 
 	<p id="<?php echo $id; ?>-ai-notice" class="base3-chatbot-ai-notice">
-		<?php echo htmlspecialchars($this->_['aiNoticeText']); ?>
+		<img class="base3-chatbot-ai-notice-icon" src="<?php echo htmlspecialchars($this->_['icons']['info'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
+		<span><?php echo htmlspecialchars($this->_['aiNoticeText']); ?></span>
 	</p>
 
 	<div class="base3-chatbot-visually-hidden" data-chatbot-status role="status" aria-live="polite"></div>

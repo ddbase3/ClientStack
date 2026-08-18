@@ -1,5 +1,5 @@
 import { ConversationApi } from '../conversation/ConversationApi.js?build=conversation-draft-1';
-import { ConversationView } from '../conversation/ConversationView.js?build=conversation-title-contract-1';
+import { ConversationView } from '../conversation/ConversationView.js?build=layout-icons-2';
 import { resolveReference } from './ReferencePlugin.js?build=conversation-draft-1';
 
 function getReference(context) {
@@ -73,11 +73,22 @@ export const ConversationPlugin = {
 			busy: false,
 			available: false,
 			draftId: '',
+			hasUserMessage: false,
 			applyState: null,
 			unsubscribe: []
 		};
 		this.states ??= new WeakMap();
 		this.states.set(context.chatbot, state);
+
+		const contextualOpening = String(options.firstMessageMode || '') === 'contextual_ai';
+		const showOpeningLoading = () => {
+			if (!contextualOpening) {
+				return false;
+			}
+
+			context.chatbot.showConversationLoading();
+			return true;
+		};
 
 		const setBusy = (busy) => {
 			state.busy = Boolean(busy);
@@ -86,8 +97,13 @@ export const ConversationPlugin = {
 		const applyState = (conversationState, settings = {}) => {
 			const active = conversationState.active_conversation;
 			const draft = conversationState.draft;
+			const messages = active ? conversationState.messages : (draft?.messages || []);
 			context.chatbot.conversationManaged = true;
 			state.draftId = draft?.id || '';
+			state.hasUserMessage = messages.some((message) =>
+				String(message?.role || '').toLowerCase() === 'user'
+				&& String(message?.content || '').trim() !== ''
+			);
 			if (active) {
 				context.setConversation(active);
 				context.setOpeningMessage(active.opening_message);
@@ -121,6 +137,7 @@ export const ConversationPlugin = {
 				return null;
 			}
 
+			const openingLoading = settings.openingLoading === true && showOpeningLoading();
 			setBusy(true);
 			try {
 				const conversationState = await operation();
@@ -133,6 +150,9 @@ export const ConversationPlugin = {
 				}
 				return conversationState;
 			} catch (error) {
+				if (openingLoading) {
+					context.replaceMessages([]);
+				}
 				if (error?.name !== 'AbortError') {
 					context.events.emit('chatbot:error', error);
 					context.chatbot.announce(error?.message || options.strings?.requestFailed || 'Conversation request failed.');
@@ -157,7 +177,7 @@ export const ConversationPlugin = {
 					}
 				);
 				if (result) {
-					if (!state.view.media.matches) {
+					if (state.view.isCompactLayout()) {
 						state.view.setOpen(false, false);
 					}
 					context.focusComposer();
@@ -206,6 +226,7 @@ export const ConversationPlugin = {
 						() => api.create(getReference(context)),
 						{
 							hydrate: true,
+							openingLoading: true,
 							announcement: options.strings?.conversationCreated
 						}
 					);
@@ -229,11 +250,15 @@ export const ConversationPlugin = {
 		state.view.setAvailable(true);
 		state.view.enable();
 		state.view.renderStatus(options.strings?.conversationLoading || 'Loading chats…');
+		const initialOpeningLoading = showOpeningLoading();
 		setBusy(true);
 		let initialState = null;
 		try {
 			initialState = await api.getState('', getReference(context));
 		} catch (error) {
+			if (initialOpeningLoading) {
+				context.replaceMessages([]);
+			}
 			if (error?.name !== 'AbortError') {
 				state.view.renderStatus(error?.message || options.strings?.conversationUnavailable || 'Chat history is not available.');
 				context.events.emit('chatbot:error', error);
@@ -250,6 +275,11 @@ export const ConversationPlugin = {
 			context.events.on('chatbot:sending-changed', ({ sending }) => {
 				state.view.setBusy(state.busy || sending);
 			}),
+			context.events.on('message:starting', ({ text }) => {
+				if (String(text || '').trim() !== '') {
+					state.hasUserMessage = true;
+				}
+			}),
 			context.events.on('message:completed', async (message) => {
 				if (message.interaction || message.error || !context.getConversationId()) {
 					return;
@@ -257,7 +287,7 @@ export const ConversationPlugin = {
 
 				const conversationId = context.getConversationId();
 				try {
-					const conversationState = options.automaticTitles === true
+					const conversationState = options.automaticTitles === true && state.hasUserMessage
 						? await api.generateTitle(conversationId, getReference(context))
 						: await api.getState(conversationId, getReference(context));
 					if (context.getConversationId() !== conversationId) {

@@ -73,7 +73,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'chat_history_enabled' => false,
 			'chat_history_panel_mode' => 'responsive',
 			'automatic_chat_titles' => true,
+			'first_message_mode' => 'none',
 			'ai_notice_text' => '',
+			'ai_notice_position' => 'above_composer',
 			'conversation_state_url' => '',
 			'conversation_create_url' => '',
 			'conversation_materialize_url' => '',
@@ -89,7 +91,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'speech_to_text_session_url' => '',
 			'text_to_speech_url' => '',
 			'extensions' => [],
-			'extension_plugin_options' => []
+			'extension_plugin_options' => [],
+			'additional_stylesheet' => '',
+			'message_icons' => []
 		], $this->data);
 
 		$id = trim((string)$config['id']);
@@ -113,7 +117,25 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('chatHistoryEnabled', (bool)$config['chat_history_enabled']);
 		$this->view->assign('chatHistoryPanelMode', (string)$config['chat_history_panel_mode']);
 		$this->view->assign('automaticChatTitles', (bool)$config['automatic_chat_titles']);
+		$firstMessageMode = (string)$config['first_message_mode'];
+		if(!in_array($firstMessageMode, ['none', 'random', 'contextual_ai'], true)) {
+			$firstMessageMode = 'none';
+		}
+		$this->view->assign('firstMessageMode', $firstMessageMode);
 		$this->view->assign('aiNoticeText', trim((string)$config['ai_notice_text']));
+		$aiNoticePosition = (string)$config['ai_notice_position'];
+		if(!in_array($aiNoticePosition, ['above_composer', 'below_composer'], true)) {
+			$aiNoticePosition = 'above_composer';
+		}
+		$this->view->assign('aiNoticePosition', $aiNoticePosition);
+		$this->view->assign('additionalStylesheetUrl', $this->resolveOptionalAsset((string)$config['additional_stylesheet']));
+		$messageIcons = is_array($config['message_icons']) ? $config['message_icons'] : [];
+		$this->view->assign('messageIcons', [
+			'user' => $this->resolveOptionalAsset((string)($messageIcons['user'] ?? '')),
+			'assistant' => $this->resolveOptionalAsset((string)($messageIcons['assistant'] ?? '')),
+			'thinking' => $this->resolveOptionalAsset((string)($messageIcons['thinking'] ?? '')),
+			'opening' => $this->resolveOptionalAsset((string)($messageIcons['opening'] ?? ''))
+		]);
 		$this->view->assign('conversationStateUrl', $this->normalizeClientUrl((string)$config['conversation_state_url']));
 		$this->view->assign('conversationCreateUrl', $this->normalizeClientUrl((string)$config['conversation_create_url']));
 		$this->view->assign('conversationMaterializeUrl', $this->normalizeClientUrl((string)$config['conversation_materialize_url']));
@@ -161,7 +183,8 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'plus' => $this->resolveIcon('plus'),
 			'edit' => $this->resolveIcon('edit'),
 			'delete' => $this->resolveIcon('delete'),
-			'close' => $this->resolveIcon('close')
+			'close' => $this->resolveIcon('close'),
+			'info' => $this->resolveIcon('info')
 		]);
 
 		return $this->view->loadTemplate();
@@ -251,8 +274,13 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		return $url . (str_contains($url, '?') ? '&' : '?') . 'v=' . substr($hash, 0, 12);
 	}
 
+	private function resolveOptionalAsset(string $logicalPath): string {
+		$logicalPath = trim($logicalPath);
+		return $logicalPath === '' ? '' : $this->assetResolver->resolve($logicalPath);
+	}
+
 	private function resolveIcon(string $name): string {
-		return $this->assetResolver->resolve(
+		return $this->resolveVersionedAsset(
 			'plugin/ClientStack/assets/modularchatbot/icons/' . $name . '.svg'
 		);
 	}
