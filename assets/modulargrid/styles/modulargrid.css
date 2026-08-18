@@ -104,6 +104,62 @@
 	gap: 4px;
 }
 
+
+/*
+ * Classic top line contract:
+ * On non-mobile viewports, every top-row control stays on one horizontal line.
+ * Mobile keeps the existing responsive layout below 721px.
+ */
+@media (min-width: 721px) {
+	.mg-classic-top-row {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+	}
+
+	.mg-classic-top-row > .mg-zone,
+	.mg-classic-top-row > .mg-view {
+		flex: 0 0 auto;
+		width: auto;
+		min-width: 0;
+	}
+
+	.mg-classic-top-row > .mg-zone {
+		display: flex;
+		flex-flow: row nowrap;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.mg-classic-top-row > .mg-zone > * {
+		flex: 0 0 auto;
+		min-width: 0;
+	}
+
+	.mg-classic-top-row .mg-control-group {
+		flex-direction: row;
+		align-items: center;
+		min-width: 0;
+		white-space: nowrap;
+	}
+
+	.mg-classic-top-row .mg-inline-buttons,
+	.mg-classic-top-row .mg-view-switcher {
+		flex-wrap: nowrap;
+	}
+
+	.mg-classic-top-row .mg-label,
+	.mg-classic-top-row .mg-button,
+	.mg-classic-top-row .mg-sort-button {
+		white-space: nowrap;
+	}
+
+	.mg-classic-top-row .mg-input,
+	.mg-classic-top-row .mg-select {
+		width: auto;
+	}
+}
+
 .mg-table-scroll {
 	width: 100%;
 	max-width: 100%;
