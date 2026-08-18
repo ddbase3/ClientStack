@@ -470,6 +470,21 @@
 		);
 	}
 
+	function getPanel(target) {
+		return Array.from(content.querySelectorAll("[data-base3-tab-panel]"))
+			.find((panel) => panel.dataset.base3TabTarget === target) || null;
+	}
+
+	function cancelPendingRequest() {
+		if(!requestController) {
+			return;
+		}
+
+		requestController.abort();
+		requestController = null;
+		requestNumber++;
+		setLoading(false);
+	}
 
 	function setLoading(state) {
 		root.setAttribute("aria-busy", state ? "true" : "false");
@@ -568,35 +583,27 @@
 		return panel;
 	}
 
-	function removePanels(nextTarget, nextUrl) {
-		for(const panel of Array.from(content.querySelectorAll("[data-base3-tab-panel]"))) {
-			const target = String(panel.dataset.base3TabTarget || "");
-			const url = String(panel.dataset.base3TabUrl || "");
-
-			panel.dispatchEvent(new CustomEvent("base3:tab-control:before-unmount", {
-				bubbles: true,
-				detail: { target, url, nextTarget, nextUrl }
-			}));
-
-			panel.remove();
-		}
-	}
-
 	async function loadTarget(target, url) {
 		if(!target || !url || !getConfiguredLink(target)) {
 			return;
 		}
 
-		let panel = null;
-
-		if(requestController) {
-			requestController.abort();
+		const existingPanel = getPanel(target);
+		if(existingPanel) {
+			cancelPendingRequest();
+			setMessage("");
+			setActive(target);
+			existingPanel.dispatchEvent(new CustomEvent("base3:tab-control:activated", {
+				bubbles: true,
+				detail: { target, url }
+			}));
+			return;
 		}
 
-		removePanels(target, url);
-		setActive(target);
+		cancelPendingRequest();
 
-		requestController = new AbortController();
+		const controller = new AbortController();
+		requestController = controller;
 		const currentRequest = ++requestNumber;
 
 		setMessage("");
@@ -610,7 +617,7 @@
 					"Accept": "text/html",
 					"X-Requested-With": "XMLHttpRequest"
 				},
-				signal: requestController.signal
+				signal: controller.signal
 			});
 
 			if(!response.ok) {
@@ -622,7 +629,7 @@
 				return;
 			}
 
-			panel = createPanel(target);
+			const panel = createPanel(target);
 
 			panel.dispatchEvent(new CustomEvent("base3:tab-control:before-content", {
 				bubbles: true,
@@ -630,6 +637,10 @@
 			}));
 
 			await setPanelContent(panel, html, true);
+
+			if(currentRequest !== requestNumber) {
+				return;
+			}
 
 			panel.dataset.base3TabUrl = url;
 			setActive(target);
@@ -652,6 +663,9 @@
 		}
 		finally {
 			if(currentRequest === requestNumber) {
+				if(requestController === controller) {
+					requestController = null;
+				}
 				setLoading(false);
 			}
 		}
