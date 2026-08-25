@@ -50,16 +50,16 @@
 		],
 		'voice' => [
 			'stt' => [
-				'enabled' => true,
+				'enabled' => !empty($this->_['speechToTextEnabled']),
 				'provider' => !empty($this->_['speechToTextSessionUrl']) ? 'backend' : 'browser',
 				'sessionUrl' => $this->_['speechToTextSessionUrl']
 			],
 			'tts' => [
-				'enabled' => true,
+				'enabled' => !empty($this->_['textToSpeechEnabled']),
 				'provider' => !empty($this->_['textToSpeechUrl']) ? 'backend' : 'browser',
 				'speechUrl' => $this->_['textToSpeechUrl']
 			],
-			'dialog' => true,
+			'dialog' => !empty($this->_['useDialog']),
 			'lang' => $this->_['defaultLang'],
 			'icons' => [
 				'microphone' => $this->_['icons']['microphone'],

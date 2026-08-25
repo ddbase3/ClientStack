@@ -116,6 +116,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'use_markdown' => true,
 			'use_icons' => true,
 			'use_voice' => true,
+			'use_dialog' => true,
+			'speech_to_text_enabled' => true,
+			'text_to_speech_enabled' => true,
 			'conversation_enabled' => false,
 			'chat_history_enabled' => false,
 			'chat_history_panel_mode' => 'responsive',
@@ -161,6 +164,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('useMarkdown', (bool)$config['use_markdown']);
 		$this->view->assign('useIcons', (bool)$config['use_icons']);
 		$this->view->assign('useVoice', (bool)$config['use_voice']);
+		$this->view->assign('useDialog', (bool)$config['use_dialog']);
+		$this->view->assign('speechToTextEnabled', (bool)$config['speech_to_text_enabled']);
+		$this->view->assign('textToSpeechEnabled', (bool)$config['text_to_speech_enabled']);
 		$this->view->assign('conversationEnabled', (bool)$config['conversation_enabled']);
 		$this->view->assign('chatHistoryEnabled', (bool)$config['chat_history_enabled']);
 		$this->view->assign('chatHistoryPanelMode', (string)$config['chat_history_panel_mode']);
