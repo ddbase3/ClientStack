@@ -8,6 +8,7 @@
 		'configGroup' => $this->_['configGroup'],
 		'configName' => $this->_['configName'],
 		'transportMode' => $this->_['transportMode'],
+		'domClasses' => (object) $this->_['domClasses'],
 		'messageIcons' => $this->_['messageIcons'],
 		'strings' => $strings
 	];
@@ -171,7 +172,7 @@
 
 		<div class="base3-chatbot-composer-overlay" data-chatbot-slot="composer-overlay"></div>
 
-		<div class="base3-chatbot-actions">
+		<div class="base3-chatbot-actions" data-chatbot-actions>
 			<div class="base3-chatbot-actions-left">
 				<div class="base3-chatbot-slot" data-chatbot-slot="composer-start"></div>
 			</div>
@@ -189,7 +190,7 @@
 		</div>
 	</div>
 
-	<p id="<?php echo $id; ?>-ai-notice" class="base3-chatbot-ai-notice">
+	<p id="<?php echo $id; ?>-ai-notice" class="base3-chatbot-ai-notice" data-chatbot-ai-notice>
 		<img class="base3-chatbot-ai-notice-icon" src="<?php echo htmlspecialchars($this->_['icons']['info'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
 		<span><?php echo htmlspecialchars($this->_['aiNoticeText']); ?></span>
 	</p>

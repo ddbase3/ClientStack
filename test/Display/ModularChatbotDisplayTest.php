@@ -39,6 +39,11 @@ class ModularChatbotDisplayTest extends TestCase {
 			'first_message_mode' => 'contextual_ai',
 			'ai_notice_text' => 'AI can make mistakes.',
 			'ai_notice_position' => 'below_composer',
+			'dom_classes' => [
+				'root' => ['customer-chatbot', 'theme-dark'],
+				'main' => 'customer-chat',
+				'composer' => ['customer-prompt']
+			],
 			'additional_stylesheet' => 'plugin/Customer/assets/css/chatbot.css',
 			'message_icons' => [
 				'user' => '',
@@ -80,6 +85,11 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('contextual_ai', $view->getAssigned('firstMessageMode'));
 		$this->assertSame('AI can make mistakes.', $view->getAssigned('aiNoticeText'));
 		$this->assertSame('below_composer', $view->getAssigned('aiNoticePosition'));
+		$this->assertSame([
+			'root' => ['customer-chatbot', 'theme-dark'],
+			'main' => 'customer-chat',
+			'composer' => ['customer-prompt']
+		], $view->getAssigned('domClasses'));
 		$this->assertSame('/resolved/plugin/Customer/assets/css/chatbot.css', $view->getAssigned('additionalStylesheetUrl'));
 		$this->assertSame('', $view->getAssigned('messageIcons')['user'] ?? null);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/thinking.svg', $view->getAssigned('messageIcons')['thinking'] ?? null);
@@ -145,6 +155,15 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertIsString($template);
 		$this->assertStringContainsString('data-chatbot-opening-message', $template);
 		$this->assertStringNotContainsString('data-chatbot-base-prompt', $template);
+	}
+
+	public function testTemplateExposesDomClassConfigurationAndStableDetailTargets(): void {
+		$template = file_get_contents(DIR_PLUGIN . 'ClientStack/tpl/Display/ModularChatbotDisplay.php');
+
+		$this->assertIsString($template);
+		$this->assertStringContainsString("'domClasses' => (object) \$this->_['domClasses']", $template);
+		$this->assertStringContainsString('data-chatbot-actions', $template);
+		$this->assertStringContainsString('data-chatbot-ai-notice', $template);
 	}
 
 	public function testTemplateInstallsResponseExtensionsBeforeConversationHydration(): void {

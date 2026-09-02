@@ -148,6 +148,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'text_to_speech_url' => '',
 			'extensions' => [],
 			'extension_plugin_options' => [],
+			'dom_classes' => [],
 			'additional_stylesheet' => '',
 			'message_icons' => [],
 			'strings' => []
@@ -215,6 +216,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'extensionPluginOptions',
 			is_array($config['extension_plugin_options']) ? $config['extension_plugin_options'] : []
 		);
+		$this->view->assign('domClasses', $config['dom_classes']);
 		$this->view->assign(
 			'strings',
 			$this->getStrings(is_array($config['strings']) ? $config['strings'] : [])

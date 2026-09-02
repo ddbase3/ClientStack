@@ -167,6 +167,38 @@ Deploy it with:
 
 The modular display supports Chatbot's server-backed Conversation API. `ConversationPlugin` registers the chat-list and new-chat controls before loading the last active chat, hydrates stored messages through the normal renderer, and provides accessible controls for creating, activating, renaming and deleting chats. Conversation ids and history are not generated or persisted in the browser. ClassicChatbot remains the non-multi-chat fallback.
 
+### DOM class customization
+
+`ModularChatbotDisplay` accepts semantic DOM class assignments through `dom_classes`. A target may contain one whitespace-separated class string or an array of class strings.
+
+```php
+$display->setData([
+	'dom_classes' => [
+		'root' => ['customer-chatbot', 'theme-dark'],
+		'main' => 'customer-chat',
+		'composer' => ['customer-prompt']
+	]
+]);
+```
+
+Supported targets are:
+
+| Target | DOM area |
+| --- | --- |
+| `root` | complete chatbot root |
+| `conversation_panel` | conversation navigation panel |
+| `opening` | opening or initial message |
+| `main` | main chat area |
+| `messages` | message log |
+| `suggestions` | suggestion area |
+| `canvas` | canvas side area |
+| `composer` | complete prompt composer |
+| `input` | prompt textarea |
+| `actions` | composer action row |
+| `ai_notice` | AI notice below or above the composer |
+
+The target names are part of the ModularChatbot DOM contract. Configuration does not accept arbitrary CSS selectors. Existing ClientStack classes remain unchanged, so project-specific styling can be layered on top without replacing the built-in selectors.
+
 ### Realtime speech transcription
 
 ModularChatbot supports live Mistral transcription through
