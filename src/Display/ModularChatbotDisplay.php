@@ -151,6 +151,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'dom_classes' => [],
 			'additional_stylesheet' => '',
 			'message_icons' => [],
+			'control_icons' => [],
 			'strings' => []
 		], $this->data);
 
@@ -233,6 +234,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'markedUrl',
 			$this->assetResolver->resolve('plugin/ClientStack/assets/marked/marked.js')
 		);
+		$controlIcons = is_array($config['control_icons']) ? $config['control_icons'] : [];
 		$this->view->assign('icons', [
 			'send' => $this->resolveIcon('send'),
 			'copy' => $this->resolveIcon('copy'),
@@ -241,11 +243,11 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'thumbsupfill' => $this->resolveIcon('thumbsupfill'),
 			'thumbsdown' => $this->resolveIcon('thumbsdown'),
 			'thumbsdownfill' => $this->resolveIcon('thumbsdownfill'),
-			'microphone' => $this->resolveIcon('microphone'),
-			'speaker' => $this->resolveIcon('speaker'),
-			'dialogue' => $this->resolveIcon('dialogue'),
-			'list' => $this->resolveIcon('list'),
-			'plus' => $this->resolveIcon('plus'),
+			'microphone' => $this->resolveControlIcon($controlIcons, 'voice_microphone', 'microphone'),
+			'speaker' => $this->resolveControlIcon($controlIcons, 'voice_speaker', 'speaker'),
+			'dialogue' => $this->resolveControlIcon($controlIcons, 'voice_dialog', 'dialogue'),
+			'list' => $this->resolveControlIcon($controlIcons, 'conversation_list', 'list'),
+			'plus' => $this->resolveControlIcon($controlIcons, 'conversation_new', 'plus'),
 			'edit' => $this->resolveIcon('edit'),
 			'delete' => $this->resolveIcon('delete'),
 			'close' => $this->resolveIcon('close'),
@@ -348,6 +350,14 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 	private function resolveOptionalAsset(string $logicalPath): string {
 		$logicalPath = trim($logicalPath);
 		return $logicalPath === '' ? '' : $this->assetResolver->resolve($logicalPath);
+	}
+
+	/** @param array<string,mixed> $controlIcons */
+	private function resolveControlIcon(array $controlIcons, string $key, string $defaultIcon): string {
+		$logicalPath = trim((string)($controlIcons[$key] ?? ''));
+		return $logicalPath === ''
+			? $this->resolveIcon($defaultIcon)
+			: $this->resolveOptionalAsset($logicalPath);
 	}
 
 	private function resolveIcon(string $name): string {

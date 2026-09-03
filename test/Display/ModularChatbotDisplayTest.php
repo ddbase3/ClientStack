@@ -51,6 +51,13 @@ class ModularChatbotDisplayTest extends TestCase {
 				'thinking' => 'plugin/Customer/assets/icons/thinking.svg',
 				'opening' => 'plugin/Customer/assets/icons/opening.svg'
 			],
+			'control_icons' => [
+				'conversation_list' => 'plugin/Customer/assets/icons/chat-list.svg',
+				'conversation_new' => 'plugin/Customer/assets/icons/new-chat.svg',
+				'voice_microphone' => 'plugin/Customer/assets/icons/microphone.svg',
+				'voice_speaker' => 'plugin/Customer/assets/icons/speaker.svg',
+				'voice_dialog' => 'plugin/Customer/assets/icons/dialog.svg'
+			],
 			'conversation_state_url' => '/chatbot/conversations/state',
 			'conversation_create_url' => '/chatbot/conversations/create',
 			'conversation_materialize_url' => '/chatbot/conversations/materialize',
@@ -108,6 +115,11 @@ class ModularChatbotDisplayTest extends TestCase {
 			$view->getAssigned('icons')['edit'] ?? null
 		);
 		$this->assertSame('/resolved/plugin/ClientStack/assets/modularchatbot/icons/info.svg', $view->getAssigned('icons')['info'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/chat-list.svg', $view->getAssigned('icons')['list'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/new-chat.svg', $view->getAssigned('icons')['plus'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/microphone.svg', $view->getAssigned('icons')['microphone'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/speaker.svg', $view->getAssigned('icons')['speaker'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/dialog.svg', $view->getAssigned('icons')['dialogue'] ?? null);
 		$this->assertSame('FAKE_TEMPLATE_OUTPUT', $output);
 	}
 
