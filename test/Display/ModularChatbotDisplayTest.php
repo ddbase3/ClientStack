@@ -51,6 +51,10 @@ class ModularChatbotDisplayTest extends TestCase {
 				'thinking' => 'plugin/Customer/assets/icons/thinking.svg',
 				'opening' => 'plugin/Customer/assets/icons/opening.svg'
 			],
+			'initial_assistant_branding' => [
+				'logo' => 'plugin/Customer/assets/icons/brand.svg',
+				'title' => 'Ask <strong>KIM</strong>'
+			],
 			'control_icons' => [
 				'conversation_list' => 'plugin/Customer/assets/icons/chat-list.svg',
 				'conversation_new' => 'plugin/Customer/assets/icons/new-chat.svg',
@@ -101,6 +105,8 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('', $view->getAssigned('messageIcons')['user'] ?? null);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/thinking.svg', $view->getAssigned('messageIcons')['thinking'] ?? null);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/opening.svg', $view->getAssigned('messageIcons')['opening'] ?? null);
+		$this->assertSame('/resolved/plugin/Customer/assets/icons/brand.svg', $view->getAssigned('initialAssistantBranding')['logo'] ?? null);
+		$this->assertSame('Ask <strong>KIM</strong>', $view->getAssigned('initialAssistantBranding')['title'] ?? null);
 		$this->assertSame('/chatbot/conversations/state', $view->getAssigned('conversationStateUrl'));
 		$this->assertSame('/chatbot/conversations/materialize', $view->getAssigned('conversationMaterializeUrl'));
 		$this->assertSame('/chatbot/conversations/title', $view->getAssigned('conversationTitleUrl'));
@@ -174,6 +180,7 @@ class ModularChatbotDisplayTest extends TestCase {
 
 		$this->assertIsString($template);
 		$this->assertStringContainsString("'domClasses' => (object) \$this->_['domClasses']", $template);
+		$this->assertStringContainsString("'initialAssistantBranding' => \$this->_['initialAssistantBranding']", $template);
 		$this->assertStringContainsString('data-chatbot-actions', $template);
 		$this->assertStringContainsString('data-chatbot-ai-notice', $template);
 	}

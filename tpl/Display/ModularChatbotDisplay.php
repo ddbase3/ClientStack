@@ -10,6 +10,7 @@
 		'transportMode' => $this->_['transportMode'],
 		'domClasses' => (object) $this->_['domClasses'],
 		'messageIcons' => $this->_['messageIcons'],
+		'initialAssistantBranding' => $this->_['initialAssistantBranding'],
 		'strings' => $strings
 	];
 	$pluginConfig = [

@@ -151,6 +151,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'dom_classes' => [],
 			'additional_stylesheet' => '',
 			'message_icons' => [],
+			'initial_assistant_branding' => [],
 			'control_icons' => [],
 			'strings' => []
 		], $this->data);
@@ -197,6 +198,13 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'assistant' => $this->resolveOptionalAsset((string)($messageIcons['assistant'] ?? '')),
 			'thinking' => $this->resolveOptionalAsset((string)($messageIcons['thinking'] ?? '')),
 			'opening' => $this->resolveOptionalAsset((string)($messageIcons['opening'] ?? ''))
+		]);
+		$initialAssistantBranding = is_array($config['initial_assistant_branding'])
+			? $config['initial_assistant_branding']
+			: [];
+		$this->view->assign('initialAssistantBranding', [
+			'logo' => $this->resolveOptionalAsset((string)($initialAssistantBranding['logo'] ?? '')),
+			'title' => trim((string)($initialAssistantBranding['title'] ?? ''))
 		]);
 		$this->view->assign('conversationStateUrl', $this->normalizeClientUrl((string)$config['conversation_state_url']));
 		$this->view->assign('conversationCreateUrl', $this->normalizeClientUrl((string)$config['conversation_create_url']));
