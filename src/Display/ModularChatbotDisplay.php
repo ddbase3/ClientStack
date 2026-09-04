@@ -40,6 +40,9 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		'messageLabel' => 'Message',
 		'messageInputLabel' => 'Enter message',
 		'sendMessage' => 'Send message',
+		'stopResponse' => 'Stop response',
+		'cancelledByUser' => 'You stopped the response.',
+		'cancelRequestFailed' => 'The response could not be stopped.',
 		'initializationError' => 'The chatbot could not be initialized.',
 		'emptyResponse' => 'No visible response could be generated. Please try the request again.',
 		'requestError' => 'A technical error occurred. The request could not be completed.',
@@ -117,6 +120,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			'service_url' => '',
 			'service' => '',
 			'turn_prepare_url' => '',
+			'turn_cancel_url' => '',
 			'config_group' => '',
 			'config_name' => '',
 			'use_markdown' => true,
@@ -168,6 +172,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$this->view->assign('serviceUrl', $this->normalizeClientUrl((string)$config['service_url']));
 		$this->view->assign('serviceId', (string)$config['service']);
 		$this->view->assign('turnPrepareUrl', $this->normalizeClientUrl((string)$config['turn_prepare_url']));
+		$this->view->assign('turnCancelUrl', $this->normalizeClientUrl((string)$config['turn_cancel_url']));
 		$this->view->assign('configGroup', (string)$config['config_group']);
 		$this->view->assign('configName', (string)$config['config_name']);
 		$this->view->assign('useMarkdown', (bool)$config['use_markdown']);
@@ -245,6 +250,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		$controlIcons = is_array($config['control_icons']) ? $config['control_icons'] : [];
 		$this->view->assign('icons', [
 			'send' => $this->resolveIcon('send'),
+			'stop' => $this->resolveIcon('stop'),
 			'copy' => $this->resolveIcon('copy'),
 			'check' => $this->resolveIcon('check'),
 			'thumbsup' => $this->resolveIcon('thumbsup'),

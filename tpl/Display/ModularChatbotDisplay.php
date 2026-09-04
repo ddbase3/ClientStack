@@ -5,11 +5,16 @@
 		'serviceUrl' => $this->_['serviceUrl'],
 		'serviceId' => $this->_['serviceId'],
 		'turnPrepareUrl' => $this->_['turnPrepareUrl'],
+		'turnCancelUrl' => $this->_['turnCancelUrl'],
 		'configGroup' => $this->_['configGroup'],
 		'configName' => $this->_['configName'],
 		'transportMode' => $this->_['transportMode'],
 		'domClasses' => (object) $this->_['domClasses'],
 		'messageIcons' => $this->_['messageIcons'],
+		'sendButtonIcons' => [
+			'send' => $this->_['icons']['send'],
+			'stop' => $this->_['icons']['stop']
+		],
 		'initialAssistantBranding' => $this->_['initialAssistantBranding'],
 		'strings' => $strings
 	];
@@ -185,7 +190,7 @@
 					data-chatbot-send
 					aria-label="<?php echo htmlspecialchars($strings['sendMessage'], ENT_QUOTES); ?>"
 				>
-					<img src="<?php echo htmlspecialchars($this->_['icons']['send'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
+					<img data-chatbot-send-icon src="<?php echo htmlspecialchars($this->_['icons']['send'], ENT_QUOTES); ?>" alt="" aria-hidden="true" />
 				</button>
 			</div>
 		</div>
