@@ -22,6 +22,40 @@ function getDropdownInstanceStore(grid) {
 	return grid._mgDropdownInstances;
 }
 
+function isDropdownOpen(details) {
+	if (!(details instanceof HTMLElement)) {
+		return false;
+	}
+
+	if (details instanceof HTMLDetailsElement) {
+		return details.open === true;
+	}
+
+	return details.classList.contains('mg-dropdown-open');
+}
+
+export function setFloatingDropdownOpen(details, isOpen) {
+	if (!(details instanceof HTMLElement)) {
+		return;
+	}
+
+	const open = isOpen === true;
+
+	if (details instanceof HTMLDetailsElement) {
+		details.open = open;
+		return;
+	}
+
+	if (details.classList.contains('mg-dropdown-open') === open) {
+		return;
+	}
+
+	details.classList.toggle('mg-dropdown-open', open);
+	details.dispatchEvent(new CustomEvent('mgdropdown:toggle', {
+		detail: { open }
+	}));
+}
+
 function getActiveFloatingDropdown(grid, stateKey) {
 	if (!grid || !stateKey) {
 		return null;
@@ -30,12 +64,12 @@ function getActiveFloatingDropdown(grid, stateKey) {
 	const store = getDropdownInstanceStore(grid);
 	const details = store[stateKey];
 
-	if (!(details instanceof HTMLDetailsElement)) {
+	if (!(details instanceof HTMLElement)) {
 		delete store[stateKey];
 		return null;
 	}
 
-	if (!details.isConnected || details.open !== true) {
+	if (!details.isConnected || !isDropdownOpen(details)) {
 		delete store[stateKey];
 		return null;
 	}
@@ -44,7 +78,7 @@ function getActiveFloatingDropdown(grid, stateKey) {
 }
 
 function setActiveFloatingDropdown(grid, stateKey, details) {
-	if (!grid || !stateKey || !(details instanceof HTMLDetailsElement)) {
+	if (!grid || !stateKey || !(details instanceof HTMLElement)) {
 		return;
 	}
 
@@ -59,12 +93,12 @@ function clearActiveFloatingDropdown(grid, stateKey, details = null) {
 	const store = getDropdownInstanceStore(grid);
 	const current = store[stateKey];
 
-	if (!(current instanceof HTMLDetailsElement)) {
+	if (!(current instanceof HTMLElement)) {
 		delete store[stateKey];
 		return;
 	}
 
-	if (details instanceof HTMLDetailsElement && current !== details) {
+	if (details instanceof HTMLElement && current !== details) {
 		return;
 	}
 
@@ -126,7 +160,7 @@ function storeOriginalMenuMount(menu, details) {
 		};
 	}
 
-	if (details instanceof HTMLDetailsElement) {
+	if (details instanceof HTMLElement) {
 		menu._mgDropdownOwner = details;
 	}
 }
@@ -174,11 +208,11 @@ function restoreMenuMount(menu) {
 }
 
 function positionFloatingDropdown(details, summary, menu, grid, preferredAlign = 'end') {
-	if (!(details instanceof HTMLDetailsElement) || !(summary instanceof HTMLElement) || !(menu instanceof HTMLElement)) {
+	if (!(details instanceof HTMLElement) || !(summary instanceof HTMLElement) || !(menu instanceof HTMLElement)) {
 		return;
 	}
 
-	if (!details.open || !details.isConnected || !summary.isConnected) {
+	if (!isDropdownOpen(details) || !details.isConnected || !summary.isConnected) {
 		return;
 	}
 
@@ -268,12 +302,12 @@ function cleanupDetachedFloatingDropdowns() {
 
 		const owner = menu._mgDropdownOwner;
 
-		if (!(owner instanceof HTMLDetailsElement)) {
+		if (!(owner instanceof HTMLElement)) {
 			cleanupFloatingDropdownMenu(menu);
 			return;
 		}
 
-		if (!owner.isConnected || owner.open !== true) {
+		if (!owner.isConnected || !isDropdownOpen(owner)) {
 			cleanupFloatingDropdownMenu(menu);
 		}
 	});
@@ -302,7 +336,7 @@ export function attachFloatingDropdown(details, {
 	preferredAlign = 'end',
 	stateKey = ''
 }) {
-	if (!(details instanceof HTMLDetailsElement) || !(summary instanceof HTMLElement) || !(menu instanceof HTMLElement)) {
+	if (!(details instanceof HTMLElement) || !(summary instanceof HTMLElement) || !(menu instanceof HTMLElement)) {
 		return details;
 	}
 
@@ -321,9 +355,7 @@ export function attachFloatingDropdown(details, {
 	};
 
 	const closeDropdown = () => {
-		if (details.open) {
-			details.open = false;
-		}
+		setFloatingDropdownOpen(details, false);
 	};
 
 	const onViewportChange = () => {
@@ -378,16 +410,23 @@ export function attachFloatingDropdown(details, {
 		document.removeEventListener('keydown', onDocumentKeyDown, true);
 	};
 
-	details.addEventListener('toggle', () => {
-		if (stateKey) {
-			setFloatingDropdownOpenState(grid, stateKey, details.open);
+	const onToggle = () => {
+		const open = isDropdownOpen(details);
+
+		if (!(details instanceof HTMLDetailsElement)) {
+			summary.setAttribute('aria-expanded', open ? 'true' : 'false');
+			menu.hidden = !open;
 		}
 
-		if (details.open) {
+		if (stateKey) {
+			setFloatingDropdownOpenState(grid, stateKey, open);
+		}
+
+		if (open) {
 			const activeDetails = stateKey ? getActiveFloatingDropdown(grid, stateKey) : null;
 
 			if (activeDetails && activeDetails !== details) {
-				activeDetails.open = false;
+				setFloatingDropdownOpen(activeDetails, false);
 			}
 
 			if (stateKey) {
@@ -407,15 +446,46 @@ export function attachFloatingDropdown(details, {
 			detachViewportListeners();
 			cleanupFloatingDropdownMenu(menu);
 		}
-	});
+	};
+
+	details.addEventListener(
+		details instanceof HTMLDetailsElement ? 'toggle' : 'mgdropdown:toggle',
+		onToggle
+	);
+
+	if (!(details instanceof HTMLDetailsElement)) {
+		menu.hidden = !isDropdownOpen(details);
+
+		summary.addEventListener('click', (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			setFloatingDropdownOpen(details, !isDropdownOpen(details));
+		});
+
+		summary.addEventListener('keydown', (event) => {
+			if (event.target !== summary || (event.key !== 'Enter' && event.key !== ' ')) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			setFloatingDropdownOpen(details, !isDropdownOpen(details));
+		});
+	}
 
 	details.addEventListener('click', (event) => {
 		event.stopPropagation();
 	});
 
-	summary.addEventListener('click', (event) => {
-		event.stopPropagation();
-	});
+	if (details instanceof HTMLDetailsElement) {
+		summary.addEventListener('click', (event) => {
+			event.stopPropagation();
+		});
+	}
+
+	if (!(details instanceof HTMLDetailsElement)) {
+		summary.setAttribute('aria-expanded', isDropdownOpen(details) ? 'true' : 'false');
+	}
 
 	if (stateKey && isFloatingDropdownOpen(grid, stateKey)) {
 		reopenRafId = window.requestAnimationFrame(() => {
@@ -425,11 +495,11 @@ export function attachFloatingDropdown(details, {
 				return;
 			}
 
-			if (!details.isConnected || details.open) {
+			if (!details.isConnected || isDropdownOpen(details)) {
 				return;
 			}
 
-			details.open = true;
+			setFloatingDropdownOpen(details, true);
 		});
 	}
 

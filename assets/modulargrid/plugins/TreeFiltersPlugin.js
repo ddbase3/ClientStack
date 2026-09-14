@@ -1,4 +1,4 @@
-import { attachFloatingDropdown, setFloatingDropdownOpenState } from '../utils/dropdown.js';
+import { attachFloatingDropdown, setFloatingDropdownOpen } from '../utils/dropdown.js';
 
 function resolveOptions(context) {
 	return {
@@ -221,9 +221,8 @@ function applyAppearance(element, field) {
 	}
 }
 
-function closeDropdown(context, options, field, details) {
-	setFloatingDropdownOpenState(context.grid, `tree-filter-${options.stateKey}-${field.key}`, false);
-	details.open = false;
+function closeDropdown(context, options, field, control) {
+	setFloatingDropdownOpen(control, false);
 }
 
 function setSelection(context, options, field, value, details = null) {
@@ -555,27 +554,29 @@ function createControl(context, options, field) {
 	const key = String(field.key);
 	const runtime = getRuntime(context, key);
 	const selectedId = normalizeValue(getTreeFilterState(context, options)[key]);
-	const details = document.createElement('details');
-	details.className = 'mg-dropdown mg-tree-filter-control';
-	details.dataset.treeFilterKey = key;
-	details.title = field.label || key;
-	appendDimensions(details, field);
-	applyAppearance(details, field);
+	const control = document.createElement('div');
+	control.className = 'mg-dropdown mg-tree-filter-control';
+	control.dataset.treeFilterKey = key;
+	control.title = field.label || key;
+	appendDimensions(control, field);
+	applyAppearance(control, field);
 
 	if (selectedId !== '') {
-		details.classList.add('mg-tree-filter-control-active');
+		control.classList.add('mg-tree-filter-control-active');
 	}
 
-	const summary = document.createElement('summary');
+	const summary = document.createElement('div');
 	summary.className = 'mg-tree-filter-summary';
 	summary.dataset.mgFocusKey = `tree-filter-summary-${key}`;
+	summary.setAttribute('role', 'button');
+	summary.tabIndex = 0;
 
 	const label = document.createElement('span');
 	label.className = 'mg-tree-filter-label';
 	label.textContent = field.shortLabel || field.label || key;
 
 	summary.appendChild(label);
-	summary.appendChild(createBreadcrumb(context, options, field, runtime, selectedId, details));
+	summary.appendChild(createBreadcrumb(context, options, field, runtime, selectedId, control));
 
 	const indicator = document.createElement('span');
 	indicator.className = 'mg-tree-filter-indicator';
@@ -583,23 +584,23 @@ function createControl(context, options, field) {
 	indicator.textContent = '▾';
 	summary.appendChild(indicator);
 
-	const menu = createMenu(context, options, field, runtime, details);
-	details.appendChild(summary);
-	details.appendChild(menu);
+	const menu = createMenu(context, options, field, runtime, control);
+	control.appendChild(summary);
+	control.appendChild(menu);
 
-	details.addEventListener('toggle', () => {
-		if (!details.open) {
+	control.addEventListener('mgdropdown:toggle', (event) => {
+		if (event.detail?.open !== true) {
 			return;
 		}
 
 		ensureNodes(context, options, field, runtime).then(() => {
-			if (details.open && details.isConnected) {
-				renderMenuBody(context, options, field, runtime, details, menu);
+			if (control.isConnected) {
+				renderMenuBody(context, options, field, runtime, control, menu);
 			}
 		});
 	});
 
-	attachFloatingDropdown(details, {
+	attachFloatingDropdown(control, {
 		grid: context.grid,
 		summary,
 		menu,
@@ -607,13 +608,13 @@ function createControl(context, options, field) {
 		stateKey: `tree-filter-${options.stateKey}-${key}`
 	});
 
-	renderMenuBody(context, options, field, runtime, details, menu);
+	renderMenuBody(context, options, field, runtime, control, menu);
 
 	if (selectedId !== '' && !Array.isArray(runtime.nodes) && !runtime.loading) {
 		ensureNodes(context, options, field, runtime);
 	}
 
-	return details;
+	return control;
 }
 
 function renderTreeFilters(context, options) {
