@@ -232,3 +232,8 @@ assets/mermaid/mermaid.min.js
 `ClientStack\Display\TabControlDisplay` treats a tab entry id (`name`) separately from its optional renderer (`display`). Existing entries without `display` continue to use their `name` as the renderer name, while multiple entries may now point to the same `IDisplay` implementation with different data.
 
 `ClientStack\Display\CompositeDisplay` composes multiple discoverable `IDisplay` instances into a responsive CSS grid. Each item has its own `id`, `display`, optional `data`, optional `title`, and optional `span`; the layout collapses to one column on small screens.
+
+## Documentation
+
+- [Frequently Asked Questions](docs/faq.md)
+- [Privacy and data processing](PRIVACY.md)
