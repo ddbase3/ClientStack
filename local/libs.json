@@ -156,6 +156,14 @@
     "target": "leaflet"
   },
   {
+    "name": "filemanager",
+    "repo": "https://github.com/ddbase3/FileManager.git",
+    "branch": "main",
+    "dir": "FileManager",
+    "subdir": "src",
+    "target": "filemanager"
+  },
+  {
     "name": "dropzone",
     "download": [
       {
