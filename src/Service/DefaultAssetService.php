@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace ClientStack\Service;
 
+use Base3\Api\IModuleRegistry;
 use ClientStack\Api\IAssetService;
-use ClientStack\Dto\LogicalAsset;
 use ClientStack\Dto\AssetFile;
-use Base3\Api\IAssetResolver;
+use ClientStack\Dto\LogicalAsset;
 
 /**
  * Default implementation of the asset service interface.
@@ -14,7 +14,9 @@ use Base3\Api\IAssetResolver;
 class DefaultAssetService implements IAssetService {
 	private array $assets = [];
 
-	public function __construct() {
+	public function __construct(
+		private readonly IModuleRegistry $moduleRegistry
+	) {
 		$this->registerBuiltInAssets();
 		$this->loadPluginAssets();
 	}
@@ -72,30 +74,32 @@ class DefaultAssetService implements IAssetService {
 	 * @return void
 	 */
 	private function registerBuiltInAssets(): void {
+		$assetsRoot = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
+
 		$this->registerAsset(new LogicalAsset('assetloader', [
-			new AssetFile(DIR_PLUGIN . 'assets/assetloader/assetloader.min.js', 'js')
+			new AssetFile($assetsRoot . 'assetloader/assetloader.min.js', 'js')
 		], true));
 
 		$this->registerAsset(new LogicalAsset('jquery', [
-			new AssetFile(DIR_PLUGIN . 'assets/jquery/jquery.js', 'js')
+			new AssetFile($assetsRoot . 'jquery/jquery.js', 'js')
 		], true));
 
 		$this->registerAsset(new LogicalAsset('jqueryui', [
-			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.js', 'js'),
-			new AssetFile(DIR_PLUGIN . 'assets/jqueryui/jquery-ui.css', 'css')
+			new AssetFile($assetsRoot . 'jqueryui/jquery-ui.js', 'js'),
+			new AssetFile($assetsRoot . 'jqueryui/jquery-ui.css', 'css')
 		]));
 
 		$this->registerAsset(new LogicalAsset('dbdesigner', [
-			new AssetFile(DIR_PLUGIN . 'assets/dbdesigner/dbdesigner.min.js', 'js')
+			new AssetFile($assetsRoot . 'dbdesigner/dbdesigner.min.js', 'js')
 		]));
 
 		$this->registerAsset(new LogicalAsset('jquerydatatable', [
-			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquery.datatable.min.js', 'js'),
-			new AssetFile(DIR_PLUGIN . 'assets/jquerydatatable/jquery.datatable.min.css', 'css')
+			new AssetFile($assetsRoot . 'jquerydatatable/jquery.datatable.min.js', 'js'),
+			new AssetFile($assetsRoot . 'jquerydatatable/jquery.datatable.min.css', 'css')
 		]));
 
 		$this->registerAsset(new LogicalAsset('chart', [
-			new AssetFile(DIR_PLUGIN . 'assets/chart/chart.js', 'js')
+			new AssetFile($assetsRoot . 'chart/chart.js', 'js')
 		]));
 	}
 
@@ -105,7 +109,13 @@ class DefaultAssetService implements IAssetService {
 	 * @return void
 	 */
 	private function loadPluginAssets(): void {
-		foreach (glob(DIR_PLUGIN . '*/local/assets.json') as $jsonPath) {
+		foreach ($this->moduleRegistry->getModuleNames() as $moduleName) {
+			$moduleRoot = $this->moduleRegistry->getModulePath($moduleName);
+			if ($moduleRoot === null) continue;
+
+			$jsonPath = $moduleRoot . DIRECTORY_SEPARATOR . 'local' . DIRECTORY_SEPARATOR . 'assets.json';
+			if (!is_file($jsonPath)) continue;
+
 			$this->registerAssetsFromJson($jsonPath);
 		}
 	}
@@ -117,7 +127,8 @@ class DefaultAssetService implements IAssetService {
 	 * @return void
 	 */
 	private function registerAssetsFromJson(string $jsonPath): void {
-		$data = json_decode(file_get_contents($jsonPath), true);
+		$data = json_decode((string) file_get_contents($jsonPath), true);
+		if (!is_array($data)) return;
 
 		foreach ($data as $name => $config) {
 			$files = [];
@@ -138,4 +149,3 @@ class DefaultAssetService implements IAssetService {
 		}
 	}
 }
-

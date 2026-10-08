@@ -3,6 +3,7 @@
 namespace ClientStack\AdminDisplay;
 
 use Base3\Api\IMvcView;
+use Base3\Api\IModuleRegistry;
 use Base3\Api\IRequest;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use UiFoundation\Api\IAdminDisplay;
@@ -12,7 +13,8 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 	public function __construct(
 		private readonly IRequest $request,
 		private readonly IMvcView $view,
-		private readonly ILinkTargetService $linkTargetService
+		private readonly ILinkTargetService $linkTargetService,
+		private readonly IModuleRegistry $moduleRegistry
 	) {}
 
 	public static function getName(): string {
@@ -38,7 +40,7 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 	}
 
 	private function handleHtml(): string {
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('AdminDisplay/AgentFlowAdminDisplay.php');
 
 		$flowId = (string)($this->request->get('flow') ?? '');
@@ -71,54 +73,43 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 
 	/**
 	 * Scan strategy:
-	 * - DIR_PLUGIN contains plugins as direct subfolders
-	 * - Each plugin may have a "local" folder
+	 * - BASE3 modules are provided by IModuleRegistry
+	 * - Each module may have a "local" folder
 	 * - Under "local" we scan exactly one additional folder level (e.g. local/Ai, local/Chatbot)
 	 * - In those folders we collect JSON files whose basename contains "flow"
 	 *
 	 * @return array<int, array{id:string,label:string,plugin:string,relpath:string,abspath:string,mtime:int}>
 	 */
 	private function scanFlows(): array {
-		$base = rtrim((string)DIR_PLUGIN, '/\\') . DIRECTORY_SEPARATOR;
-
-		$plugins = glob($base . '*', GLOB_ONLYDIR) ?: [];
 		$flows = [];
 
-		foreach ($plugins as $pluginDir) {
-			$pluginName = basename($pluginDir);
+		foreach ($this->moduleRegistry->getModuleNames() as $moduleName) {
+			$moduleRoot = $this->moduleRegistry->getModulePath($moduleName);
+			if ($moduleRoot === null) continue;
 
-			$localDir = $pluginDir . DIRECTORY_SEPARATOR . 'local';
-			if (!is_dir($localDir)) {
-				continue;
-			}
+			$localDir = $moduleRoot . DIRECTORY_SEPARATOR . 'local';
+			if (!is_dir($localDir)) continue;
 
 			$groups = glob($localDir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR) ?: [];
 			foreach ($groups as $groupDir) {
 				$files = glob($groupDir . DIRECTORY_SEPARATOR . '*') ?: [];
 
 				foreach ($files as $file) {
-					if (!is_file($file)) {
-						continue;
-					}
+					if (!is_file($file)) continue;
 
 					$baseName = basename($file);
 					$lower = strtolower($baseName);
 
-					if (!str_ends_with($lower, '.json')) {
-						continue;
-					}
+					if (!str_ends_with($lower, '.json')) continue;
+					if (strpos($lower, 'flow') === false) continue;
 
-					if (strpos($lower, 'flow') === false) {
-						continue;
-					}
-
-					$rel = $this->relPath($file, $base);
-					$id = $pluginName . '::' . $rel;
+					$rel = $this->relPath($file, $moduleRoot);
+					$id = $moduleName . '::' . $rel;
 
 					$flows[] = [
 						'id' => $id,
-						'label' => $pluginName . ' / ' . $rel,
-						'plugin' => $pluginName,
+						'label' => $moduleName . ' / ' . $rel,
+						'plugin' => $moduleName,
 						'relpath' => $rel,
 						'abspath' => $file,
 						'mtime' => (int)@filemtime($file),

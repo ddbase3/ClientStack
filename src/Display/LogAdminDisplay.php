@@ -44,7 +44,7 @@ final class LogAdminDisplay implements IDisplay {
 	}
 
 	private function handleHtml(): string {
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/LogAdminDisplay.php');
 
 		$endpoint = $this->buildEndpointBase();

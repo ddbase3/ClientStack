@@ -44,7 +44,7 @@ final class TabControlDisplay implements IDisplay {
 			$activeDisplay['data'] ?? null
 		);
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/TabControlDisplay.php');
 		$this->view->assign('controlId', 'base3-tab-control-' . bin2hex(random_bytes(6)));
 		$this->view->assign('tabs', $tabs);

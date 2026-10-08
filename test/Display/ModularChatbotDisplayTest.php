@@ -76,7 +76,7 @@ class ModularChatbotDisplayTest extends TestCase {
 
 		$output = $display->getOutput();
 
-		$this->assertSame(DIR_PLUGIN . 'ClientStack', $view->getLastPath());
+		$this->assertSame(dirname(__DIR__, 2), $view->getLastPath());
 		$this->assertSame('ModularChatbotDisplay', $view->getLoadedBrickSet());
 		$this->assertSame('Display/ModularChatbotDisplay.php', $view->getLastTemplate());
 		$this->assertSame('chatbot-a', $view->getAssigned('id'));
@@ -168,7 +168,7 @@ class ModularChatbotDisplayTest extends TestCase {
 	}
 
 	public function testTemplateUsesCanonicalOpeningMessageContract(): void {
-		$template = file_get_contents(DIR_PLUGIN . 'ClientStack/tpl/Display/ModularChatbotDisplay.php');
+		$template = file_get_contents(dirname(__DIR__, 2) . '/tpl/Display/ModularChatbotDisplay.php');
 
 		$this->assertIsString($template);
 		$this->assertStringContainsString('data-chatbot-opening-message', $template);
@@ -176,7 +176,7 @@ class ModularChatbotDisplayTest extends TestCase {
 	}
 
 	public function testTemplateExposesDomClassConfigurationAndStableDetailTargets(): void {
-		$template = file_get_contents(DIR_PLUGIN . 'ClientStack/tpl/Display/ModularChatbotDisplay.php');
+		$template = file_get_contents(dirname(__DIR__, 2) . '/tpl/Display/ModularChatbotDisplay.php');
 
 		$this->assertIsString($template);
 		$this->assertStringContainsString("'domClasses' => (object) \$this->_['domClasses']", $template);
@@ -186,7 +186,7 @@ class ModularChatbotDisplayTest extends TestCase {
 	}
 
 	public function testTemplateInstallsResponseExtensionsBeforeConversationHydration(): void {
-		$template = file_get_contents(DIR_PLUGIN . 'ClientStack/tpl/Display/ModularChatbotDisplay.php');
+		$template = file_get_contents(dirname(__DIR__, 2) . '/tpl/Display/ModularChatbotDisplay.php');
 
 		$this->assertIsString($template);
 		$extensionPosition = strpos($template, 'for(const definition of extensionDefinitions)');

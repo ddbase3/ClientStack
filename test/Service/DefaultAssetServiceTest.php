@@ -2,20 +2,20 @@
 
 namespace ClientStack\Test\Service;
 
-use PHPUnit\Framework\TestCase;
-use ClientStack\Service\DefaultAssetService;
-use ClientStack\Dto\LogicalAsset;
+use Base3\Api\IModuleRegistry;
 use ClientStack\Dto\AssetFile;
+use ClientStack\Dto\LogicalAsset;
+use ClientStack\Service\DefaultAssetService;
+use PHPUnit\Framework\TestCase;
 
 class DefaultAssetServiceTest extends TestCase {
 
-	private string $testPluginDir;
+	private string $testModuleDir;
+	private IModuleRegistry $moduleRegistry;
 
 	protected function setUp(): void {
-		// Create a temporary plugin with a local/assets.json so DefaultAssetService can discover it
-		$this->testPluginDir = DIR_PLUGIN . 'ZzClientStackTestPlugin';
-
-		@mkdir($this->testPluginDir . '/local', 0777, true);
+		$this->testModuleDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'base3_clientstack_' . uniqid('', true);
+		@mkdir($this->testModuleDir . '/local', 0777, true);
 
 		$json = [
 			'unittestasset' => [
@@ -27,18 +27,29 @@ class DefaultAssetServiceTest extends TestCase {
 			]
 		];
 
-		file_put_contents($this->testPluginDir . '/local/assets.json', json_encode($json, JSON_PRETTY_PRINT));
+		file_put_contents($this->testModuleDir . '/local/assets.json', json_encode($json, JSON_PRETTY_PRINT));
+
+		$modulePath = $this->testModuleDir;
+		$this->moduleRegistry = new class($modulePath) implements IModuleRegistry {
+			public function __construct(private readonly string $modulePath) {}
+			public function getModuleNames(): array { return ['ZzClientStackTestPlugin']; }
+			public function getModulePath(string $name): ?string { return $name === 'ZzClientStackTestPlugin' ? $this->modulePath : null; }
+			public function requireModulePath(string $name): string {
+				$path = $this->getModulePath($name);
+				if ($path === null) throw new \RuntimeException('Module not found: ' . $name);
+				return $path;
+			}
+		};
 	}
 
 	protected function tearDown(): void {
-		// Best-effort cleanup
-		@unlink($this->testPluginDir . '/local/assets.json');
-		@rmdir($this->testPluginDir . '/local');
-		@rmdir($this->testPluginDir);
+		@unlink($this->testModuleDir . '/local/assets.json');
+		@rmdir($this->testModuleDir . '/local');
+		@rmdir($this->testModuleDir);
 	}
 
 	public function testBuiltInAssetsAreRegistered(): void {
-		$service = new DefaultAssetService();
+		$service = new DefaultAssetService($this->moduleRegistry);
 
 		$this->assertNotNull($service->getAsset('assetloader'));
 		$this->assertNotNull($service->getAsset('jquery'));
@@ -51,7 +62,7 @@ class DefaultAssetServiceTest extends TestCase {
 	}
 
 	public function testRegisterAssetAndGetAsset(): void {
-		$service = new DefaultAssetService();
+		$service = new DefaultAssetService($this->moduleRegistry);
 
 		$asset = new LogicalAsset('customasset', [
 			new AssetFile('/assets/custom/custom.js', 'js')
@@ -65,31 +76,25 @@ class DefaultAssetServiceTest extends TestCase {
 	}
 
 	public function testGetDefaultAssetsIncludesBuiltInsAndJsonAssets(): void {
-		$service = new DefaultAssetService();
+		$service = new DefaultAssetService($this->moduleRegistry);
 
 		$defaults = $service->getDefaultAssets();
 		$this->assertNotEmpty($defaults);
 
 		$defaultNames = array_map(fn($a) => $a->name, $defaults);
-
-		// Built-in defaults
 		$this->assertContains('assetloader', $defaultNames);
 		$this->assertContains('jquery', $defaultNames);
-
-		// From our temp plugin assets.json
 		$this->assertContains('unittestasset', $defaultNames);
 	}
 
 	public function testLoadsPluginAssetsFromJson(): void {
-		$service = new DefaultAssetService();
+		$service = new DefaultAssetService($this->moduleRegistry);
 
 		$asset = $service->getAsset('unittestasset');
 		$this->assertNotNull($asset);
 		$this->assertSame('unittestasset', $asset->name);
 		$this->assertTrue($asset->isDefault);
-
 		$this->assertIsArray($asset->files);
 		$this->assertCount(2, $asset->files);
 	}
-
 }

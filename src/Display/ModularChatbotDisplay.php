@@ -165,7 +165,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			$id = 'base3-chatbot-' . bin2hex(random_bytes(6));
 		}
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->loadBricks('ModularChatbotDisplay');
 		$this->view->setTemplate('Display/ModularChatbotDisplay.php');
 		$this->view->assign('id', $id);
@@ -348,7 +348,7 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 			return $url;
 		}
 
-		$file = DIR_PLUGIN . 'ClientStack/' . substr($logicalPath, strlen($prefix));
+		$file = dirname(__DIR__, 2) . '/' . substr($logicalPath, strlen($prefix));
 		if(!is_file($file)) {
 			return $url;
 		}

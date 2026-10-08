@@ -41,7 +41,7 @@ final class ClassicChatbotDisplay implements IChatbotDisplay {
 			'default_lang' => 'auto'
 		], $this->data);
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/ClassicChatbotDisplay.php');
 
 		foreach($config as $tag => $content) {

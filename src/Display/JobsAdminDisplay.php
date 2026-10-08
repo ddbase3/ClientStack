@@ -48,7 +48,7 @@ final class JobsAdminDisplay implements IDisplay {
 	}
 
 	private function handleHtml(): string {
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/JobsAdminDisplay.php');
 
 		$baseEndpoint = $this->buildEndpointBase();

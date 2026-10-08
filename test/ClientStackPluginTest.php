@@ -7,6 +7,7 @@ use ClientStack\ClientStackPlugin;
 use ClientStack\Api\IAssetService;
 use ClientStack\Service\DefaultAssetService;
 use Base3\Api\IContainer;
+use Base3\Api\IModuleRegistry;
 use UiFoundation\Api\IChatbotDisplay;
 use Base3\Test\Core\ContainerStub;
 
@@ -18,6 +19,7 @@ class ClientStackPluginTest extends TestCase {
 
 	public function testInitRegistersPluginAndAssetService(): void {
 		$container = new ContainerStub();
+		$container->set(IModuleRegistry::class, $this->createStub(IModuleRegistry::class), IContainer::SHARED);
 		$plugin = new ClientStackPlugin($container);
 
 		$plugin->init();

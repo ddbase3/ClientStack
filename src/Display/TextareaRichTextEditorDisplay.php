@@ -33,7 +33,7 @@ final class TextareaRichTextEditorDisplay implements IRichTextEditorDisplay {
 		$className = trim('base3-rich-text-editor base3-rich-text-editor-textarea ' . $additionalClass);
 		$rows = $this->readInt('rows', 12, 2, 1000);
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/TextareaRichTextEditorDisplay.php');
 		$this->view->assign('id', $id);
 		$this->view->assign('name', $name);

@@ -25,7 +25,7 @@ class ClassicChatbotDisplayTest extends TestCase {
 
 		$output = $display->getOutput();
 
-		$this->assertSame(DIR_PLUGIN . 'ClientStack', $view->getLastPath());
+		$this->assertSame(dirname(__DIR__, 2), $view->getLastPath());
 		$this->assertSame('Display/ClassicChatbotDisplay.php', $view->getLastTemplate());
 		$this->assertSame('/chatbot/service', $view->getAssigned('service_url'));
 		$this->assertSame('chatbotservice', $view->getAssigned('service'));

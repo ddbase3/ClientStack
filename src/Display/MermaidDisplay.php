@@ -28,7 +28,7 @@ final class MermaidDisplay implements IDisplay {
 			return '';
 		}
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/MermaidDisplay.php');
 		$this->view->assign('mermaid', (string) ($this->data['mermaid'] ?? ''));
 		$this->view->assign(

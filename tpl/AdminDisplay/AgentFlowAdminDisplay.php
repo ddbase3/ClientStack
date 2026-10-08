@@ -127,7 +127,7 @@ $selectedId = $selected['id'] ?? '';
 	<div class="af-head">
 		<div>
 			<div class="af-title">Agent Flow Viewer</div>
-			<div class="af-subtitle">Scan: <span class="af-mono">DIR_PLUGIN/*/local/*/*flow*.json</span></div>
+			<div class="af-subtitle">Scan: <span class="af-mono">base3.json modules: local/*/*flow*.json</span></div>
 		</div>
 
 		<div class="af-picker">

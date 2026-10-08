@@ -27,7 +27,7 @@ final class CompositeDisplay implements IDisplay {
 		$columns = $this->normalizeColumns($this->data['columns'] ?? 2);
 		$items = $this->renderItems($this->data['items'] ?? [], $columns);
 
-		$this->view->setPath(DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/CompositeDisplay.php');
 		$this->view->assign('compositeId', 'base3-composite-display-' . bin2hex(random_bytes(6)));
 		$this->view->assign('columns', $columns);

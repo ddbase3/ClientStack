@@ -80,7 +80,7 @@ final class UsermanagerDebugDisplay implements IDisplay {
 		$target = $this->getTarget();
 		$operation = $this->getOperation();
 
-		$this->view->setPath(\DIR_PLUGIN . 'ClientStack');
+		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/UsermanagerDebugDisplay.php');
 
 		$this->view->assign('generatedAt', date('c'));
