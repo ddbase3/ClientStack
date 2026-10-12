@@ -64,8 +64,8 @@
 				<?php endforeach; ?>
 			</datalist>
 
-			<button type="button" onclick="umProbeSingle()">Einzelprüfung</button>
-			<button type="button" onclick="umProbeAll()">Alle Operationen prüfen</button>
+			<button type="button" data-um-probe="single">Einzelprüfung</button>
+			<button type="button" data-um-probe="all">Alle Operationen prüfen</button>
 		</div>
 
 		<div class="um-usage">
@@ -338,28 +338,27 @@
 </style>
 
 <script>
+(function() {
+	const root = document.querySelector('.clientstack-usermanager-debug');
+	if(!root) {
+		return;
+	}
+
+	const requests = new Set();
 	const UM_ENDPOINT = <?php echo json_encode((string)$this->_['endpoint']); ?>;
 	const UM_SCOPE_PARAM = <?php echo json_encode((string)$this->_['scopeParamName']); ?>;
 	const UM_TARGET_PARAM = <?php echo json_encode((string)$this->_['targetParamName']); ?>;
 	const UM_OPERATION_PARAM = <?php echo json_encode((string)$this->_['operationParamName']); ?>;
 	const UM_MODE_PARAM = <?php echo json_encode((string)$this->_['modeParamName']); ?>;
 
-	function umProbeSingle() {
-		umProbe('single');
-	}
-
-	function umProbeAll() {
-		umProbe('all');
-	}
-
 	function umProbe(mode) {
-		const scope = String(document.getElementById('um-scope').value || '').trim();
-		const target = String(document.getElementById('um-target').value || '').trim();
-		const operation = String(document.getElementById('um-operation').value || '').trim();
-		const status = document.getElementById('um-probe-status');
-		const usage = document.getElementById('um-usage');
-		const tablewrap = document.getElementById('um-probe-tablewrap');
-		const body = document.getElementById('um-probe-body');
+		const scope = String(root.querySelector('#um-scope').value || '').trim();
+		const target = String(root.querySelector('#um-target').value || '').trim();
+		const operation = String(root.querySelector('#um-operation').value || '').trim();
+		const status = root.querySelector('#um-probe-status');
+		const usage = root.querySelector('#um-usage');
+		const tablewrap = root.querySelector('#um-probe-tablewrap');
+		const body = root.querySelector('#um-probe-body');
 		const url = new URL(UM_ENDPOINT, window.location.href);
 
 		url.searchParams.set(UM_SCOPE_PARAM, scope);
@@ -372,9 +371,13 @@
 		tablewrap.style.display = 'none';
 		body.innerHTML = '';
 
-		fetch(url.toString(), { credentials: 'same-origin' })
+		const controller = new AbortController();
+		requests.add(controller);
+
+		fetch(url.toString(), { credentials: 'same-origin', signal: controller.signal })
 			.then(response => response.json())
 			.then(payload => {
+				if (!root.isConnected) return;
 				if (!payload || payload.status !== 'ok') {
 					throw new Error(payload && payload.message ? payload.message : 'Unknown JSON response.');
 				}
@@ -398,9 +401,24 @@
 				tablewrap.style.display = (data.rows || []).length > 0 ? 'block' : 'none';
 			})
 			.catch(error => {
+				if (error.name === 'AbortError' || !root.isConnected) return;
 				status.textContent = 'Fehler: ' + error.message;
 				usage.textContent = '';
-			});
+			})
+			.finally(() => requests.delete(controller));
+	}
+
+	root.querySelector('[data-um-probe="single"]').addEventListener('click', () => umProbe('single'));
+	root.querySelector('[data-um-probe="all"]').addEventListener('click', () => umProbe('all'));
+
+	const panel = root.closest('[data-base3-tab-panel]');
+	if(panel) {
+		panel.addEventListener('base3:tab-control:unload', () => {
+			for(const controller of requests) {
+				controller.abort();
+			}
+			requests.clear();
+		}, { once: true });
 	}
 
 	function umCell(child) {
@@ -431,4 +449,5 @@
 		span.textContent = String(status).toUpperCase();
 		return span;
 	}
+})();
 </script>

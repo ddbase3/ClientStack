@@ -608,16 +608,17 @@ $selectedId = $selected['id'] ?? '';
 </style>
 
 <script>
-const AF_LIST_ENDPOINT = <?php echo json_encode($listEndpoint); ?>;
-
 (async function() {
-	const sel = document.getElementById('af-flow-select');
+	const AF_LIST_ENDPOINT = <?php echo json_encode($listEndpoint); ?>;
 	const wrap = document.querySelector('.af-wrap');
+	const sel = wrap ? wrap.querySelector('#af-flow-select') : null;
+	if(!sel) return;
 	const selected = wrap?.dataset?.selectedFlow ? String(wrap.dataset.selectedFlow) : '';
 
 	try {
 		const res = await fetch(AF_LIST_ENDPOINT, { headers: { Accept: 'application/json' } });
 		const json = await res.json();
+		if(!wrap.isConnected) return;
 		const flows = Array.isArray(json?.data?.flows) ? json.data.flows : [];
 
 		sel.innerHTML = '';
@@ -640,6 +641,7 @@ const AF_LIST_ENDPOINT = <?php echo json_encode($listEndpoint); ?>;
 			window.location.href = url.toString();
 		};
 	} catch (e) {
+		if(!wrap.isConnected) return;
 		sel.innerHTML = '<option>Failed to load flows</option>';
 	}
 })();

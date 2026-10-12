@@ -3,6 +3,7 @@
 	$tabs = (array) $this->_['tabs'];
 	$activeTab = (string) $this->_['activeTab'];
 	$activeDisplay = (string) $this->_['activeDisplay'];
+	$defaultDisplay = (string) $this->_['defaultDisplay'];
 	$activeUrl = (string) $this->_['activeUrl'];
 	$content = (string) $this->_['content'];
 	$emptyMessage = (string) $this->_['emptyMessage'];
@@ -11,6 +12,7 @@
 	id="<?php echo htmlspecialchars($controlId); ?>"
 	class="base3-tab-control"
 	data-base3-tab-control
+	data-base3-tab-default="<?php echo htmlspecialchars($defaultDisplay, ENT_QUOTES, 'UTF-8'); ?>"
 	aria-busy="false"
 >
 	<?php if(count($tabs) === 0): ?>
@@ -22,17 +24,17 @@
 			<nav class="base3-tab-control-primary" aria-label="Primary navigation" data-base3-tab-strip>
 				<?php foreach($tabs as $tab): ?>
 					<?php $firstDisplay = (array) $tab['displays'][0]; ?>
-					<button
-						type="button"
+					<a
+						href="<?php echo htmlspecialchars((string) $firstDisplay['href'], ENT_QUOTES, 'UTF-8'); ?>"
 						class="base3-tab-control-primary-button"
 						data-base3-tab-link
 						data-base3-tab-target="<?php echo htmlspecialchars((string) $firstDisplay['name']); ?>"
 						data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
 						data-base3-tab-url="<?php echo htmlspecialchars((string) $firstDisplay['url']); ?>"
-						aria-selected="<?php echo (string) $tab['name'] === $activeTab ? 'true' : 'false'; ?>"
+						<?php echo (string) $tab['name'] === $activeTab ? 'aria-current="page"' : ''; ?>
 					>
 						<?php echo htmlspecialchars((string) $tab['label']); ?>
-					</button>
+					</a>
 				<?php endforeach; ?>
 			</nav>
 			<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
@@ -51,17 +53,17 @@
 				>
 					<nav class="base3-tab-control-secondary" aria-label="Secondary navigation" data-base3-tab-strip>
 						<?php foreach((array) $tab['displays'] as $display): ?>
-							<button
-								type="button"
+							<a
+								href="<?php echo htmlspecialchars((string) $display['href'], ENT_QUOTES, 'UTF-8'); ?>"
 								class="base3-tab-control-secondary-button"
 								data-base3-tab-link
 								data-base3-tab-target="<?php echo htmlspecialchars((string) $display['name']); ?>"
 								data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
 								data-base3-tab-url="<?php echo htmlspecialchars((string) $display['url']); ?>"
-								aria-selected="<?php echo (string) $display['name'] === $activeDisplay ? 'true' : 'false'; ?>"
+								<?php echo (string) $display['name'] === $activeDisplay ? 'aria-current="page"' : ''; ?>
 							>
 								<?php echo htmlspecialchars((string) $display['label']); ?>
-							</button>
+							</a>
 						<?php endforeach; ?>
 					</nav>
 					<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
@@ -86,7 +88,6 @@
 					data-base3-tab-panel
 					data-base3-tab-target="<?php echo htmlspecialchars($activeDisplay); ?>"
 					data-base3-tab-url="<?php echo htmlspecialchars($activeUrl); ?>"
-					data-base3-tab-scripts-loaded="1"
 				>
 					<?php echo $content; ?>
 				</section>
@@ -221,8 +222,8 @@
 	background: var(--base3-tab-hover-surface);
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button[aria-selected="true"],
-#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button[aria-selected="true"] {
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-primary-button[aria-current="page"],
+#<?php echo $controlId; ?> .base3-tab-control-overflow-menu .base3-tab-control-secondary-button[aria-current="page"] {
 	background: var(--base3-tab-hover-surface);
 	color: var(--base3-tab-accent);
 }
@@ -234,6 +235,7 @@
 	background: transparent;
 	color: var(--base3-tab-text);
 	font: inherit;
+	text-decoration: none;
 	white-space: nowrap;
 	cursor: pointer;
 	transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
@@ -253,7 +255,7 @@
 	background: var(--base3-tab-hover-surface);
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-primary-button[aria-selected="true"] {
+#<?php echo $controlId; ?> .base3-tab-control-primary-button[aria-current="page"] {
 	background: var(--base3-tab-active-surface);
 	border-color: var(--base3-tab-border);
 	color: var(--base3-tab-accent);
@@ -271,7 +273,7 @@
 	color: var(--base3-tab-text);
 }
 
-#<?php echo $controlId; ?> .base3-tab-control-secondary-button[aria-selected="true"] {
+#<?php echo $controlId; ?> .base3-tab-control-secondary-button[aria-current="page"] {
 	background: var(--base3-tab-accent);
 	color: #ffffff;
 }
@@ -364,6 +366,9 @@
 	let requestNumber = 0;
 	let overflowFrame = 0;
 	let overflowObserver = null;
+	let activeTarget = <?php echo json_encode($activeDisplay); ?>;
+	const defaultTarget = root.dataset.base3TabDefault || "";
+	let destroyed = false;
 
 	function getOverflowBars() {
 		return Array.from(root.querySelectorAll("[data-base3-tab-overflow-bar]"));
@@ -381,7 +386,7 @@
 		if(!overflow || !menu) {
 			return;
 		}
-		overflow.classList.toggle("has-active", Boolean(menu.querySelector('[aria-selected="true"]')));
+		overflow.classList.toggle("has-active", Boolean(menu.querySelector('[aria-current="page"]')));
 	}
 
 	function layoutOverflowBar(bar) {
@@ -421,7 +426,7 @@
 	}
 
 	function scheduleOverflowLayout() {
-		if(overflowFrame) {
+		if(destroyed || overflowFrame) {
 			return;
 		}
 		overflowFrame = window.requestAnimationFrame(() => {
@@ -463,27 +468,44 @@
 	}
 
 	function getUrl(link) {
-		return String(
-			link.dataset.base3TabUrl ||
-			link.getAttribute("href") ||
-			""
-		);
+		return String(link.dataset.base3TabUrl || "");
 	}
 
-	function getPanel(target) {
-		return Array.from(content.querySelectorAll("[data-base3-tab-panel]"))
-			.find((panel) => panel.dataset.base3TabTarget === target) || null;
+	function getHistoryTarget() {
+		const target = new URL(window.location.href).searchParams.get("base3_tab");
+		return target && getConfiguredLink(target) ? target : defaultTarget;
 	}
 
-	function cancelPendingRequest() {
-		if(!requestController) {
+	function handleHistoryNavigation() {
+		if(destroyed) {
 			return;
 		}
 
-		requestController.abort();
-		requestController = null;
+		const target = getHistoryTarget();
+		const link = getConfiguredLink(target);
+		if(link && target !== activeTarget) {
+			closeOverflowMenus();
+			loadTarget(target, getUrl(link));
+		}
+	}
+
+	function cancelPendingRequest() {
 		requestNumber++;
+		if(requestController) {
+			requestController.abort();
+			requestController = null;
+		}
 		setLoading(false);
+	}
+
+	function unloadPanels() {
+		for(const panel of content.querySelectorAll("[data-base3-tab-panel]")) {
+			panel.dispatchEvent(new CustomEvent("base3:tab-control:unload", {
+				bubbles: true,
+				detail: { target: panel.dataset.base3TabTarget, url: panel.dataset.base3TabUrl }
+			}));
+			panel.remove();
+		}
 	}
 
 	function setLoading(state) {
@@ -504,6 +526,7 @@
 	}
 
 	function setActive(target) {
+		activeTarget = target;
 		const parent = getParent(target);
 
 		for(const link of getLinks()) {
@@ -516,7 +539,11 @@
 				? link.dataset.base3TabParent === parent
 				: link.dataset.base3TabTarget === target;
 
-			link.setAttribute("aria-selected", selected ? "true" : "false");
+			if(selected) {
+				link.setAttribute("aria-current", "page");
+			} else {
+				link.removeAttribute("aria-current");
+			}
 		}
 
 		for(const group of root.querySelectorAll("[data-base3-tab-group]")) {
@@ -535,27 +562,53 @@
 		}
 	}
 
-	async function executeScripts(panel, scripts) {
+	async function executeScripts(panel, scripts, signal) {
 		for(const source of scripts) {
+			if(signal.aborted) {
+				throw new DOMException("Tab load cancelled", "AbortError");
+			}
+
 			const script = document.createElement("script");
 			copyScriptAttributes(source, script);
+			script.textContent = source.textContent || "";
 
 			if(source.src) {
 				await new Promise((resolve, reject) => {
+					function cleanup() {
+						signal.removeEventListener("abort", abort);
+						script.removeEventListener("load", complete);
+						script.removeEventListener("error", fail);
+					}
+
+					function complete() {
+						cleanup();
+						resolve();
+					}
+
+					function fail() {
+						cleanup();
+						reject(new Error("Tab script could not be loaded."));
+					}
+
+					function abort() {
+						script.remove();
+						cleanup();
+						reject(new DOMException("Tab load cancelled", "AbortError"));
+					}
+
 					script.async = false;
-					script.addEventListener("load", resolve, { once: true });
-					script.addEventListener("error", reject, { once: true });
+					signal.addEventListener("abort", abort, { once: true });
+					script.addEventListener("load", complete, { once: true });
+					script.addEventListener("error", fail, { once: true });
 					panel.appendChild(script);
 				});
-				continue;
+			} else {
+				panel.appendChild(script);
 			}
-
-			script.textContent = source.textContent || "";
-			panel.appendChild(script);
 		}
 	}
 
-	async function setPanelContent(panel, html, execute) {
+	async function setPanelContent(panel, html, signal) {
 		const template = document.createElement("template");
 		template.innerHTML = String(html || "");
 
@@ -565,11 +618,7 @@
 		}
 
 		panel.replaceChildren(template.content.cloneNode(true));
-
-		if(execute) {
-			await executeScripts(panel, scripts);
-			panel.dataset.base3TabScriptsLoaded = "1";
-		}
+		await executeScripts(panel, scripts, signal);
 	}
 
 	function createPanel(target) {
@@ -577,7 +626,6 @@
 		panel.className = "base3-tab-control-panel";
 		panel.dataset.base3TabPanel = "";
 		panel.dataset.base3TabTarget = target;
-		panel.dataset.base3TabScriptsLoaded = "0";
 		panel.hidden = true;
 		content.appendChild(panel);
 		return panel;
@@ -588,23 +636,13 @@
 			return;
 		}
 
-		const existingPanel = getPanel(target);
-		if(existingPanel) {
-			cancelPendingRequest();
-			setMessage("");
-			setActive(target);
-			existingPanel.dispatchEvent(new CustomEvent("base3:tab-control:activated", {
-				bubbles: true,
-				detail: { target, url }
-			}));
-			return;
-		}
-
 		cancelPendingRequest();
+		unloadPanels();
+		setActive(target);
 
 		const controller = new AbortController();
 		requestController = controller;
-		const currentRequest = ++requestNumber;
+		const currentRequest = requestNumber;
 
 		setMessage("");
 		setLoading(true);
@@ -613,6 +651,7 @@
 			const response = await fetch(url, {
 				method: "GET",
 				credentials: "same-origin",
+				cache: "no-store",
 				headers: {
 					"Accept": "text/html",
 					"X-Requested-With": "XMLHttpRequest"
@@ -625,36 +664,34 @@
 			}
 
 			const html = await response.text();
-			if(currentRequest !== requestNumber) {
+			if(controller.signal.aborted) {
 				return;
 			}
 
 			const panel = createPanel(target);
-
+			panel.dataset.base3TabUrl = url;
 			panel.dispatchEvent(new CustomEvent("base3:tab-control:before-content", {
 				bubbles: true,
 				detail: { target, url }
 			}));
 
-			await setPanelContent(panel, html, true);
-
-			if(currentRequest !== requestNumber) {
+			await setPanelContent(panel, html, controller.signal);
+			if(controller.signal.aborted) {
 				return;
 			}
 
-			panel.dataset.base3TabUrl = url;
 			setActive(target);
-
 			panel.dispatchEvent(new CustomEvent("base3:tab-control:loaded", {
 				bubbles: true,
 				detail: { target, url }
 			}));
 		}
 		catch(error) {
-			if(error && error.name === "AbortError") {
+			if(controller.signal.aborted || (error && error.name === "AbortError")) {
 				return;
 			}
 
+			unloadPanels();
 			setMessage("The selected tab could not be loaded.");
 			root.dispatchEvent(new CustomEvent("base3:tab-control:error", {
 				bubbles: true,
@@ -678,7 +715,7 @@
 
 		const eventTarget = event.target instanceof Element ? event.target : null;
 		const link = eventTarget ? eventTarget.closest("[data-base3-tab-link]") : null;
-		if(!link || !root.contains(link)) {
+		if(!link || !root.contains(link) || !link.matches("a[href]")) {
 			return;
 		}
 
@@ -695,8 +732,28 @@
 
 		event.preventDefault();
 		closeOverflowMenus();
+		if(window.location.href !== link.href) {
+			window.history.pushState(window.history.state, "", link.href);
+		}
 		loadTarget(target, url);
 	});
+
+	window.addEventListener("popstate", handleHistoryNavigation);
+	const parentPanel = root.parentElement ? root.parentElement.closest("[data-base3-tab-panel]") : null;
+	if(parentPanel) {
+		parentPanel.addEventListener("base3:tab-control:unload", () => {
+			destroyed = true;
+			cancelPendingRequest();
+			if(overflowObserver) {
+				overflowObserver.disconnect();
+			}
+			if(overflowFrame) {
+				window.cancelAnimationFrame(overflowFrame);
+			}
+			window.removeEventListener("resize", scheduleOverflowLayout);
+			window.removeEventListener("popstate", handleHistoryNavigation);
+		}, { once: true });
+	}
 
 	installOverflowLayout();
 })();

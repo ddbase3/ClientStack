@@ -222,20 +222,31 @@
 
 <script>
 (function() {
+const root = document.querySelector('.jobs-admin');
+if(!root) return;
+const requests = new Set();
+const panel = root.closest('[data-base3-tab-panel]');
+if(panel) {
+        panel.addEventListener('base3:tab-control:unload', () => {
+                for(const controller of requests) controller.abort();
+                requests.clear();
+        }, { once: true });
+}
+
 const JA_ENDPOINT = <?php echo json_encode((string)$this->_['endpoint']); ?>;
 const JA_PRIO_MIN = <?php echo (int)$this->_['prioMin']; ?>;
 const JA_PRIO_MAX = <?php echo (int)$this->_['prioMax']; ?>;
 
 function jaSetLoading(state) {
-        document.getElementById("ja-loading").style.display = state ? "block" : "none";
+        root.querySelector("#ja-loading").style.display = state ? "block" : "none";
 }
 
 function jaSetLastUpdate(ts) {
-        document.getElementById("ja-lastupdate").textContent = ts || "–";
+        root.querySelector("#ja-lastupdate").textContent = ts || "–";
 }
 
 function jaPrint(obj, type = null) {
-        const box = document.getElementById("ja-output");
+        const box = root.querySelector("#ja-output");
         box.style.display = "block";
         box.className = "ja-output";
         if (type === "error") box.classList.add("error");
@@ -266,7 +277,7 @@ function jaConfigBadge(job) {
 }
 
 function jaRenderRows(jobs) {
-        const body = document.getElementById("ja-body");
+        const body = root.querySelector("#ja-body");
         body.innerHTML = "";
 
         if (!Array.isArray(jobs) || jobs.length === 0) {
@@ -304,7 +315,7 @@ function jaRenderRows(jobs) {
 }
 
 function jaWireActions() {
-        document.querySelectorAll("input[type=checkbox][data-action='active']").forEach(el => {
+        root.querySelectorAll("input[type=checkbox][data-action='active']").forEach(el => {
                 el.onchange = async function() {
                         const job = this.getAttribute("data-job") || "";
                         const value = this.checked ? 1 : 0;
@@ -313,7 +324,7 @@ function jaWireActions() {
                 };
         });
 
-        document.querySelectorAll("button[data-action='prio']").forEach(el => {
+        root.querySelectorAll("button[data-action='prio']").forEach(el => {
                 el.onclick = async function() {
                         const job = this.getAttribute("data-job") || "";
                         const delta = this.getAttribute("data-delta") || "0";
@@ -321,7 +332,7 @@ function jaWireActions() {
                         const res = await jaCall("prio&job=" + encodeURIComponent(job) + "&delta=" + encodeURIComponent(delta));
                         if (res && res.status === "ok" && res.data && res.data.job && typeof res.data.job.priority !== "undefined") {
                                 const v = jaClamp(res.data.job.priority, JA_PRIO_MIN, JA_PRIO_MAX);
-                                const box = document.getElementById("ja-prio-" + job);
+                                const box = root.querySelector("#ja-prio-" + job);
                                 if (box) box.textContent = String(v);
                         }
                 };
@@ -329,11 +340,15 @@ function jaWireActions() {
 }
 
 async function jaCall(qs) {
+        if(!root.isConnected) return null;
         jaSetLoading(true);
+        const controller = new AbortController();
+        requests.add(controller);
 
         try {
-                const res = await fetch(JA_ENDPOINT + qs, { method: "GET", headers: { "Accept": "application/json" } });
+                const res = await fetch(JA_ENDPOINT + qs, { method: "GET", headers: { "Accept": "application/json" }, signal: controller.signal });
                 const json = await res.json();
+                if(!root.isConnected) return null;
 
                 jaSetLastUpdate(json.timestamp);
 
@@ -346,10 +361,11 @@ async function jaCall(qs) {
                 return json;
 
         } catch (e) {
-                jaPrint("Request failed:\n" + e, "error");
+                if(root.isConnected && e.name !== 'AbortError') jaPrint("Request failed:\n" + e, "error");
                 return null;
         } finally {
-                jaSetLoading(false);
+                requests.delete(controller);
+                if(root.isConnected) jaSetLoading(false);
         }
 }
 

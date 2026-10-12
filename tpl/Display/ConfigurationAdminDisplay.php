@@ -379,6 +379,17 @@ $typeOptions = $this->_['typeOptions'];
                 let editorDialog = null;
                 let currentEditorRecord = null;
 
+                const viewRoot = document.querySelector(GRID_SELECTOR);
+                const panel = viewRoot ? viewRoot.closest('[data-base3-tab-panel]') : null;
+                if(panel) {
+                        panel.addEventListener('base3:tab-control:unload', () => {
+                                if(grid) grid.destroy();
+                                if(editorDialog) editorDialog.destroy();
+                                grid = null;
+                                editorDialog = null;
+                        }, { once: true });
+                }
+
                 function getText(value, placeholder = '-') {
                         if(value === null || value === undefined || value === '') {
                                 return placeholder;
@@ -388,6 +399,7 @@ $typeOptions = $this->_['typeOptions'];
                 }
 
                 function setLog(message) {
+                        if(!viewRoot || !viewRoot.isConnected) return;
                         const logElement = document.querySelector(LOG_SELECTOR);
 
                         if(!logElement) {
@@ -911,6 +923,7 @@ $typeOptions = $this->_['typeOptions'];
                                 import(MODULAR_GRID_URL),
                                 import(MODULAR_DIALOG_URL)
                         ]);
+                        if(!root.isConnected) return;
 
                         initEditorDialog(modularDialogModule);
                         bindEditorEvents();

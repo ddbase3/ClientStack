@@ -201,6 +201,17 @@
         let logTimer = null;
         let logScopesLoaded = false;
 
+        const requests = new Set();
+        const panel = root.closest('[data-base3-tab-panel]');
+        if(panel) {
+                panel.addEventListener('base3:tab-control:unload', () => {
+                        clearInterval(logTimer);
+                        logTimer = null;
+                        for(const controller of requests) controller.abort();
+                        requests.clear();
+                }, { once: true });
+        }
+
         function logSetLoading(state) {
                 root.querySelector("#log-loading").style.display = state ? "flex" : "none";
         }
@@ -257,7 +268,10 @@
         }
 
         async function logRefresh(forceScopes = false) {
+                if(!root.isConnected) return;
                 logSetLoading(true);
+                const controller = new AbortController();
+                requests.add(controller);
 
                 try {
                         const sel = root.querySelector("#log-scope");
@@ -268,10 +282,12 @@
 
                         const response = await fetch(url.toString(), {
                                 method: "GET",
-                                headers: { "Accept": "application/json" }
+                                headers: { "Accept": "application/json" },
+                                signal: controller.signal
                         });
 
                         const text = await response.text();
+                        if(!root.isConnected) return;
                         let json;
 
                         try {
@@ -303,9 +319,10 @@
 
                 } catch (err) {
                         // silent UI (wie bei embedding queue)
+                } finally {
+                        requests.delete(controller);
+                        if(root.isConnected) logSetLoading(false);
                 }
-
-                logSetLoading(false);
         }
 
         function logToggleAutoRefresh() {

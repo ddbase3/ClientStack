@@ -10,6 +10,7 @@ use Base3\LinkTarget\Api\ILinkTargetService;
 final class TabControlDisplay implements IDisplay {
 
 	private const DISPLAY_DATA_PARAMETER = 'base3_display_data';
+	private const ACTIVE_TAB_PARAMETER = 'base3_tab';
 
 	private array $data = [];
 
@@ -30,12 +31,17 @@ final class TabControlDisplay implements IDisplay {
 	public function getOutput(string $out = 'html', bool $final = false): string {
 		$displayInstances = [];
 		$tabs = $this->normalizeTabs($this->data['tabs'] ?? [], $displayInstances);
-		$activeEntryName = $this->resolveActiveEntryName(
+		$defaultEntryName = $this->resolveActiveEntryName(
 			$tabs,
 			isset($this->data['active']) && is_scalar($this->data['active'])
 				? trim((string) $this->data['active'])
 				: ''
 		);
+		$requestedEntryName = $_GET[self::ACTIVE_TAB_PARAMETER] ?? null;
+		$activeEntryName = is_string($requestedEntryName)
+			&& $this->getDisplayConfig($tabs, $requestedEntryName) !== null
+				? $requestedEntryName
+				: $defaultEntryName;
 
 		$activeTabName = $this->resolveActiveTabName($tabs, $activeEntryName);
 		$activeDisplay = $this->getDisplayConfig($tabs, $activeEntryName);
@@ -50,6 +56,7 @@ final class TabControlDisplay implements IDisplay {
 		$this->view->assign('tabs', $tabs);
 		$this->view->assign('activeTab', $activeTabName);
 		$this->view->assign('activeDisplay', $activeEntryName);
+		$this->view->assign('defaultDisplay', $defaultEntryName);
 		$this->view->assign('activeUrl', (string) ($activeDisplay['url'] ?? ''));
 		$this->view->assign('content', $content);
 		$this->view->assign(
@@ -136,6 +143,7 @@ final class TabControlDisplay implements IDisplay {
 
 				$displays[] = [
 					'name' => $entryName,
+					'href' => $this->createHistoryUrl($entryName),
 					'display' => $displayName,
 					'label' => $this->readLabel($displayData, $entryName),
 					'data' => $displayData['data'] ?? null,
@@ -252,6 +260,27 @@ final class TabControlDisplay implements IDisplay {
 
 		$label = trim((string) $data['label']);
 		return $label !== '' ? $label : $fallback;
+	}
+
+	private function createHistoryUrl(string $entryName): string {
+		$requestUri = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''));
+		$path = is_array($requestUri) ? (string) ($requestUri['path'] ?? '') : '';
+		$query = is_array($requestUri) ? (string) ($requestUri['query'] ?? '') : '';
+		$parts = [];
+
+		foreach(explode('&', $query) as $part) {
+			if($part === '') {
+				continue;
+			}
+
+			$name = explode('=', $part, 2)[0];
+			if(rawurldecode($name) !== self::ACTIVE_TAB_PARAMETER) {
+				$parts[] = $part;
+			}
+		}
+
+		$parts[] = self::ACTIVE_TAB_PARAMETER . '=' . rawurlencode($entryName);
+		return $path . '?' . implode('&', $parts);
 	}
 
 	private function encodeDisplayData(mixed $data): string {

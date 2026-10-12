@@ -407,6 +407,17 @@ $expiresStateOptions = is_array($this->_['expiresStateOptions'] ?? null) ? $this
                 let editorContent = null;
                 let currentEditorRecord = null;
 
+                const viewRoot = document.querySelector(GRID_SELECTOR);
+                const panel = viewRoot ? viewRoot.closest('[data-base3-tab-panel]') : null;
+                if(panel) {
+                        panel.addEventListener('base3:tab-control:unload', () => {
+                                if(grid) grid.destroy();
+                                if(editorDialog) editorDialog.destroy();
+                                grid = null;
+                                editorDialog = null;
+                        }, { once: true });
+                }
+
                 function getText(value, placeholder = '-') {
                         if(value === null || value === undefined || value === '') {
                                 return placeholder;
@@ -416,6 +427,7 @@ $expiresStateOptions = is_array($this->_['expiresStateOptions'] ?? null) ? $this
                 }
 
                 function setLog(message) {
+                        if(!viewRoot || !viewRoot.isConnected) return;
                         const logElement = document.querySelector(LOG_SELECTOR);
 
                         if(!logElement) {
@@ -976,10 +988,12 @@ $expiresStateOptions = is_array($this->_['expiresStateOptions'] ?? null) ? $this
                         root.dataset.initialized = '1';
 
                         const modularGridModule = await import(MODULAR_GRID_URL);
+                        if(!root.isConnected) return;
                         let editorInitializationError = '';
 
                         try {
                                 const modularDialogModule = await import(MODULAR_DIALOG_URL);
+                                if(!root.isConnected) return;
                                 initEditorDialog(modularDialogModule);
                                 bindEditorEvents();
                         }
