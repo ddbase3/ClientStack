@@ -237,3 +237,11 @@ assets/mermaid/mermaid.min.js
 
 - [Frequently Asked Questions](docs/faq.md)
 - [Privacy and data processing](PRIVACY.md)
+
+## TabControlDisplay initial loading
+
+`TabControlDisplay` normally renders the initial active display on the server and loads subsequent tabs through the configured display URLs.
+
+When the calling application provides `initial_load_via_ajax => true` in the control's `setData()` array, the first display is also loaded through the existing AJAX tab navigation. The initial HTML contains an empty panel; the browser fetches the selected display through the same `loadTarget()` function used after clicking a tab. This is appropriate for host adapters whose AJAX endpoint must prepare display data before rendering. The option does not modify display configuration or file handling and defaults to `false` for existing consumers.
+
+The calling application must make the configured display URL accessible in the authenticated browser context and provide a working JavaScript runtime. Loading and error messages are managed by the existing tab control.

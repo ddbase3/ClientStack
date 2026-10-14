@@ -45,7 +45,8 @@ final class TabControlDisplay implements IDisplay {
 
 		$activeTabName = $this->resolveActiveTabName($tabs, $activeEntryName);
 		$activeDisplay = $this->getDisplayConfig($tabs, $activeEntryName);
-		$content = $this->renderDisplay(
+		$initialLoadViaAjax = !empty($this->data['initial_load_via_ajax']);
+		$content = $initialLoadViaAjax ? '' : $this->renderDisplay(
 			$displayInstances[$activeEntryName] ?? null,
 			$activeDisplay['data'] ?? null
 		);
@@ -58,6 +59,7 @@ final class TabControlDisplay implements IDisplay {
 		$this->view->assign('activeDisplay', $activeEntryName);
 		$this->view->assign('defaultDisplay', $defaultEntryName);
 		$this->view->assign('activeUrl', (string) ($activeDisplay['url'] ?? ''));
+		$this->view->assign('initialLoadViaAjax', $initialLoadViaAjax);
 		$this->view->assign('content', $content);
 		$this->view->assign(
 			'emptyMessage',

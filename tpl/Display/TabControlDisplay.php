@@ -5,6 +5,7 @@
 	$activeDisplay = (string) $this->_['activeDisplay'];
 	$defaultDisplay = (string) $this->_['defaultDisplay'];
 	$activeUrl = (string) $this->_['activeUrl'];
+	$initialLoadViaAjax = (bool) $this->_['initialLoadViaAjax'];
 	$content = (string) $this->_['content'];
 	$emptyMessage = (string) $this->_['emptyMessage'];
 ?>
@@ -13,6 +14,7 @@
 	class="base3-tab-control"
 	data-base3-tab-control
 	data-base3-tab-default="<?php echo htmlspecialchars($defaultDisplay, ENT_QUOTES, 'UTF-8'); ?>"
+	data-base3-tab-initial-load="<?php echo $initialLoadViaAjax ? 'ajax' : 'server'; ?>"
 	aria-busy="false"
 >
 	<?php if(count($tabs) === 0): ?>
@@ -75,12 +77,12 @@
 		</div>
 
 		<div class="base3-tab-control-stage">
-			<div class="base3-tab-control-loading" data-base3-tab-loading hidden>
+			<div class="base3-tab-control-loading" data-base3-tab-loading role="status" aria-live="polite" hidden>
 				<span class="base3-tab-control-spinner" aria-hidden="true"></span>
 				<span>Loading…</span>
 			</div>
 
-			<div class="base3-tab-control-message" data-base3-tab-message hidden></div>
+			<div class="base3-tab-control-message" data-base3-tab-message role="alert" hidden></div>
 
 			<div class="base3-tab-control-content" data-base3-tab-content>
 				<section
@@ -756,5 +758,12 @@
 	}
 
 	installOverflowLayout();
+
+	if(root.dataset.base3TabInitialLoad === "ajax") {
+		const initialLink = getConfiguredLink(activeTarget);
+		if(initialLink) {
+			loadTarget(activeTarget, getUrl(initialLink));
+		}
+	}
 })();
 </script>

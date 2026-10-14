@@ -225,3 +225,7 @@ A privacy review for a concrete application must therefore consider both layers 
 ## Related documentation
 
 See [docs/faq.md](docs/faq.md) for operational and architectural questions about ClientStack.
+
+## TabControlDisplay first-tab AJAX rendering
+
+`TabControlDisplay` now supports `initial_load_via_ajax` as a caller-controlled rendering choice. When enabled, the browser requests the initially active display with the same same-origin `fetch()` mechanism (`credentials: "same-origin"`, `cache: "no-store"`) already used for subsequent tab navigation. This does not add a data store, new recipient, separate cookie, upload endpoint, or ClientStack-owned persistence. The target display URL and its request parameters are supplied by the embedding application; the host must apply the same authorization to initial and later display requests. The browser request and its metadata may appear in host or infrastructure access logs subject to host retention policies. ClientStack does not define those retention periods.
