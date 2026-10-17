@@ -229,3 +229,40 @@ See [docs/faq.md](docs/faq.md) for operational and architectural questions about
 ## TabControlDisplay first-tab AJAX rendering
 
 `TabControlDisplay` now supports `initial_load_via_ajax` as a caller-controlled rendering choice. When enabled, the browser requests the initially active display with the same same-origin `fetch()` mechanism (`credentials: "same-origin"`, `cache: "no-store"`) already used for subsequent tab navigation. This does not add a data store, new recipient, separate cookie, upload endpoint, or ClientStack-owned persistence. The target display URL and its request parameters are supplied by the embedding application; the host must apply the same authorization to initial and later display requests. The browser request and its metadata may appear in host or infrastructure access logs subject to host retention policies. ClientStack does not define those retention periods.
+
+
+## Global chatbot launcher (October 2026)
+
+`GlobalChatbotLauncher` is a platform-neutral UI shell. On initialization it
+reads a BASE3-owned window-configuration dataset (`global-chatbot-launcher/default`)
+through the host integration. The dataset stores boolean layout options; the
+backend-specific `ISettingsStore` determines its physical storage and retention.
+Administrators can change the dataset through `GlobalChatbotLauncherConfigDisplay`,
+which checks BASE3 `IUsermanager::can(Permission::for('system', 'admin'))`.
+
+The browser shell uses origin-scoped `localStorage` for the last selected mode and
+user-resized dimensions, and `sessionStorage` for whether the overlay/sidebar
+should reopen in the same tab after navigation. Keys include the configured
+chatbot group/name (not the user's name). Storage is removed or replaced through
+ordinary browser controls or subsequent interactions; no automatic age-based
+expiry is implemented. The browser may retain local-storage values until cleared.
+
+The shell requests server-rendered chatbot markup at a host-provided same-origin
+URL. The chatbot feature and configured AI providers control the ensuing data
+processing. The launcher itself does not read/store conversation contents or
+contact third-party endpoints. Actual retention, recipients, transfers and
+hosting for the chatbot backend remain deployment-specific and must be verified
+separately.
+
+The GlobalChatbotLauncher source is an explicitly versioned exception to the
+otherwise temporary `dev/` clones; its checked-in `src/` files are mirrored
+unchanged to `assets/globalchatbotlauncher/`. No third-party CDN or external
+asset loader is required by this UI shell.
+
+
+### Global launcher header formatting (October 2026)
+
+The launcher displays administrator-supplied title emphasis in the existing
+header element. It renders only simple formatting tags and discards all
+attributes and executable elements. This change does not introduce new
+collection, storage, retention, external recipients or transmissions.

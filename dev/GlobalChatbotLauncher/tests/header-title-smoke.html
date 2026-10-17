@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Global chatbot header test</title></head>
+<body data-test="pending">
+<div hidden data-base3-global-chatbot-launcher
+ data-ajax-url="/mock-chat" data-button-label="Open chatbot"
+ data-header-title="Ask &lt;strong class='unsafe' onclick='window.titleAttack=1'&gt;KIM&lt;/strong&gt;&lt;img src='bad' onerror='window.titleAttack=1'&gt;&lt;script&gt;window.titleAttack=1&lt;/script&gt;"
+ data-close-label="Close" data-loading-label="Loading" data-load-error="Error"
+ data-mode-overlay-enabled="1" data-mode-modal-enabled="0"
+ data-mode-docked-enabled="0" data-mode-cover-enabled="0" data-mode-fullscreen-enabled="0"
+ data-config-group="test" data-config-name="title-regression"></div>
+<script type="module">
+import { initializeGlobalChatbotLaunchers } from '../src/GlobalChatbotLauncher.js';
+initializeGlobalChatbotLaunchers();
+const title = document.getElementById('base3-chatbot-panel-title');
+const panel = document.getElementById('base3-chatbot-panel');
+const strong = title?.querySelector('strong');
+const ok = title?.textContent === 'Ask KIM'
+ && strong?.textContent === 'KIM'
+ && !strong?.hasAttribute('onclick')
+ && !strong?.hasAttribute('class')
+ && !title?.querySelector('img, script, iframe, style')
+ && panel?.getAttribute('aria-label') === 'Ask KIM'
+ && window.titleAttack !== 1;
+document.body.dataset.test = ok ? 'passed' : 'failed';
+</script>
+</body>
+</html>

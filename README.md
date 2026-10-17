@@ -245,3 +245,29 @@ assets/mermaid/mermaid.min.js
 When the calling application provides `initial_load_via_ajax => true` in the control's `setData()` array, the first display is also loaded through the existing AJAX tab navigation. The initial HTML contains an empty panel; the browser fetches the selected display through the same `loadTarget()` function used after clicking a tab. This is appropriate for host adapters whose AJAX endpoint must prepare display data before rendering. The option does not modify display configuration or file handling and defaults to `false` for existing consumers.
 
 The calling application must make the configured display URL accessible in the authenticated browser context and provide a working JavaScript runtime. Loading and error messages are managed by the existing tab control.
+
+## Global Chatbot Launcher
+
+The platform-neutral global launcher is implemented once as an ES module under
+`dev/GlobalChatbotLauncher/src/`. It publishes unchanged to
+`assets/globalchatbotlauncher/` using `deploy-global-chatbot-launcher.sh`.
+The new `GlobalChatbotLauncherConfigDisplay` stores presentation-only settings in
+`ISettingsStore` dataset `global-chatbot-launcher/default`. It is independent of
+chatbot backends, host permissions, and per-content chatbot identities.
+
+Host adapters must only produce the launcher bootstrap element with a render URL,
+labels, appearance, instance identity, and the settings read from the store,
+then include the shared script and stylesheet through `IAssetResolver`.
+
+An open overlay or sidebar can be restored after a full navigation within the
+same browser tab when the respective option is enabled. The last display mode and
+resized dimensions are kept in browser local storage. Window-open state is kept
+in session storage. Browser fullscreen requires a user gesture and is never
+entered automatically during restoration.
+
+
+The global launcher's `data-header-title` can contain simple emphasis
+markup (`strong`, `b`, `em`, `i`) and line breaks. The ES module preserves
+these elements while discarding all supplied attributes and non-formatting
+elements; executable HTML is not accepted. The resulting text is used for
+the panel's accessible label.
