@@ -266,8 +266,17 @@ in session storage. Browser fullscreen requires a user gesture and is never
 entered automatically during restoration.
 
 
-The global launcher's `data-header-title` can contain simple emphasis
-markup (`strong`, `b`, `em`, `i`) and line breaks. The ES module preserves
-these elements while discarding all supplied attributes and non-formatting
-elements; executable HTML is not accepted. The resulting text is used for
-the panel's accessible label.
+## ModularChatbot Markdown in AMD hosts
+
+`MarkdownPlugin` uses the local `assets/marked/marked.js` UMD bundle. On
+RequireJS/AMD hosts (such as Moodle), the UMD bundle registers a named
+`marked` AMD module instead of setting `window.marked`. The plugin now
+waits for the local script to load and resolves that AMD export when the
+normal global parser is absent. It stores the parser on the plugin context,
+so no new global object or host-specific loader is needed.
+
+The canonical source is `dev/ModularChatbot/src/plugins/MarkdownPlugin.js`;
+`deploy-modular-chatbot.sh` copies it to
+`assets/modularchatbot/plugins/MarkdownPlugin.js`. Both versions must remain
+identical. The corresponding ES-module `index.js` import is versioned to
+invalidate the previous browser module cache. Test with `node test/MarkdownPluginAmdSmokeTest.mjs`.

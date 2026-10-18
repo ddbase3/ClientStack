@@ -274,3 +274,14 @@ header. Where configured, it adjusts only that header's inline layout while
 the sidebar is open and restores its original values on close. This is a
 visual DOM/CSS change: it does not add browser storage, collect personal data,
 change network requests, or change retention or third-party recipients.
+
+
+### ModularChatbot Markdown script resolution (October 2026)
+
+The existing locally served `marked.js` bundle can now be resolved as an AMD
+module when the host page uses RequireJS. The same local browser resource and
+message-rendering flow are retained. The change does not introduce external
+asset hosts, a new data store, new network recipients or an additional data
+retention mechanism. Chat message content remains processed by the existing
+modular client and the host-configured chatbot services; those services and
+their retention policies are unchanged by this correction.

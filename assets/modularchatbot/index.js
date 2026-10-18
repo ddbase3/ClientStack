@@ -49,7 +49,7 @@ export { ShimmerAgentActivityRenderer } from './plugins/agent-activity/ShimmerAg
 export { AgentInteractionPlugin } from './plugins/AgentInteractionPlugin.js?build=hitl-terminal-layout-2';
 export { CanvasPlugin } from './plugins/CanvasPlugin.js?build=conversation-draft-1';
 export { ConversationPlugin } from './plugins/ConversationPlugin.js?build=hitl-lifecycle-1';
-export { MarkdownPlugin } from './plugins/MarkdownPlugin.js?build=initial-message-multiline-1';
+export { MarkdownPlugin } from './plugins/MarkdownPlugin.js?build=amd-host-parser-1';
 export { MessageActionsPlugin } from './plugins/MessageActionsPlugin.js?build=initial-no-actions-1';
 export { ReferencePlugin } from './plugins/ReferencePlugin.js?build=conversation-draft-1';
 export { SuggestionsPlugin } from './plugins/SuggestionsPlugin.js?build=conversation-draft-1';
