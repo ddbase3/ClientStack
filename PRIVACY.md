@@ -266,3 +266,11 @@ The launcher displays administrator-supplied title emphasis in the existing
 header element. It renders only simple formatting tags and discards all
 attributes and executable elements. This change does not introduce new
 collection, storage, retention, external recipients or transmissions.
+
+### Docked launcher stacking and host headers (October 2026)
+
+The docked launcher has display priority over a host's fixed administration
+header. Where configured, it adjusts only that header's inline layout while
+the sidebar is open and restores its original values on close. This is a
+visual DOM/CSS change: it does not add browser storage, collect personal data,
+change network requests, or change retention or third-party recipients.

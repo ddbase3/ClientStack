@@ -117,7 +117,8 @@
 	right: 0;
 	bottom: 0;
 	left: auto;
-	z-index: 99997;
+	/* Keep the docked panel above fixed host toolbars (e.g. WordPress admin bar). */
+	z-index: 100000;
 	width: min(var(--base3-chatbot-docked-width), 70vw);
 	height: 100dvh;
 	min-width: min(360px, 70vw);
