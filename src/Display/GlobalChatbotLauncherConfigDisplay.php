@@ -7,8 +7,9 @@ use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Settings\Api\ISettingsStore;
-use Base3\Usermanager\Api\IUsermanager;
 use Base3\Usermanager\Permission;
+use Base3\Authorization\Api\IAuthorizationService;
+use Base3\Authorization\Dto\AuthorizationRequest;
 use ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherSettings;
 use Throwable;
 
@@ -24,7 +25,7 @@ final class GlobalChatbotLauncherConfigDisplay implements IDisplay {
 		private readonly IRequest $request,
 		private readonly ISettingsStore $settingsStore,
 		private readonly ILinkTargetService $linkTargetService,
-		private readonly IUsermanager $usermanager
+		private readonly IAuthorizationService $authorization
 	) {}
 
 	public static function getName(): string {
@@ -40,7 +41,7 @@ final class GlobalChatbotLauncherConfigDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
-		if (!$this->usermanager->can(Permission::for('system', 'admin'))) {
+		if (!$this->authorization->decide(new AuthorizationRequest($this->authorization->getDefaultAuthority(), Permission::for('system', 'admin')))->isAllowed()) {
 			http_response_code(403);
 			return $out === 'json'
 				? json_encode(['success' => false, 'message' => 'Access denied.'], JSON_THROW_ON_ERROR)

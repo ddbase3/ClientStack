@@ -39,7 +39,7 @@
 	<div class="um-section">
 		<div class="um-section-head">
 			<h4>Permission Lookup</h4>
-			<div class="um-description">Prüft gezielt <span class="mono">IUsermanager::can()</span> gegen den aktuell verdrahteten Adapter. Der JSON-Endpunkt wird über <span class="mono">ILinkTargetService</span> erzeugt.</div>
+			<div class="um-description">Prüft gezielt <span class="mono">IAuthorizationService::decide()</span> gegen den aktuell verdrahteten Adapter. Der JSON-Endpunkt wird über <span class="mono">ILinkTargetService</span> erzeugt.</div>
 		</div>
 
 		<div class="um-actions">

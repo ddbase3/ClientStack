@@ -238,7 +238,7 @@ reads a BASE3-owned window-configuration dataset (`global-chatbot-launcher/defau
 through the host integration. The dataset stores boolean layout options; the
 backend-specific `ISettingsStore` determines its physical storage and retention.
 Administrators can change the dataset through `GlobalChatbotLauncherConfigDisplay`,
-which checks BASE3 `IUsermanager::can(Permission::for('system', 'admin'))`.
+which checks BASE3 `IAuthorizationService::decide()` for `system/admin`.
 
 The browser shell uses origin-scoped `localStorage` for the last selected mode and
 user-resized dimensions, and `sessionStorage` for whether the overlay/sidebar
@@ -285,3 +285,12 @@ asset hosts, a new data store, new network recipients or an additional data
 retention mechanism. Chat message content remains processed by the existing
 modular client and the host-configured chatbot services; those services and
 their retention policies are unchanged by this correction.
+
+## Authorization update (2026-10-19)
+
+The launcher configuration and usermanager diagnostics now use the project-bound
+`IAuthorizationService` and its selected host authority for system administration
+checks instead of `IUsermanager::can()`. No separate user-role or permission table is
+created. The host authorization backend owns its logs, access state, cache expiry and
+retention. The debug display may expose native roles and rights to authorized operators;
+restrict its route accordingly.

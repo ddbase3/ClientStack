@@ -8,6 +8,9 @@ use Base3\Api\IRequest;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Usermanager\Api\IUsermanager;
 use Base3\Usermanager\Permission;
+use Base3\Authorization\Api\IAuthorizationService;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Authorization\Dto\ResourceReference;
 use Base3\Usermanager\Role;
 use Throwable;
 
@@ -37,7 +40,8 @@ final class UsermanagerDebugDisplay implements IDisplay {
 		private readonly IRequest $request,
 		private readonly IMvcView $view,
 		private readonly ILinkTargetService $linkTargetService,
-		private readonly IUsermanager $usermanager
+		private readonly IUsermanager $usermanager,
+		private readonly IAuthorizationService $authorization
 	) {}
 
 	public static function getName(): string {
@@ -177,9 +181,10 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	}
 
 	private function checkPermission(string $scope, string $operation, int|string|null $target): array {
-		$permission = Permission::for($scope, $operation, $target);
-		$call = $this->call('can(' . $scope . '/' . $operation . ')', fn() => $this->usermanager->can($permission));
-		$allowed = $call['ok'] && $call['value'] === true;
+		$permission = Permission::for($scope, $operation);
+		$resource = $target !== null ? new ResourceReference($this->authorization->getDefaultAuthority(), 'ref_id', $target) : null;
+		$call = $this->call('decide(' . $scope . '/' . $operation . ')', fn() => $this->authorization->decide(new AuthorizationRequest($this->authorization->getDefaultAuthority(), $permission, $resource)));
+		$allowed = $call['ok'] && $call['value']?->isAllowed() === true;
 
 		return [
 			'label' => $operation,
@@ -460,13 +465,10 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	}
 
 	private function buildUsage(string $scope, string $operation, int|string|null $target): string {
-		return "\$allowed = \$this->usermanager->can(Permission::for("
-			. $this->phpValue($scope)
-			. ', '
-			. $this->phpValue($operation)
-			. ', '
-			. $this->phpValue($target)
-			. '));';
+		$resource = $target === null ? 'null' : "new ResourceReference(" . $this->phpValue($this->authorization->getDefaultAuthority()) . ", 'ref_id', " . $this->phpValue($target) . ')';
+		return '$allowed = $authorization->decide(new AuthorizationRequest(' . $this->phpValue($this->authorization->getDefaultAuthority()) . ', Permission::for('
+			. $this->phpValue($scope) . ', ' . $this->phpValue($operation)
+			. '), ' . $resource . '))->isAllowed();';
 	}
 
 	private function phpValue(int|string|null $value): string {
