@@ -294,3 +294,7 @@ checks instead of `IUsermanager::can()`. No separate user-role or permission tab
 created. The host authorization backend owns its logs, access state, cache expiry and
 retention. The debug display may expose native roles and rights to authorized operators;
 restrict its route accordingly.
+
+## Authorization administration UI refactor
+
+The shared ClientStack screens do not create another persistence layer. ILIAS group identifiers, user and role criterion IDs, and feature audience expressions continue to be processed and stored solely by the configured ILIAS host services. Access is checked server-side; POST mutations require a session CSRF token. The new UiFoundation interface provides no storage. Retention and erasure continue to follow the host settings backend as previously documented.

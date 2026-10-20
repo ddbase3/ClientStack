@@ -280,3 +280,9 @@ The canonical source is `dev/ModularChatbot/src/plugins/MarkdownPlugin.js`;
 `assets/modularchatbot/plugins/MarkdownPlugin.js`. Both versions must remain
 identical. The corresponding ES-module `index.js` import is versioned to
 invalidate the previous browser module cache. Test with `node test/MarkdownPluginAmdSmokeTest.mjs`.
+
+## Shared authorization administration UI
+
+`AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` are cross-host interfaces rendered in ClientStack. They require `UiFoundation\Api\IAuthorizationAudienceAdministrationService`, and perform a fresh `IAuthorizationService::decide(system/admin)` check before accessing backend data or accepting mutations. The host backend performs additional native guards; an AJAX action is not trusted merely because its tab was visible. The shared native-resource `AuthorizationAdministrationDisplay` remains unchanged.
+
+The forms retain the BASE3 any/all/not criterion grammar, show fixed code-owned memberships separately, and submit POST data with per-session CSRF tokens. Role suggestions and accepted criterion names come from the host service, not the UI. Without a configured host backend, these screens must not be included in navigation.
