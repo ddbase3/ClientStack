@@ -1,15 +1,14 @@
 <script>
 (() => {
 	if (window.BASE3AudienceEditor) return;
-	const esc = (v) => String(v);
 	function readConfig(row) {
 		try { return JSON.parse(row.querySelector('[data-audience-json]').value || '{}'); }
 		catch (_) { return {}; }
 	}
-	function fieldInput(name, definition, value) {
+	function fieldInput(name, displayName, definition, value, arrayPlaceholder) {
 		const label = document.createElement('label');
 		label.className = 'base3-audience-field';
-		label.textContent = name + ((definition.required) ? ' *' : '');
+		label.textContent = displayName + ((definition.required) ? ' *' : '');
 		const types = Array.isArray(definition.type) ? definition.type : [definition.type];
 		let input;
 		if (Array.isArray(definition.enum)) {
@@ -30,7 +29,7 @@
 		} else {
 			input = document.createElement('input');
 			input.type = 'text';
-			if (types.includes('array')) input.placeholder = 'Comma-separated values';
+			if (types.includes('array')) input.placeholder = arrayPlaceholder;
 		}
 		input.dataset.criterionProperty = name;
 		input.dataset.criterionType = types[0] || 'string';
@@ -53,6 +52,11 @@
 		container.replaceChildren();
 		if (kind !== 'criterion') return;
 		if (reset) area.value = '{}';
+		if (name === '') {
+			jsonWrap.hidden = true;
+			schemaText.textContent = '';
+			return;
+		}
 		const simple = schema.type === 'object' && Object.values(properties).every((prop) => {
 			const type = Array.isArray(prop.type) ? prop.type : [prop.type];
 			return type.some((t) => ['string', 'integer', 'number', 'boolean', 'array'].includes(t))
@@ -60,7 +64,7 @@
 		});
 		jsonWrap.hidden = simple;
 		if (!simple) {
-			schemaText.textContent = schema.description || 'Enter configuration according to the criterion schema.';
+			schemaText.textContent = schema.description || editor.dataset.schemaJsonHint;
 			return;
 		}
 		const current = readConfig(row);
@@ -81,37 +85,53 @@
 			area.value = JSON.stringify(data);
 		}
 		for (const [prop, definition] of Object.entries(properties)) {
-			const field = fieldInput(prop, {...definition, required: (schema.required || []).includes(prop)}, current[prop]);
+			const displayName = String(definition.title || prop);
+			const field = fieldInput(prop, displayName, {...definition, required: (schema.required || []).includes(prop)}, current[prop], editor.dataset.arrayPlaceholder);
 			container.append(field);
 			field.addEventListener('input', sync);
 			field.addEventListener('change', sync);
 		}
-		schemaText.textContent = Object.keys(properties).length ? 'Fields derived from the discovered criterion schema.' : 'This criterion has no parameters.';
+		schemaText.textContent = Object.keys(properties).length ? editor.dataset.schemaFieldsHint : editor.dataset.schemaNoFields;
 		sync();
 	}
 	function configureRow(editor, row, reset = false) {
 		const kind = row.querySelector('[data-audience-kind]').value;
-		for (const [type, selector] of [['user','number'],['role','number'],['group','group'],['criterion','criterion']]) {
-			const wrap = row.querySelector('[data-audience-' + selector + '-wrap]');
-			if (wrap) wrap.hidden = !(kind === type || selector === 'number' && ['user','role'].includes(kind));
+		row.dataset.kind = kind;
+		const role = row.querySelector('[data-audience-role]');
+		const numberActive = kind === 'user' || (kind === 'role' && !role);
+		row.querySelector('[data-audience-number-wrap]').hidden = !numberActive;
+		const roleWrap = row.querySelector('[data-audience-role-wrap]');
+		if (roleWrap) roleWrap.hidden = kind !== 'role';
+		for (const type of ['group', 'criterion']) {
+			const wrap = row.querySelector('[data-audience-' + type + '-wrap]');
+			if (wrap) wrap.hidden = kind !== type;
 		}
 		const number = row.querySelector('[data-audience-number]');
 		const group = row.querySelector('[data-audience-group]');
 		const criterion = row.querySelector('[data-audience-criterion]');
 		const config = row.querySelector('[data-audience-json]');
-		row.querySelector('[data-audience-config-wrap]').hidden = !['criterion','expression'].includes(kind);
-		number.disabled = !['user','role'].includes(kind);
-		number.required = !number.disabled;
-		if (kind === 'role') number.setAttribute('list', editor.dataset.roleListId);
-		else number.removeAttribute('list');
-		row.querySelector('[data-audience-number-label]').textContent = kind === 'role' ? 'native role object ID' : 'native user ID';
+		const configActive = kind === 'expression' || (kind === 'criterion' && criterion.value !== '');
+		row.querySelector('[data-audience-config-wrap]').hidden = !configActive;
+		number.disabled = !numberActive;
+		number.required = numberActive;
+		if (role) {
+			role.disabled = kind !== 'role';
+			role.required = !role.disabled;
+		}
+		row.querySelector('[data-audience-number-label]').textContent = kind === 'role' ? editor.dataset.roleLabel : editor.dataset.userLabel;
 		if (group) { group.disabled = kind !== 'group'; group.required = !group.disabled; }
 		criterion.disabled = kind !== 'criterion';
 		criterion.required = !criterion.disabled;
-		config.disabled = !['criterion','expression'].includes(kind);
-		config.required = !config.disabled;
+		config.disabled = !configActive;
+		config.required = configActive;
 		row.querySelector('[data-audience-json-wrap]').hidden = kind !== 'expression';
+		row.querySelector('[data-audience-json-label]').textContent = kind === 'expression' ? editor.dataset.expressionLabel : editor.dataset.configLabel;
 		if (kind === 'criterion') configureCriterion(editor, row, reset);
+		else {
+			// Remove fields from the previous criterion without changing the underlying JSON value.
+			row.querySelector('[data-audience-properties]').replaceChildren();
+			row.querySelector('[data-audience-schema]').textContent = '';
+		}
 	}
 	function bind(editor) {
 		if (editor.dataset.audienceBound === 'true') return;
@@ -121,7 +141,7 @@
 			const row = event.target.closest('[data-audience-row]');
 			if (!row) return;
 			if (event.target.matches('[data-audience-kind]')) configureRow(editor, row, true);
-			if (event.target.matches('[data-audience-criterion]')) configureCriterion(editor, row, true);
+			if (event.target.matches('[data-audience-criterion]')) configureRow(editor, row, true);
 		});
 		editor.addEventListener('click', (event) => {
 			const remove = event.target.closest('[data-audience-remove]');

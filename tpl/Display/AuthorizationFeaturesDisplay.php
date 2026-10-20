@@ -24,7 +24,6 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 				$editorRows = $feature['rules'];
 				$allowGroups = true;
 				$allowRoles = true;
-				$roleListId = 'base3-authorization-feature-role-options';
 				require __DIR__ . '/AuthorizationAudienceEditor.php';
 				?>
 			</fieldset>
@@ -33,12 +32,7 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 		<input type="hidden" name="base3_feature_csrf" value="<?php echo $esc((string)$this->_['csrf']); ?>">
 		<button type="submit" class="btn btn-primary"><?php echo $esc($t('save', 'Save feature audiences')); ?></button>
 	</form>
-	<datalist id="base3-authorization-feature-role-options">
-		<?php foreach ((array)($this->_['roleOptions'] ?? []) as $role): ?>
-			<option value="<?php echo (int)$role['id']; ?>" label="<?php echo $esc((string)$role['label']); ?>"></option>
-		<?php endforeach; ?>
-	</datalist>
-	<p class="base3-audience-hint"><?php echo $esc($t('roles_hint', 'Available native role suggestions are offered; additional native role IDs may be accepted by the host.')); ?></p>
+	<p class="base3-audience-hint"><?php echo $esc($t('roles_hint', 'Native role names come from the host; role identifiers remain unchanged when saved.')); ?></p>
 </section>
 <?php require __DIR__ . '/AuthorizationAudienceStyles.php'; ?>
 <?php require __DIR__ . '/AuthorizationAudienceScript.php'; ?>

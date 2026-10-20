@@ -285,4 +285,21 @@ invalidate the previous browser module cache. Test with `node test/MarkdownPlugi
 
 `AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` are cross-host interfaces rendered in ClientStack. They require `UiFoundation\Api\IAuthorizationAudienceAdministrationService`, and perform a fresh `IAuthorizationService::decide(system/admin)` check before accessing backend data or accepting mutations. The host backend performs additional native guards; an AJAX action is not trusted merely because its tab was visible. The shared native-resource `AuthorizationAdministrationDisplay` remains unchanged.
 
-The forms retain the BASE3 any/all/not criterion grammar, show fixed code-owned memberships separately, and submit POST data with per-session CSRF tokens. Role suggestions and accepted criterion names come from the host service, not the UI. Without a configured host backend, these screens must not be included in navigation.
+The Groups and Features displays share a responsive audience editor with compact inputs, criterion fields below the assignment selector, and an advanced JSON area shown only when applicable. Generic editor labels are translated in ClientStack; criterion-specific display titles and property titles come from the criterion schema supplied by its owning module. Host-specific identifiers and existing form names are not modified. This UI update does not introduce directory lookups or change authorization, persistence, or feature evaluation.
+
+
+Host-managed groups provide a delete button next to their group description; code-defined groups do not. Deletion reuses the already-existing host removal operation, authorization and CSRF protection. Referenced or fallback groups remain protected by the host.
+
+The forms retain the BASE3 any/all/not criterion grammar, show fixed code-owned memberships separately, and submit POST data with per-session CSRF tokens. Native role names and identifiers come from the existing host view; the editor shows role names and submits the original identifiers. When the host provides no role catalog, the existing numeric ID input remains available. Accepted criterion names continue to come from the host service. Without a configured host backend, these screens must not be included in navigation.
+
+## Group and feature audience editor
+
+`AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` share the same
+`AuthorizationAudienceEditor` template, row renderer, styling and browser script.
+The advanced-expression JSON editor aligns with the assignment type, and the
+user-facing assignment types are host-neutral (`Group`, `Role`, `User`).
+
+Group, role and criterion selects start with an explicit, non-selectable placeholder instead of silently preselecting the first value. The criterion configuration appears only after choosing a criterion.
+Each discoverable criterion owns its localized `getSchema()["title"]` and its optional `properties[*]["title"]`, using the existing host translation service where available. ClientStack renders those schema fields without recognizing criterion identifiers, translating host/plugin-specific properties, or introducing another label resolver. Technical criterion names and stored expressions remain unchanged. When a schema lacks a title, the technical name is shown rather than inventing a translation.
+The editor currently keeps the existing numeric user-ID entry. It does not
+provide directory search or change the host's `IUsermanager::getAllUsers()`.

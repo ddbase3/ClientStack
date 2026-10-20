@@ -9,6 +9,8 @@ $defaultGroup = (string)($this->_['defaultGroup'] ?? '');
 $translations = (array)($this->_['translations'] ?? []);
 $t = static fn(string $key, string $fallback): string => (string)($translations[$key] ?? $fallback);
 $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$removeForms = [];
+$groupPosition = 0;
 ?>
 <section class="base3-authorization-editor" data-base3-display="authorizationgroupsdisplay">
 	<h3><?php echo $esc($t('page_title', 'BASE3 groups')); ?></h3>
@@ -18,9 +20,24 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 
 	<form method="post" action="<?php echo $esc($endpoint); ?>" data-base3-ajax-form>
 		<?php foreach ($entries as $entry): ?>
+			<?php
+			$groupPosition++;
+			$isManaged = ($entry['source'] ?? '') === 'managed';
+			$removeFormId = 'base3-remove-group-' . $groupPosition;
+			if ($isManaged) $removeForms[] = ['id' => $removeFormId, 'name' => (string)$entry['name']];
+			?>
 			<fieldset>
 				<legend><code><?php echo $esc((string)$entry['name']); ?></code><?php echo $entry['source'] === 'managed' ? ' (' . $esc($t('custom', 'custom')) . ')' : ''; ?></legend>
-				<p class="base3-group-summary"><?php echo $esc((string)$entry['description']); ?></p>
+				<div class="base3-group-heading">
+					<p class="base3-group-summary"><?php echo $esc((string)$entry['description']); ?></p>
+					<?php if ($isManaged): ?>
+						<button type="submit" form="<?php echo $esc($removeFormId); ?>"
+							class="btn btn-default base3-group-delete" data-confirm-remove
+							data-confirm-message="<?php echo $esc(sprintf($t('remove_confirm', 'Delete BASE3 group %s? This cannot be undone.'), (string)$entry['name'])); ?>"
+							aria-label="<?php echo $esc($t('remove_group', 'Delete group') . ': ' . (string)$entry['name']); ?>"
+							title="<?php echo $esc($t('remove_hint', 'Groups referenced by features or fallback cannot be removed.')); ?>"><?php echo $esc($t('remove_group', 'Delete group')); ?></button>
+					<?php endif; ?>
+				</div>
 				<?php if ($entry['codeCriteria'] !== []): ?>
 					<p class="base3-audience-hint">Code-defined membership (always effective, cannot be removed here):
 						<code><?php echo $esc(json_encode($entry['codeCriteria'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)); ?></code>
@@ -31,7 +48,6 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 					$editorPrefix = 'base3_group_rules[' . $entry['name'] . ']';
 					$editorRows = $entry['rows'];
 					$allowRoles = true;
-				$roleListId = 'base3-authorization-group-role-options';
 					$allowGroups = false;
 					require __DIR__ . '/AuthorizationAudienceEditor.php';
 					?>
@@ -68,28 +84,14 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 		</form>
 	</div>
 
-	<?php if (array_filter($entries, static fn(array $entry): bool => $entry['source'] === 'managed')): ?>
-		<div class="base3-section">
-			<h4><?php echo $esc($t('remove_title', 'Remove custom group')); ?></h4>
-			<p><?php echo $esc($t('remove_hint', 'Groups referenced by a feature or fallback cannot be removed.')); ?></p>
-			<?php foreach ($entries as $entry): ?>
-				<?php if ($entry['source'] !== 'managed') continue; ?>
-				<form method="post" action="<?php echo $esc($endpoint); ?>" data-base3-ajax-form class="base3-action-row">
-					<strong><?php echo $esc($entry['name']); ?></strong>
-					<input type="hidden" name="base3_group_name" value="<?php echo $esc($entry['name']); ?>">
-					<input type="hidden" name="base3_group_action" value="remove">
-					<input type="hidden" name="base3_group_csrf" value="<?php echo $esc($csrf); ?>">
-					<button type="submit" class="btn btn-default" data-confirm-remove><?php echo $esc($t('remove', 'Remove')); ?></button>
-				</form>
-			<?php endforeach; ?>
-		</div>
-	<?php endif; ?>
-	<datalist id="base3-authorization-group-role-options">
-		<?php foreach ((array)($this->_['roleOptions'] ?? []) as $role): ?>
-			<option value="<?php echo (int)$role['id']; ?>" label="<?php echo $esc((string)$role['label']); ?>"></option>
-		<?php endforeach; ?>
-	</datalist>
-	<p class="base3-audience-hint"><?php echo $esc($t('roles_hint', 'Available native role suggestions are offered; additional native role IDs may be accepted by the host.')); ?></p>
+	<?php foreach ($removeForms as $removeForm): ?>
+		<form id="<?php echo $esc($removeForm['id']); ?>" method="post" action="<?php echo $esc($endpoint); ?>" data-base3-ajax-form>
+			<input type="hidden" name="base3_group_name" value="<?php echo $esc($removeForm['name']); ?>">
+			<input type="hidden" name="base3_group_action" value="remove">
+			<input type="hidden" name="base3_group_csrf" value="<?php echo $esc($csrf); ?>">
+		</form>
+	<?php endforeach; ?>
+	<p class="base3-audience-hint"><?php echo $esc($t('roles_hint', 'Native role names come from the host; role identifiers remain unchanged when saved.')); ?></p>
 </section>
 <?php require __DIR__ . '/AuthorizationAudienceStyles.php'; ?>
 <?php require __DIR__ . '/AuthorizationAudienceScript.php'; ?>
@@ -103,7 +105,7 @@ $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES |
 		for (const form of root.querySelectorAll('[data-base3-ajax-form]')) {
 			form.addEventListener('submit', async (event) => {
 				event.preventDefault();
-				if (event.submitter?.matches('[data-confirm-remove]') && !confirm('Remove this BASE3 group?')) return;
+				if (event.submitter?.matches('[data-confirm-remove]') && !confirm(event.submitter.dataset.confirmMessage)) return;
 				const button = event.submitter;
 				const error = root.querySelector('[data-base3-error]');
 				if (button) button.disabled = true;
