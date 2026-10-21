@@ -93,6 +93,9 @@ $groupPosition = 0;
 	<?php endforeach; ?>
 	<p class="base3-audience-hint"><?php echo $esc($t('roles_hint', 'Native role names come from the host; role identifiers remain unchanged when saved.')); ?></p>
 </section>
+<?php if (!empty($this->_['modularSelectCssUrl'])): ?>
+<link rel="stylesheet" href="<?php echo $esc((string)$this->_['modularSelectCssUrl']); ?>">
+<?php endif; ?>
 <?php require __DIR__ . '/AuthorizationAudienceStyles.php'; ?>
 <?php require __DIR__ . '/AuthorizationAudienceScript.php'; ?>
 <script>
@@ -115,6 +118,7 @@ $groupPosition = 0;
 					if (!response.ok) throw new Error('Group update failed (HTTP ' + response.status + ').');
 					const replacement = new DOMParser().parseFromString(await response.text(), 'text/html').querySelector(selector);
 					if (!replacement) throw new Error('The updated group administration response is invalid.');
+					window.BASE3AudienceEditor.unbindAll(root);
 					root.replaceWith(replacement);
 					bind(replacement);
 					const status = replacement.querySelector('[data-base3-status]');

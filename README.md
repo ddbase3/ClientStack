@@ -285,7 +285,7 @@ invalidate the previous browser module cache. Test with `node test/MarkdownPlugi
 
 `AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` are cross-host interfaces rendered in ClientStack. They require `UiFoundation\Api\IAuthorizationAudienceAdministrationService`, and perform a fresh `IAuthorizationService::decide(system/admin)` check before accessing backend data or accepting mutations. The host backend performs additional native guards; an AJAX action is not trusted merely because its tab was visible. The shared native-resource `AuthorizationAdministrationDisplay` remains unchanged.
 
-The Groups and Features displays share a responsive audience editor with compact inputs, criterion fields below the assignment selector, and an advanced JSON area shown only when applicable. Generic editor labels are translated in ClientStack; criterion-specific display titles and property titles come from the criterion schema supplied by its owning module. Host-specific identifiers and existing form names are not modified. This UI update does not introduce directory lookups or change authorization, persistence, or feature evaluation.
+The Groups and Features displays share a responsive audience editor with compact inputs, criterion fields below the assignment selector, and an advanced JSON area shown only when applicable. Generic editor labels are translated in ClientStack; criterion-specific display titles and property titles come from the criterion schema supplied by its owning module. Host-specific identifiers and existing form names are not modified. The user picker below performs only authorized, on-demand native directory queries. It does not change permission decisions, persistence or feature evaluation.
 
 
 Host-managed groups provide a delete button next to their group description; code-defined groups do not. Deletion reuses the already-existing host removal operation, authorization and CSRF protection. Referenced or fallback groups remain protected by the host.
@@ -301,5 +301,109 @@ user-facing assignment types are host-neutral (`Group`, `Role`, `User`).
 
 Group, role and criterion selects start with an explicit, non-selectable placeholder instead of silently preselecting the first value. The criterion configuration appears only after choosing a criterion.
 Each discoverable criterion owns its localized `getSchema()["title"]` and its optional `properties[*]["title"]`, using the existing host translation service where available. ClientStack renders those schema fields without recognizing criterion identifiers, translating host/plugin-specific properties, or introducing another label resolver. Technical criterion names and stored expressions remain unchanged. When a schema lacks a title, the technical name is shown rather than inventing a translation.
-The editor currently keeps the existing numeric user-ID entry. It does not
-provide directory search or change the host's `IUsermanager::getAllUsers()`.
+The shared audience editor now enhances native user assignments through the
+**ModularSelect** ES module while preserving the original numeric `[value]`
+form field. If ES modules cannot load, the original numeric entry remains
+usable. Existing IDs are resolved on demand for readable labels; adding users
+uses bounded, server-paginated native searches rather than loading all users.
+The display and the native host persist the unchanged numeric user IDs.
+
+## ModularSelect client
+
+ClientStack now includes the reusable **ModularSelect** ES module, a domain-neutral
+single-/multi-select with a searchable accessible listbox. It accepts static
+option arrays or an asynchronous paginated option source. No user, group,
+feature or other business-specific behavior is built into the component.
+Single-select is the default and returns a string ID (or `null`); `multiple: true`
+returns an array of IDs. Mouse, touch and keyboard all commit selections.
+Single-select closes after a pick, while multi-select stays open and allows
+adding/removing multiple options. After choosing an item, the search field is
+cleared and **Backspace** removes the most recently selected item when the field
+is empty. With typed text, Backspace edits the search normally. Both modes keep
+the chip's remove button for pointer and keyboard interaction. The
+`closeOnSelect` setting is configurable.
+
+The standalone development tree is supplied at:
+
+```text
+dev/ModularSelect/
+```
+
+Its deployable `src/` files are copied, unchanged, to:
+
+```text
+assets/modularselect/
+```
+
+Run `./deploy-modular-select.sh` from ClientStack to update the runtime copy.
+Use `plugin/ClientStack/assets/modularselect/index.js` and
+`plugin/ClientStack/assets/modularselect/styles/modularselect.css` through the
+BASE3 asset resolver in consuming displays. The groups/features editor configures
+its authorized user search as a `source` callback, without adding
+business-specific logic to ModularSelect.
+
+Long selected labels are visually ellipsized without shifting the dropdown
+button; multi-select chips use a single, horizontally scrollable row. The
+full label remains available in the DOM and via the chip tooltip, and keyboard
+or mouse removal remains supported. Layout regression checks are in
+`dev/ModularSelect/tests/browser-smoke/layout-smoke.py`.
+
+The development directory is intentionally git-ignored by ClientStack like
+other independent module checkouts. The included source is a local initial
+scaffold, not a claimed upstream Git clone; add its actual repository URL to
+the repository-management process only once that repository exists. See
+`dev/ModularSelect/README.md`, `docs/INTEGRATION.md` and `PRIVACY.md` within
+the module for APIs, examples, accessibility and privacy responsibilities.
+Real keyboard, pointer and touch tests for both modes are in
+`dev/ModularSelect/tests/browser-smoke/pointer-smoke.py`; they require optional
+Python Playwright and Chromium, but no external network service.
+
+### Group and feature user options
+
+`AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` now use their
+shared `AuthorizationAudienceEditor` template to configure ModularSelect.
+A single class-map output (`AuthorizationAudienceUserSearchDisplay`,
+`out=json`) handles both search and resolving existing numeric user IDs.
+The endpoint accepts only form-encoded POST bodies, not query strings:
+
+- `scope=groups|features` and `csrf=<token>`: the existing form CSRF token
+  associated with that administration screen; the endpoint verifies the session.
+- `action=search`, `query=<literal search text>`, `limit=1..30`,
+  `offset=0..100000`: paged `IUsermanager::searchUsers()`; the backend is
+  asked for one extra record to determine `hasMore`.
+- `action=resolve`, `id=<positive native user ID>`: resolves a previously
+  saved assignment through `IUsermanager::getUserById()` without enumerating
+  all users; returns `{item: null}` if unavailable.
+
+Every call requires a fresh explicit `IAuthorizationService::decide(system/admin)`
+ALLOW and `IAuthorizationAudienceAdministrationService::assertCanAdminister()`.
+The endpoint returns only numeric IDs and display labels composed of names,
+logins and IDs, never email, roles or host internals. It sets `Cache-Control:
+private, no-store`; the search term is carried in the POST body rather than
+URL query parameters. No new persistence, criteria, feature permissions or
+host-specific logic is introduced. `IUsermanager::getAllUsers()` is not used.
+
+The host must deploy the new `IUsermanager::searchUsers()` implementation and
+the assets from the earlier ModularSelect patch before enabling this editor.
+The shared editor destroys select instances on row removal, AJAX form
+replacement and tab unload. Check keyboard, zoom and screen-reader behavior in
+the real host UI as part of acceptance, including error/fallback handling.
+
+### Verification
+
+Run the existing PHPUnit display tests and the new
+`test/Display/AuthorizationAudienceUserSearchDisplayTest.php` and
+`test/Display/AuthorizationAudienceModularSelectIntegrationTest.php` against
+the currently deployed Framework/UiFoundation contracts. For an optional
+end-to-end browser smoke test, run:
+
+```bash
+node test/Display/AuthorizationAudienceModularSelectBrowserSmoke.mjs
+```
+
+The browser smoke test requires Chromium and PHP CLI; it exercises the actual
+shared editor template, a local same-origin user-options endpoint and the
+deployed ModularSelect ES module without needing a live ILIAS installation.
+It is not part of the ILIAS class-map build and should run only when explicitly
+invoked. Complete the final manual screen-reader, focus and ILIAS admin AJAX
+reload checks on the target host.

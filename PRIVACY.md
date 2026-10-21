@@ -298,3 +298,96 @@ restrict its route accordingly.
 ## Authorization administration UI refactor
 
 The shared ClientStack screens do not create another persistence layer. ILIAS group identifiers, user and role criterion IDs, and feature audience expressions continue to be processed and stored solely by the configured ILIAS host services. Access is checked server-side; POST mutations require a session CSRF token. The new UiFoundation interface provides no storage. Retention and erasure continue to follow the host settings backend as previously documented.
+
+## ModularSelect deployment (2026-10-21)
+
+The new `assets/modularselect/` is a locally served copy of
+`dev/ModularSelect/src/`, reviewed at initial source creation on 2026-10-21.
+It is a domain-neutral browser select: labels, optional descriptions, literal
+search text and selected IDs are kept in its DOM and JavaScript instance
+memory. It uses no dedicated cookies, persistent browser storage, telemetry,
+remote scripts or hardcoded network requests. When the instance is destroyed,
+its DOM and event listeners are removed and active searches are invalidated
+and aborted, subject to caller-held data and backend processing outside the
+module's control.
+
+An application can supply an asynchronous source function that receives search
+text and pagination parameters. For a user directory this can expose personal
+information, so the consuming server endpoint must authenticate and authorize
+each request, restrict the result projection and enforce pagination. The
+source function, its recipients, server-side logs, caching, backups, retention,
+rights handling, transfer location and controller/processor relationships are
+not defined by ClientStack and require deployment-specific review. If the
+containing form is submitted, ModularSelect's optional hidden inputs provide
+selected string IDs; the actual submission is controlled by the host page.
+In single-select the widget exposes at most one selected ID. In multi-select
+it can expose multiple selected IDs in instance memory and, when configured,
+repeated hidden form inputs. The repaired mouse/touch focus handling changes only event order. Keyboard
+Backspace removal updates the same in-memory selection and optional hidden
+form fields as the chip remove button. Its visually hidden live announcement
+uses the already displayed option label. Neither behavior introduces
+additional storage, directory lookups, network recipients or background activity.
+
+Selected labels are visually shortened with CSS ellipsis when necessary,
+but the original labels remain in the DOM and hover tooltip, including any
+personal data in that text. Multi-select chips are horizontally scrollable;
+this UI change creates no additional data processing or external recipient.
+
+The module renders option labels/descriptions through `textContent`, not as
+HTML. This does not replace server-side validation or access control. The
+separate root inventory `dev/ModularSelect/PRIVACY.md` documents the module's
+technical boundary, including source-specific risks and known gaps. The
+presence of these assets does not activate any user-directory search or expose
+an AJAX route until a consuming display is explicitly integrated.
+
+## Group/feature user search integration (2026-10-21)
+
+The shared BASE3 Groups and Features administration UI can now query the
+selected host's `IUsermanager::searchUsers()` through the read-only
+`AuthorizationAudienceUserSearchDisplay`. This is only available to the
+current session actor when `IAuthorizationService` explicitly allows
+`system/admin` **and** the host audience-administration service approves the
+actor, such as the project-specific BASE3 development membership required in
+ILIAS. The endpoint also requires a valid CSRF token from the corresponding
+admin form. Unauthorized callers cannot read user directory entries.
+
+**Purpose and fields:** After the administrator types at least one character,
+ClientStack sends the literal search text, page limit and offset, form scope
+and CSRF token in a same-origin POST request. The host backend performs the
+search and supplies native user IDs, full/display names and login names.
+ClientStack projects only numeric user IDs and a label composed of name, login
+and ID into the JSON response; email addresses, role memberships and other
+User attributes are not returned. For an already saved ID, an optional
+single `getUserById()` request supplies its display label. Both searches are
+restricted to the approved administrator. The native host can see the search
+text and resolve it using its existing user directory.
+
+**Storage, retention, access, erasure:** ClientStack creates no user cache,
+database record, analytics event, cookie or browser storage for searches.
+Transient search terms, results, selected IDs and labels live in the active
+ModularSelect instance/DOM; outstanding requests are aborted when its UI is
+removed. Already assigned numeric IDs continue to be stored by the host's
+existing group/feature settings mechanism; removing an assignment uses that
+host's existing save operation. ClientStack has no independent retention or
+erasure mechanism. Host account deletion and settings deletion remain with
+the selected identity/settings backends. HTTP responses use `no-store`; the
+request URL contains no search term. Web-server/proxy/security logging of
+POST bodies or response payloads, underlying native directory retention and
+backup retention cannot be verified from ClientStack sources; deployment
+owners must document and configure those separately.
+
+**Recipients/transfers/security:** Requests remain same-origin to the BASE3
+host backend; no third-party browser service or external select API is
+introduced. Host and infrastructure operators may have access to the request
+and relevant logs, depending on their native operational controls.
+Authorization is checked at the actual JSON endpoint, not inferred from
+visible navigation; CSRF validation, input limits, output encoding and a
+minimal projection are applied. Transport encryption, operational logs and
+native backend controls remain host responsibilities.
+
+**Accessibility:** ModularSelect offers keyboard navigation, accessible
+combobox/listbox roles, focus and status messages, and a numeric-input
+fallback if the module fails to initialize. The shared editor destroys widget
+instances on AJAX replacement, row deletion and tab unload. Actual manual
+screen-reader, zoom and host CSS tests are still needed; automated unit and
+browser checks alone do not establish WCAG 2.2 AA conformance.

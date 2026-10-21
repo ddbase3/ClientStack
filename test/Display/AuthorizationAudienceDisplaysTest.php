@@ -2,6 +2,7 @@
 
 namespace ClientStack\Test\Display;
 
+use Base3\Api\IAssetResolver;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Authorization\Api\IAuthorizationService;
@@ -27,7 +28,8 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 			$this->createMock(IRequest::class),
 			$this->createMock(ISession::class),
 			$this->createMock(IMvcView::class),
-			$this->createMock(ILinkTargetService::class)
+			$this->createMock(ILinkTargetService::class),
+			$this->createMock(IAssetResolver::class)
 		);
 		self::assertStringContainsString('Access denied', $display->getOutput());
 	}
@@ -52,7 +54,8 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 		$display = new AuthorizationFeaturesDisplay(
 			$authorization, $administration, $request, $session,
 			$this->createMock(IMvcView::class),
-			$this->createMock(ILinkTargetService::class)
+			$this->createMock(ILinkTargetService::class),
+			$this->createMock(IAssetResolver::class)
 		);
 		self::assertStringContainsString('rejected', $display->getOutput());
 	}
@@ -82,7 +85,9 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 		$view->method('loadTemplate')->willReturn('rendered');
 		$links = $this->createMock(ILinkTargetService::class);
 		$links->method('getLink')->willReturn('/admin');
-		$display = new AuthorizationGroupsDisplay($authorization, $administration, $request, $session, $view, $links);
+		$assets = $this->createMock(IAssetResolver::class);
+		$assets->method('resolve')->willReturnCallback(static fn(string $path): string => '/assets/' . $path);
+		$display = new AuthorizationGroupsDisplay($authorization, $administration, $request, $session, $view, $links, $assets);
 		self::assertSame('rendered', $display->getOutput());
 	}
 }

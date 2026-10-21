@@ -29,6 +29,10 @@ $esc = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUB
 		<span data-audience-number-label><?php echo $esc($t('user_id', 'User ID')); ?></span>
 		<input type="number" inputmode="numeric" min="1" step="1" name="<?php echo $esc($name); ?>[value]" value="<?php echo $esc($numberActive ? $value : ''); ?>" data-audience-number<?php echo $numberActive ? ' required' : ' disabled'; ?>>
 	</label>
+	<div class="base3-audience-field base3-audience-target base3-audience-user-target" data-audience-user-wrap hidden>
+		<span><?php echo $esc($t('user_select_label', 'Select user')); ?></span>
+		<div data-audience-user-select></div>
+	</div>
 	<?php if ($hasRoleCatalog): ?>
 		<label class="base3-audience-field base3-audience-target base3-audience-role-target" data-audience-role-wrap<?php echo $kind === 'role' ? '' : ' hidden'; ?>><?php echo $esc($t('assignment_role', 'Role')); ?>
 			<select name="<?php echo $esc($name); ?>[value]" data-audience-role<?php echo $kind === 'role' ? ' required' : ' disabled'; ?>>

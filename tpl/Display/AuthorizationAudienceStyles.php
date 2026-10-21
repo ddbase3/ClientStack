@@ -25,11 +25,12 @@
 .base3-audience-row > .base3-audience-kind {grid-area:kind;max-width:220px;}
 .base3-audience-row > .base3-audience-target {grid-area:target;max-width:440px;}
 .base3-audience-row > .base3-audience-number-target {max-width:240px;}
+.base3-audience-row > .base3-audience-user-target {max-width:440px;}
 .base3-audience-row > .base3-audience-role-target {max-width:320px;}
 .base3-audience-field {display:flex;flex-direction:column;gap:5px;min-width:0;margin:0;}
-.base3-audience-field input:not([type="checkbox"]),
-.base3-audience-field select,
-.base3-audience-field textarea {
+.base3-audience-field > input:not([type="checkbox"]),
+.base3-audience-field > select,
+.base3-audience-field > textarea {
 	display:block;
 	width:100%;
 	max-width:100%;
@@ -44,7 +45,7 @@
 	font:inherit;
 	min-height:36px;
 }
-.base3-audience-field textarea {resize:vertical;min-height:82px;line-height:1.45;}
+.base3-audience-field > textarea {resize:vertical;min-height:82px;line-height:1.45;}
 .base3-audience-field input[type="checkbox"] {width:18px;height:18px;align-self:start;margin:5px 0;}
 .base3-audience-config {grid-area:config;min-width:0;max-width:900px;}
 .base3-audience-properties {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),260px));gap:12px 16px;align-items:start;}

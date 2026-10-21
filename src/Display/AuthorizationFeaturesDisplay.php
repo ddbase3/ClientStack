@@ -2,6 +2,7 @@
 
 namespace ClientStack\Display;
 
+use Base3\Api\IAssetResolver;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
@@ -26,7 +27,8 @@ final class AuthorizationFeaturesDisplay implements IDisplay {
 		private readonly IRequest $request,
 		private readonly ISession $session,
 		private readonly IMvcView $view,
-		private readonly ILinkTargetService $links
+		private readonly ILinkTargetService $links,
+		private readonly IAssetResolver $assets
 	) {}
 
 	public static function getName(): string { return 'authorizationfeaturesdisplay'; }
@@ -65,6 +67,12 @@ final class AuthorizationFeaturesDisplay implements IDisplay {
 			$this->view->assign('csrf', $this->csrfToken());
 			$this->view->assign('message', $message);
 			$this->view->assign('endpoint', $this->links->getLink(['name' => self::getName(), 'out' => 'html']));
+			$this->view->assign('userSearchEndpoint', $this->links->getLink([
+				'name' => AuthorizationAudienceUserSearchDisplay::getName(), 'out' => 'json'
+			]));
+			$this->view->assign('userSearchScope', 'features');
+			$this->view->assign('modularSelectModuleUrl', $this->assets->resolve('plugin/ClientStack/assets/modularselect/index.js'));
+			$this->view->assign('modularSelectCssUrl', $this->assets->resolve('plugin/ClientStack/assets/modularselect/styles/modularselect.css'));
 			return $this->view->loadTemplate();
 		} catch (Throwable $error) {
 			// The UI never discloses host authorization details or persisted audiences on failure.
