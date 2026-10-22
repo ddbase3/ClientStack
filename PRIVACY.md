@@ -391,3 +391,16 @@ fallback if the module fails to initialize. The shared editor destroys widget
 instances on AJAX replacement, row deletion and tab unload. Actual manual
 screen-reader, zoom and host CSS tests are still needed; automated unit and
 browser checks alone do not establish WCAG 2.2 AA conformance.
+
+
+### Diagnostic administration
+
+The new `DiagnosticScopeDisplay` provides an administrator-only read-only diagnostics page. The backend checks `IAuthorizationService` for an explicit `system/admin` grant before listing or running checks. The UI runs each requested check through a separate CSRF-protected POST; the CSRF token is held in the existing authenticated session under `diagnostics.checks.csrf`. The response contains status, translated text, recommended action and measurements supplied by the check. ClientStack does not persist check results, does not introduce tracking or third-party requests and keeps the current results only in the live page DOM. Server-side access logging, session persistence and retention depend on the active host infrastructure. Plugin diagnostics must avoid returning sensitive content.
+
+### Diagnostic report clipboard export
+
+The diagnostics UI now exposes a user-initiated JSON copy operation for the most recent **completed** local run. The JSON includes scope name/title/description, completion time, all listed checks with their translated status/message/remediation and the aggregate values rendered in the UI. Search and status filters do not remove records from this export. It excludes the session CSRF token, transport endpoint and browser identity, and the UI does not store or transmit the report to an external destination. Results remain in the current page DOM; a new run disables copying until it finishes. The clipboard is managed by the browser/OS, outside ClientStack's retention control. Users must separately assess any subsequent disclosure, especially when pasting into an external AI provider. Each check remains responsible for excluding sensitive values from its result.
+
+### Diagnostic check feature permission (2026-10-22)
+
+The existing `DiagnosticScopeDisplay` now requires both native `system/admin` authorization and the independent `feature/diagnosticreportsfeature` decision before returning either its HTML view or an AJAX check result. It uses the existing BASE3 `IAuthorizationService`, session token and in-memory result processing. The feature decision does not add persistent data collection, a user-rights replica or a separate authorization backend.

@@ -407,3 +407,20 @@ deployed ModularSelect ES module without needing a live ILIAS installation.
 It is not part of the ILIAS class-map build and should run only when explicitly
 invoked. Complete the final manual screen-reader, focus and ILIAS admin AJAX
 reload checks on the target host.
+
+
+### Diagnostic scope administration
+
+`DiagnosticScopeDisplay` is the shared administrative `IDisplay` for `IDiagnosticScope` implementations naming `diagnosticscopedisplay`. It requires the host's `IAuthorizationService` to explicitly grant `system/admin`. Its HTML view lists classmap-discovered checks in the selected scope and automatically evaluates them using one CSRF-protected POST per check, sequentially. The summary shows passed/failed/warning/error/pending counts and a progress indicator. Search and status filters operate on the visible results without persisting them. A refresh reruns all checks.
+
+The UI uses the existing `TabControlDisplay` setup: each navigation entry supplies `data: {scope: <name>}` for embedded rendering and `params: {diagnostic_scope: <name>}` for AJAX loading. Each scope can instead name its own `IDisplay` implementation. The display does not depend on MissionBay or a particular host. General UI strings belong in `ClientStack/lang/Diagnostics/{de,en}.ini`; scope and check strings remain in their supplying modules.
+
+### Diagnostic report export
+
+`DiagnosticScopeDisplay` enables **Copy report as JSON** only after the sequential run has completed. The browser constructs the report from the currently displayed, completed results, regardless of search or status filters. It includes the scope, completion timestamp, all check IDs and descriptions, statuses, translated messages, remediation text, aggregate counters and safe measurement labels/values. A rerun invalidates the previous report until all checks complete. The export uses `navigator.clipboard.writeText()` in a user click handler and performs no server-side export request or persistent storage. Clipboard permission or secure-context failures are displayed using the owning ClientStack translations.
+
+The report is intended for technical review, including manual use in an AI assistant. Administrators should still review its contents before pasting it into an external service.
+
+### Feature-gated diagnostics display
+
+`DiagnosticScopeDisplay` checks both `system/admin` and `feature/diagnosticreportsfeature` through the active `IAuthorizationService` before showing diagnostic results or servicing per-check AJAX requests. Host navigation must independently filter the corresponding tab; hiding a tab is not sufficient authorization. The display continues to execute checks in order and only keeps the report in the current browser view for JSON copying.
