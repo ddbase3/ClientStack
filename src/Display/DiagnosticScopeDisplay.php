@@ -17,7 +17,7 @@ use Base3\Usermanager\Permission;
 use InvalidArgumentException;
 use Throwable;
 
-/** Generic, privilege-protected, sequential AJAX UI for a diagnostic scope. */
+/** Compact system-wide diagnostics UI with independently started scopes and protected AJAX checks. */
 final class DiagnosticScopeDisplay implements IDisplay {
 
 	private const CSRF_KEY = 'diagnostics.checks.csrf';
@@ -53,21 +53,27 @@ final class DiagnosticScopeDisplay implements IDisplay {
 		}
 
 		$scope = $this->requestedScope();
-		$selectedScope = null;
-		foreach($this->runner->getScopes() as $candidate) {
-			if($candidate::getName() === $scope) {
-				$selectedScope = $candidate;
-				break;
+		$scopes = $this->runner->getScopes();
+		if($scope !== '') {
+			$found = false;
+			foreach($scopes as $candidate) {
+				if($candidate::getName() === $scope) {
+					$found = true;
+					break;
+				}
 			}
-		}
-		if($selectedScope === null) {
-			return $this->errorResponse(404, $out, $this->ui('scope_not_found', 'Diagnostic scope not found.'), $final);
+			if(!$found) {
+				return $this->errorResponse(404, $out, $this->ui('scope_not_found', 'Diagnostic scope not found.'), $final);
+			}
 		}
 
 		if($out === 'json') {
+			if($scope === '') {
+				return $this->errorResponse(404, $out, $this->ui('scope_not_found', 'Diagnostic scope not found.'), $final);
+			}
 			return $this->handleJson($scope, $final);
 		}
-		return $this->handleHtml($scope);
+		return $this->handleHtml($scopes, $scope);
 	}
 
 	private function isAuthorized(): bool {
@@ -93,30 +99,40 @@ final class DiagnosticScopeDisplay implements IDisplay {
 		return is_string($value) ? trim($value) : '';
 	}
 
-	private function handleHtml(string $scope): string {
-		$checks = [];
-		foreach($this->runner->getChecks($scope) as $check) {
-			$name = $check::getName();
-			$checks[] = [
+	/** @param array<int,\Base3\Diagnostics\Api\IDiagnosticScope> $scopes */
+	private function handleHtml(array $scopes, string $initialScope): string {
+		$areas = [];
+		foreach($scopes as $scope) {
+			$name = $scope::getName();
+			$checks = [];
+			foreach($this->runner->getChecks($name) as $check) {
+				$checkName = $check::getName();
+				$checks[] = [
+					'name' => $checkName,
+					'title' => $this->translation->translate('DiagnosticChecks', $checkName, 'title', $checkName),
+					'description' => $this->translation->translate('DiagnosticChecks', $checkName, 'description', '')
+				];
+			}
+			$areas[] = [
 				'name' => $name,
-				'title' => $this->translation->translate('DiagnosticChecks', $name, 'title', $name),
-				'description' => $this->translation->translate('DiagnosticChecks', $name, 'description', '')
+				'title' => $this->translation->translate('DiagnosticScopes', $name, 'title', $name),
+				'description' => $this->translation->translate('DiagnosticScopes', $name, 'description', ''),
+				'checks' => $checks,
+				'endpoint' => $this->links->getLink(
+					['name' => self::getName(), 'out' => 'json'],
+					[self::SCOPE_PARAMETER => $name]
+				)
 			];
 		}
 
 		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/DiagnosticScopeDisplay.php');
 		$this->view->assign('id', 'base3-diagnostic-' . bin2hex(random_bytes(6)));
-		$this->view->assign('scope', $scope);
-		$this->view->assign('title', $this->translation->translate('DiagnosticScopes', $scope, 'title', $scope));
-		$this->view->assign('description', $this->translation->translate('DiagnosticScopes', $scope, 'description', ''));
-		$this->view->assign('checks', $checks);
-		$this->view->assign('endpoint', $this->links->getLink(
-			['name' => self::getName(), 'out' => 'json'],
-			[self::SCOPE_PARAMETER => $scope]
-		));
+		$this->view->assign('scopes', $areas);
+		$this->view->assign('initialScope', $initialScope);
 		$this->view->assign('csrf', $this->csrfToken());
 		$keys = [
+			'areas_title', 'areas_intro', 'run_area', 'checks_label', 'no_scopes', 'results_title',
 			'summary', 'total', 'passed', 'failed', 'warning', 'error', 'not_applicable',
 			'pending', 'all', 'search', 'search_placeholder', 'run_again', 'checking',
 			'finished', 'progress', 'remediation', 'no_checks', 'no_results',

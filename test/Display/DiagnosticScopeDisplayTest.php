@@ -11,6 +11,7 @@ use Base3\Diagnostics\Api\IDiagnosticRunner;
 use Base3\Diagnostics\Dto\DiagnosticCheckResult;
 use Base3\Diagnostics\Feature\DiagnosticReportsFeature;
 use Base3\Diagnostics\Scope\PrivacyDiagnosticScope;
+use Base3\Diagnostics\Scope\DependencyDiagnosticScope;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use Base3\Session\Api\ISession;
 use Base3\Translation\Api\ITranslation;
@@ -29,7 +30,8 @@ final class DiagnosticScopeDisplayTest extends TestCase {
 		$display = $this->createDisplay($runner, $request, $view);
 		$html = $display->getOutput();
 		$this->assertStringContainsString('data-diagnostic-summary="failed"', $html);
-		$this->assertStringContainsString('data-diagnostic-filter="error"', $html);
+		$this->assertStringContainsString('<select id=', $html);
+		$this->assertStringContainsString('<option value="error"', $html);
 		$this->assertStringContainsString('data-diagnostic-search', $html);
 		$this->assertStringContainsString('data-diagnostic-export disabled', $html);
 		$this->assertStringContainsString('navigator.clipboard.writeText', $html);
@@ -37,6 +39,62 @@ final class DiagnosticScopeDisplayTest extends TestCase {
 		$this->assertStringContainsString('completedAt = new Date().toISOString()', $html);
 		$this->assertStringContainsString('for(const card of cards)', $html);
 		$this->assertStringContainsString('diagnostic_check: card.dataset.diagnosticCheck', $html);
+	}
+
+	public function testOverviewListsAllAreasWithoutRunningAnyChecks(): void {
+		$runner = $this->createMock(IDiagnosticRunner::class);
+		$runner->method('getScopes')->willReturn([new PrivacyDiagnosticScope(), new DependencyDiagnosticScope()]);
+		$runner->method('getChecks')->willReturnCallback(static fn(string $scope): array => $scope === PrivacyDiagnosticScope::getName()
+			? [new DiagnosticScopeTestCheck()]
+			: []);
+		$runner->expects($this->never())->method('run');
+		$request = $this->createMock(IRequest::class);
+		$request->method('get')->willReturn('');
+		$html = $this->createDisplay($runner, $request)->getOutput();
+		self::assertStringContainsString('data-diagnostic-launch="privacydiagnosticscope"', $html);
+		self::assertStringContainsString('data-diagnostic-launch="dependencydiagnosticscope"', $html);
+		self::assertStringContainsString('data-diagnostic-results', $html);
+		self::assertStringContainsString('data-diagnostic-check-template', $html);
+		self::assertStringContainsString('if(initialScope) runArea(initialScope);', $html);
+		self::assertStringContainsString('selectedArea.endpoint', $html);
+		self::assertStringContainsString('areaRow.appendChild(results);', $html);
+		self::assertStringContainsString('setExpanded(card, status !== "passed");', $html);
+		self::assertStringContainsString('data-diagnostic-toggle aria-expanded="false"', $html);
+		self::assertStringContainsString('data-diagnostic-measures', $html);
+		self::assertStringContainsString('data-diagnostic-extra hidden', $html);
+		self::assertStringNotContainsString('data-diagnostic-rerun', $html);
+		self::assertStringContainsString('schemaVersion: 1', $html);
+	}
+
+	public function testEachScopeHasOneInlineExpandableResultPanelAndCompactCheckRows(): void {
+		$runner = $this->createMock(IDiagnosticRunner::class);
+		$runner->method('getScopes')->willReturn([new PrivacyDiagnosticScope(), new DependencyDiagnosticScope()]);
+		$runner->method('getChecks')->willReturn([new DiagnosticScopeTestCheck()]);
+		$request = $this->createMock(IRequest::class);
+		$request->method('get')->willReturn('');
+		$html = $this->createDisplay($runner, $request)->getOutput();
+		self::assertSame(1, substr_count($html, 'data-diagnostic-results aria-label='));
+		self::assertSame(2, substr_count($html, 'class="base3-diagnostic-area-row"'));
+		self::assertStringContainsString('areaRow.appendChild(results);', $html);
+		self::assertStringContainsString('aria-expanded="false"', $html);
+		self::assertStringContainsString('data-diagnostic-summary-entry="passed" hidden', $html);
+		self::assertStringContainsString('card.querySelector("[data-diagnostic-extra]").hidden = !expanded;', $html);
+		self::assertStringContainsString('card.querySelector("[data-diagnostic-toggle]").setAttribute("aria-expanded", String(expanded));', $html);
+		$measures = strpos($html, 'class="base3-diagnostic-measures" data-diagnostic-measures hidden');
+		$extra = strpos($html, 'class="base3-diagnostic-check-extra" data-diagnostic-extra hidden');
+		self::assertIsInt($measures);
+		self::assertIsInt($extra);
+		self::assertLessThan($extra, $measures);
+	}
+
+	public function testJsonWithoutScopeCannotExecuteChecks(): void {
+		$runner = $this->createMock(IDiagnosticRunner::class);
+		$runner->method('getScopes')->willReturn([new PrivacyDiagnosticScope()]);
+		$runner->expects($this->never())->method('run');
+		$request = $this->createMock(IRequest::class);
+		$request->method('get')->willReturn('');
+		$payload = json_decode($this->createDisplay($runner, $request)->getOutput('json'), true, 512, JSON_THROW_ON_ERROR);
+		self::assertArrayHasKey('error', $payload);
 	}
 
 	public function testJsonRunsOnlyTheRequestedCheckAndTranslatesTheResult(): void {
