@@ -53,6 +53,34 @@ final class TabControlDisplayTest extends TestCase {
 		$this->assertStringContainsString('RENDERED_DISPLAY', $html);
 	}
 
+
+	public function testMissingDisplaysAndTheirEmptyGroupsAreOmittedWithoutError(): void {
+		$existing = $this->createStub(IDisplay::class);
+		$classmap = $this->createStub(IClassMap::class);
+		$classmap->method('getInstanceByInterfaceName')->willReturnCallback(
+			static fn(string $interface, string $name): ?IDisplay =>
+				$name === 'chatbotconfigdisplay' ? $existing : null
+		);
+		$links = $this->createStub(ILinkTargetService::class);
+		$links->method('getLink')->willReturn('/ajax?name=chatbotconfigdisplay');
+		$view = new TabControlTestMvcView();
+		$control = new TabControlDisplay($classmap, $view, $links);
+		$control->setData(['tabs' => [
+			[
+				'name' => 'unavailable',
+				'label' => 'Unavailable',
+				'displays' => [['name' => 'notinstalleddisplay', 'label' => 'Not installed']]
+			],
+			$this->getTabs()[0]
+		]]);
+		$control->getOutput();
+
+		$tabs = $view->getAssigned('tabs');
+		self::assertCount(1, $tabs);
+		self::assertSame('chatbot', $tabs[0]['name']);
+		self::assertSame('chatbotconfigdisplay', $view->getAssigned('activeDisplay'));
+	}
+
 	private function createControl(IDisplay $child, IMvcView $view): TabControlDisplay {
 		$classmap = $this->createStub(IClassMap::class);
 		$classmap->method('getInstanceByInterfaceName')->willReturn($child);
