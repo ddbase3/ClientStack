@@ -5,6 +5,10 @@ namespace ClientStack\AdminDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IModuleRegistry;
 use Base3\Api\IRequest;
+use Base3\Authorization\Api\IAuthorizationService;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Usermanager\Permission;
+use ClientStack\SettingsTab\AgentflowadminSettingsTab;
 use Base3\LinkTarget\Api\ILinkTargetService;
 use UiFoundation\Api\IAdminDisplay;
 
@@ -14,7 +18,8 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 		private readonly IRequest $request,
 		private readonly IMvcView $view,
 		private readonly ILinkTargetService $linkTargetService,
-		private readonly IModuleRegistry $moduleRegistry
+		private readonly IModuleRegistry $moduleRegistry,
+		private readonly IAuthorizationService $authorization
 	) {}
 
 	public static function getName(): string {
@@ -30,6 +35,13 @@ final class AgentFlowAdminDisplay implements IAdminDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->authorization->decide(new AuthorizationRequest(
+			$this->authorization->getDefaultAuthority(),
+			Permission::for('feature', AgentflowadminSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {

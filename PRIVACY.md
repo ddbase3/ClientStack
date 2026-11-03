@@ -427,3 +427,9 @@ Membership and persisted audience overrides are evaluated by the active host
 through its existing `IAuthorizationService` and settings backend. Direct
 administrative requests still require an explicit native `system/admin`
 decision. There is no new storage, network recipient or retention process.
+
+## Diagnostics and launcher settings navigation
+
+Classmap discovery can now expose the existing diagnostic scope display under Governance and the existing launcher configuration under Chatbot. These contributions add no extra user-data persistence. Diagnostics retain the framework diagnostic report feature plus the `system/admin` requirement; launcher configuration retains its existing settings store and requires both its Settings feature and `system/admin`. Access decisions are delegated to the configured `IAuthorizationService` and are not cached or copied by the Settings navigation.
+
+The Agent Flow viewer exposes plugin-local flow JSON metadata and contents only after an allow decision for `agentflowadminsettingstab`. It does not persist the inspected flow definitions.
