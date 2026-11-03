@@ -467,3 +467,11 @@ group. An unavailable default group is presented visibly rather than as an
 empty required select. Group discovery and validation remain the host
 administration service's responsibility. The editor itself does not grant
 rights or persist feature rules.
+
+## Settings discovery additions
+
+`GovernanceSettingsTab` provides the Governance first-level group and `DiagnosticscopeSettingsTab` contributes the diagnostic scope display. Diagnostics reuse the framework-owned `DiagnosticReportsFeature`, including its default audience, and require the existing `system/admin` decision. No second diagnostic feature is introduced. The display itself protects HTML and JSON operations.
+
+`GlobalChatbotLauncherSettingsTab` contributes ClientStack's launcher configuration below the `chatbotsettingstab` root supplied by the Chatbot plugin when installed. Its own feature and the existing `system/admin` requirement gate both the tab and direct display. All new ClientStack navigation labels are translated in `ClientStack/lang/Settings/`. The Settings renderer and tab control remain unchanged.
+
+The existing `AgentFlowAdminDisplay` is also exposed as a BASE3 Settings tab through `AgentflowadminSettingsTab`. Both its HTML and JSON endpoints check that feature before scanning plugin-local flow definitions.

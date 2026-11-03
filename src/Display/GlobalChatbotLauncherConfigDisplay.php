@@ -11,6 +11,7 @@ use Base3\Usermanager\Permission;
 use Base3\Authorization\Api\IAuthorizationService;
 use Base3\Authorization\Dto\AuthorizationRequest;
 use ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherSettings;
+use ClientStack\SettingsTab\GlobalChatbotLauncherSettingsTab;
 use Throwable;
 
 /**
@@ -41,6 +42,13 @@ final class GlobalChatbotLauncherConfigDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->authorization->decide(new AuthorizationRequest(
+			$this->authorization->getDefaultAuthority(),
+			Permission::for('feature', GlobalChatbotLauncherSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
 		if (!$this->authorization->decide(new AuthorizationRequest($this->authorization->getDefaultAuthority(), Permission::for('system', 'admin')))->isAllowed()) {
 			http_response_code(403);
 			return $out === 'json'
