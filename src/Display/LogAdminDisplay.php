@@ -2,6 +2,9 @@
 
 namespace ClientStack\Display;
 
+use Base3\Usermanager\Permission;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Authorization\Api\IAuthorizationService;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
@@ -18,7 +21,8 @@ final class LogAdminDisplay implements IDisplay {
 		private readonly IMvcView $view,
 		private readonly IConfiguration $config,
 		private readonly ILogger $logger,
-		private readonly ILinkTargetService $linkTargetService
+		private readonly ILinkTargetService $linkTargetService,
+		private readonly IAuthorizationService $settingsAuthorization
 	) {}
 
 	public static function getName(): string {
@@ -34,6 +38,14 @@ final class LogAdminDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->settingsAuthorization->decide(new AuthorizationRequest(
+			$this->settingsAuthorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\LogadminSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {

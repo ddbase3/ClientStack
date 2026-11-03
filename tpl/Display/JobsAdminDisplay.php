@@ -236,6 +236,7 @@ if(panel) {
 const JA_ENDPOINT = <?php echo json_encode((string)$this->_['endpoint']); ?>;
 const JA_PRIO_MIN = <?php echo (int)$this->_['prioMin']; ?>;
 const JA_PRIO_MAX = <?php echo (int)$this->_['prioMax']; ?>;
+const JA_CSRF = <?php echo json_encode((string)$this->_['csrf']); ?>;
 
 function jaSetLoading(state) {
         root.querySelector("#ja-loading").style.display = state ? "block" : "none";
@@ -346,7 +347,15 @@ async function jaCall(qs) {
         requests.add(controller);
 
         try {
-                const res = await fetch(JA_ENDPOINT + qs, { method: "GET", headers: { "Accept": "application/json" }, signal: controller.signal });
+                const isRead = qs === "list";
+                const body = isRead ? null : new URLSearchParams("action=" + qs);
+                if(body) body.append("csrf", JA_CSRF);
+                const res = await fetch(isRead ? JA_ENDPOINT + qs : JA_ENDPOINT, {
+                        method: isRead ? "GET" : "POST",
+                        headers: { "Accept": "application/json" },
+                        body,
+                        signal: controller.signal
+                });
                 const json = await res.json();
                 if(!root.isConnected) return null;
 

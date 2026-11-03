@@ -2,6 +2,7 @@
 
 namespace ClientStack\Display;
 
+use Base3\Authorization\Dto\AuthorizationRequest;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
@@ -35,6 +36,14 @@ final class AuthorizationAdministrationDisplay implements IDisplay {
 	public function setData($data) {}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->authorization->decide(new AuthorizationRequest(
+			$this->authorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\AuthorizationadministrationSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
 		if ($out !== 'html') throw new InvalidArgumentException('Rights administration supports HTML only.');
 		$authority = $this->input('authority', $this->authorization->getDefaultAuthority());
 		$type = $this->input('resource_type', 'ref_id');

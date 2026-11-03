@@ -31,7 +31,8 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 			$this->createMock(ILinkTargetService::class),
 			$this->createMock(IAssetResolver::class)
 		);
-		self::assertStringContainsString('Access denied', $display->getOutput());
+		self::assertSame('', $display->getOutput());
+		self::assertSame(403, http_response_code());
 	}
 
 	public function testBadCsrfDoesNotModifyFeatureAudiences(): void {

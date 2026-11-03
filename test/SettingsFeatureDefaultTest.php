@@ -1,0 +1,20 @@
+<?php declare(strict_types=1);
+
+namespace ClientStack\Test;
+
+use Base3\Authorization\Api\IAuthorizationService;
+use Base3\Translation\Api\ITranslation;
+use ClientStack\SettingsTab\AuthorizationfeaturesSettingsTab;
+use PHPUnit\Framework\TestCase;
+
+final class SettingsFeatureDefaultTest extends TestCase {
+
+	public function testFeatureEditorDefaultsToDeveloperAudienceOnly(): void {
+		$tab = new AuthorizationfeaturesSettingsTab(
+			$this->createMock(ITranslation::class),
+			$this->createMock(IAuthorizationService::class)
+		);
+		self::assertSame(['group' => 'developer'], $tab->getDefaultAudience());
+		self::assertSame('authorizationfeaturesdisplay', $tab->getDisplayName());
+	}
+}

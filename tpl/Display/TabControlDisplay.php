@@ -1,5 +1,7 @@
 <?php
 	$controlId = (string) $this->_['controlId'];
+	$translations = (array) ($this->_['translations'] ?? []);
+	$tabLoadError = (string)($translations['load_failed'] ?? '');
 	$tabs = (array) $this->_['tabs'];
 	$activeTab = (string) $this->_['activeTab'];
 	$activeDisplay = (string) $this->_['activeDisplay'];
@@ -23,7 +25,7 @@
 		</div>
 	<?php else: ?>
 		<div class="base3-tab-control-tabbar base3-tab-control-primary-bar" data-base3-tab-overflow-bar>
-			<nav class="base3-tab-control-primary" aria-label="Primary navigation" data-base3-tab-strip>
+			<nav class="base3-tab-control-primary" aria-label="<?php echo htmlspecialchars((string)($translations['primary_navigation'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-base3-tab-strip>
 				<?php foreach($tabs as $tab): ?>
 					<?php $firstDisplay = (array) $tab['displays'][0]; ?>
 					<a
@@ -32,6 +34,7 @@
 						data-base3-tab-link
 						data-base3-tab-target="<?php echo htmlspecialchars((string) $firstDisplay['name']); ?>"
 						data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
+						title="<?php echo htmlspecialchars((string) ($tab['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
 						data-base3-tab-url="<?php echo htmlspecialchars((string) $firstDisplay['url']); ?>"
 						<?php echo (string) $tab['name'] === $activeTab ? 'aria-current="page"' : ''; ?>
 					>
@@ -40,7 +43,7 @@
 				<?php endforeach; ?>
 			</nav>
 			<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
-				<summary class="base3-tab-control-overflow-toggle" aria-label="More tabs" title="More tabs">…</summary>
+				<summary class="base3-tab-control-overflow-toggle" aria-label="<?php echo htmlspecialchars((string)($translations['more_tabs'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" title="<?php echo htmlspecialchars((string)($translations['more_tabs'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">…</summary>
 				<div class="base3-tab-control-overflow-menu" data-base3-tab-overflow-menu></div>
 			</details>
 		</div>
@@ -53,7 +56,7 @@
 					data-base3-tab-overflow-bar
 					<?php echo (string) $tab['name'] === $activeTab ? '' : ' hidden'; ?>
 				>
-					<nav class="base3-tab-control-secondary" aria-label="Secondary navigation" data-base3-tab-strip>
+					<nav class="base3-tab-control-secondary" aria-label="<?php echo htmlspecialchars((string)($translations['secondary_navigation'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-base3-tab-strip>
 						<?php foreach((array) $tab['displays'] as $display): ?>
 							<a
 								href="<?php echo htmlspecialchars((string) $display['href'], ENT_QUOTES, 'UTF-8'); ?>"
@@ -61,6 +64,7 @@
 								data-base3-tab-link
 								data-base3-tab-target="<?php echo htmlspecialchars((string) $display['name']); ?>"
 								data-base3-tab-parent="<?php echo htmlspecialchars((string) $tab['name']); ?>"
+						title="<?php echo htmlspecialchars((string) ($display['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
 								data-base3-tab-url="<?php echo htmlspecialchars((string) $display['url']); ?>"
 								<?php echo (string) $display['name'] === $activeDisplay ? 'aria-current="page"' : ''; ?>
 							>
@@ -69,7 +73,7 @@
 						<?php endforeach; ?>
 					</nav>
 					<details class="base3-tab-control-overflow" data-base3-tab-overflow hidden>
-						<summary class="base3-tab-control-overflow-toggle" aria-label="More tabs" title="More tabs">…</summary>
+						<summary class="base3-tab-control-overflow-toggle" aria-label="<?php echo htmlspecialchars((string)($translations['more_tabs'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" title="<?php echo htmlspecialchars((string)($translations['more_tabs'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">…</summary>
 						<div class="base3-tab-control-overflow-menu" data-base3-tab-overflow-menu></div>
 					</details>
 				</div>
@@ -79,7 +83,7 @@
 		<div class="base3-tab-control-stage">
 			<div class="base3-tab-control-loading" data-base3-tab-loading role="status" aria-live="polite" hidden>
 				<span class="base3-tab-control-spinner" aria-hidden="true"></span>
-				<span>Loading…</span>
+				<span><?php echo htmlspecialchars((string)($translations['loading'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
 			</div>
 
 			<div class="base3-tab-control-message" data-base3-tab-message role="alert" hidden></div>
@@ -694,7 +698,7 @@
 			}
 
 			unloadPanels();
-			setMessage("The selected tab could not be loaded.");
+			setMessage(<?php echo json_encode($tabLoadError, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>);
 			root.dispatchEvent(new CustomEvent("base3:tab-control:error", {
 				bubbles: true,
 				detail: { target, url, error }

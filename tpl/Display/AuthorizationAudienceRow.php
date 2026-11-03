@@ -49,7 +49,10 @@ $esc = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUB
 	<?php if ($allowGroups): ?>
 		<label class="base3-audience-field base3-audience-target" data-audience-group-wrap<?php echo $kind === 'group' ? '' : ' hidden'; ?>><?php echo $esc($t('assignment_group', 'Group')); ?>
 			<select name="<?php echo $esc($name); ?>[value]" data-audience-group<?php echo $kind === 'group' ? ' required' : ' disabled'; ?>>
-				<option value="" disabled<?php echo $kind !== 'group' || $value === '' || !in_array($value, $availableGroups, true) ? ' selected' : ''; ?>><?php echo $esc($t('group_placeholder', 'Select a group')); ?></option>
+				<option value="" disabled<?php echo $kind !== 'group' || $value === '' ? ' selected' : ''; ?>><?php echo $esc($t('group_placeholder', 'Select a group')); ?></option>
+				<?php if ($kind === 'group' && $value !== '' && !in_array($value, $availableGroups, true)): ?>
+					<option value="<?php echo $esc($value); ?>" selected><?php echo $esc(sprintf($t('group_unlisted', 'Group not available here (%s)'), $value)); ?></option>
+				<?php endif; ?>
 				<?php foreach ($availableGroups as $groupName): ?>
 					<?php $groupLabel = match ($groupName) {
 						'development' => $t('group_development', 'Development'),

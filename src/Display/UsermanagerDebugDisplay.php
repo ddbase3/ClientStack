@@ -57,6 +57,14 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->authorization->decide(new AuthorizationRequest(
+			$this->authorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\UsermanagerdebugSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
 		$out = strtolower($out);
 
 		if ($out === 'json' || $this->requestValue(self::PARAM_ACTION) === self::ACTION_PERMISSION_PROBE) {

@@ -404,3 +404,26 @@ The diagnostics UI exposes a user-initiated JSON copy operation for the most rec
 ### Diagnostic check feature permission (2026-10-22)
 
 The existing `DiagnosticScopeDisplay` now requires both native `system/admin` authorization and the independent `feature/diagnosticreportsfeature` decision before returning either its HTML view or an AJAX check result. It uses the existing BASE3 `IAuthorizationService`, session token and in-memory result processing. The feature decision does not add persistent data collection, a user-rights replica or a separate authorization backend.
+
+## Classmap-discovered Settings navigation
+
+`SettingsDisplay` uses the current trusted identity and feature decisions to
+render permitted navigation and accepts only a server-discovered, permitted
+entry identifier on fragment requests. It does not persist navigation state,
+roles or access decisions. Existing admin displays now check their matching
+settings feature before rendering or performing JSON operations. These checks
+do not replace CSRF protections, native resource permissions or any related
+endpoint's own authorization. The actual active authorization backend and
+user/group configuration are host-selected. Job changes now require POST
+with a session-bound CSRF token, in addition to the feature check.
+
+
+## Feature editor bootstrap audience (2026-11-03)
+
+The BASE3 Features Settings tab now declares `developer` as its code-owned
+default audience instead of the previously missing `administration` group.
+`ClientStack` does not store developer identities or grant native roles.
+Membership and persisted audience overrides are evaluated by the active host
+through its existing `IAuthorizationService` and settings backend. Direct
+administrative requests still require an explicit native `system/admin`
+decision. There is no new storage, network recipient or retention process.

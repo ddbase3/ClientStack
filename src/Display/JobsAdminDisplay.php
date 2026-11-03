@@ -2,17 +2,23 @@
 
 namespace ClientStack\Display;
 
+use Base3\Usermanager\Permission;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Authorization\Api\IAuthorizationService;
 use Base3\Api\IClassMap;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
 use Base3\Api\IRequest;
 use Base3\Configuration\Api\IConfiguration;
 use Base3\LinkTarget\Api\ILinkTargetService;
+use Base3\Session\Api\ISession;
+use Base3\Translation\Api\ITranslation;
 use Base3\Worker\Api\IJob;
 
 final class JobsAdminDisplay implements IDisplay {
 
 	private const CONFIG_GROUP = 'job';
+	private const CSRF_KEY = 'clientstack.jobs_admin.csrf';
 
 	private const PRIO_MIN = 1;
 	private const PRIO_MAX = 10;
@@ -22,7 +28,10 @@ final class JobsAdminDisplay implements IDisplay {
 		private readonly IMvcView $view,
 		private readonly IRequest $request,
 		private readonly IConfiguration $config,
-		private readonly ILinkTargetService $linkTargetService
+		private readonly ILinkTargetService $linkTargetService,
+		private readonly IAuthorizationService $settingsAuthorization,
+		private readonly ISession $session,
+		private readonly ITranslation $translation
 	) {}
 
 	public static function getName(): string {
@@ -38,6 +47,14 @@ final class JobsAdminDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->settingsAuthorization->decide(new AuthorizationRequest(
+			$this->settingsAuthorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\JobsadminSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
 		$out = strtolower((string)$out);
 
 		if ($out === 'json') {
@@ -57,12 +74,18 @@ final class JobsAdminDisplay implements IDisplay {
 		$this->view->assign('configGroup', self::CONFIG_GROUP);
 		$this->view->assign('prioMin', self::PRIO_MIN);
 		$this->view->assign('prioMax', self::PRIO_MAX);
+		$this->view->assign('csrf', $this->csrfToken());
 
 		return $this->view->loadTemplate();
 	}
 
 	private function handleJson(): string {
-		$action = (string)($this->request->get('action') ?? '');
+		$action = (string)($this->request->post('action') ?? $this->request->get('action') ?? '');
+		$write = in_array($action, ['set_active', 'prio'], true);
+		if ($write && !$this->hasValidMutationRequest()) {
+			http_response_code(403);
+			return $this->jsonError($this->translation->translate('Settings', 'settingsdisplay', 'request_rejected'));
+		}
 
 		try {
 			return match ($action) {
@@ -73,16 +96,16 @@ final class JobsAdminDisplay implements IDisplay {
 				'set_active' => $this->jsonSuccess([
 					'group' => self::CONFIG_GROUP,
 					'job' => $this->setActive(
-						(string)($this->request->get('job') ?? ''),
-						$this->normalizeBool($this->request->get('value'))
+						(string)($this->request->post('job') ?? ''),
+						$this->normalizeBool($this->request->post('value'))
 					),
 				]),
 				'prio' => $this->jsonSuccess([
 					'group' => self::CONFIG_GROUP,
 					'job' => $this->setPriority(
-						(string)($this->request->get('job') ?? ''),
-						$this->request->get('value'),
-						$this->request->get('delta')
+						(string)($this->request->post('job') ?? ''),
+						$this->request->post('value'),
+						$this->request->post('delta')
 					),
 				]),
 				default => $this->jsonError("Unknown action '$action'. Use: list|set_active|prio"),
@@ -90,6 +113,31 @@ final class JobsAdminDisplay implements IDisplay {
 		} catch (\Throwable $e) {
 			return $this->jsonError('Exception: ' . $e->getMessage());
 		}
+	}
+
+	private function hasValidMutationRequest(): bool {
+		if (strtoupper((string)$this->request->server('REQUEST_METHOD', '')) !== 'POST') {
+			return false;
+		}
+		if (!$this->session->started()) {
+			return false;
+		}
+		$expected = $this->session->get(self::CSRF_KEY);
+		$provided = $this->request->post('csrf', '');
+		return is_string($expected) && strlen($expected) === 64
+			&& is_string($provided) && hash_equals($expected, $provided);
+	}
+
+	private function csrfToken(): string {
+		if (!$this->session->started()) {
+			throw new \RuntimeException('An active session is required.');
+		}
+		$token = $this->session->get(self::CSRF_KEY);
+		if (!is_string($token) || strlen($token) !== 64) {
+			$token = bin2hex(random_bytes(32));
+			$this->session->set(self::CSRF_KEY, $token);
+		}
+		return $token;
 	}
 
 	// ---------------------------------------------------------------------

@@ -2,6 +2,9 @@
 
 namespace ClientStack\Display;
 
+use Base3\Usermanager\Permission;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Authorization\Api\IAuthorizationService;
 use Base3\Api\IAssetResolver;
 use Base3\Api\IDisplay;
 use Base3\Api\IMvcView;
@@ -19,8 +22,9 @@ final class StateStoreAdminDisplay implements IDisplay {
                 private readonly IMvcView $view,
                 private readonly IAssetResolver $assetResolver,
                 private readonly IDatabase $database,
-                private readonly ILinkTargetService $linkTargetService
-        ) {}
+                private readonly ILinkTargetService $linkTargetService,
+		private readonly IAuthorizationService $settingsAuthorization
+	) {}
 
         public static function getName(): string {
                 return 'statestoreadmindisplay';
@@ -31,6 +35,14 @@ final class StateStoreAdminDisplay implements IDisplay {
         }
 
         public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->settingsAuthorization->decide(new AuthorizationRequest(
+			$this->settingsAuthorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\StatestoreadminSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
                 $out = strtolower((string) $out);
 
                 if($out === 'json') {

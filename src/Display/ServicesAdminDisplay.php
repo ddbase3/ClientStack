@@ -2,6 +2,9 @@
 
 namespace ClientStack\Display;
 
+use Base3\Usermanager\Permission;
+use Base3\Authorization\Dto\AuthorizationRequest;
+use Base3\Authorization\Api\IAuthorizationService;
 use Base3\Api\IAssetResolver;
 use Base3\Api\IClassMap;
 use Base3\Api\IComponentResolver;
@@ -28,7 +31,8 @@ class ServicesAdminDisplay implements IDisplay {
 
 	public function __construct(
 		private readonly IContainer $container,
-		private readonly IMvcView $view
+		private readonly IMvcView $view,
+		private readonly IAuthorizationService $settingsAuthorization
 	) {}
 
 	public static function getName(): string {
@@ -36,6 +40,14 @@ class ServicesAdminDisplay implements IDisplay {
 	}
 
 	public function getOutput(string $out = 'html', bool $final = false): string {
+		if (!$this->settingsAuthorization->decide(new AuthorizationRequest(
+			$this->settingsAuthorization->getDefaultAuthority(),
+			Permission::for('feature', \ClientStack\SettingsTab\ServicesadminSettingsTab::getName())
+		))->isAllowed()) {
+			http_response_code(403);
+			return '';
+		}
+
 		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/ServicesAdminDisplay.php');
 

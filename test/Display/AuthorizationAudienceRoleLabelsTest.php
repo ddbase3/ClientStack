@@ -135,6 +135,17 @@ final class AuthorizationAudienceRoleLabelsTest extends TestCase {
 		self::assertStringContainsString('value="" disabled>Select a group</option>', $active);
 	}
 
+	public function testUnlistedFeatureDefaultGroupRetainsItsValueOnSubmission(): void {
+		$html = $this->render('AuthorizationFeaturesDisplay', [
+			['kind' => 'group', 'value' => 'administration', 'config' => '{}']
+		], []);
+		$active = explode('<template data-audience-template>', $html, 2)[0];
+		self::assertStringContainsString('data-audience-group required', $active);
+		self::assertStringContainsString('value="administration" selected', $active);
+		self::assertStringContainsString('Group not available here (administration)', $active);
+		self::assertStringContainsString('value="" disabled>Select a group</option>', $active);
+	}
+
 	public function testExistingCriterionRetainsNameAndUsesPluginSchemaTitle(): void {
 		$criteria = [
 			['name' => 'qualitusemaildomaincriterion', 'schema' => ['title' => 'Qualitus email domain', 'type' => 'object', 'properties' => []]],

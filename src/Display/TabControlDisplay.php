@@ -53,6 +53,8 @@ final class TabControlDisplay implements IDisplay {
 
 		$this->view->setPath(dirname(__DIR__, 2));
 		$this->view->setTemplate('Display/TabControlDisplay.php');
+		$this->view->loadBricks('TabControl');
+		$this->view->assign('translations', $this->view->getBricks('tab_control_display') ?? []);
 		$this->view->assign('controlId', 'base3-tab-control-' . bin2hex(random_bytes(6)));
 		$this->view->assign('tabs', $tabs);
 		$this->view->assign('activeTab', $activeTabName);
@@ -61,11 +63,12 @@ final class TabControlDisplay implements IDisplay {
 		$this->view->assign('activeUrl', (string) ($activeDisplay['url'] ?? ''));
 		$this->view->assign('initialLoadViaAjax', $initialLoadViaAjax);
 		$this->view->assign('content', $content);
+		$tabTranslations = $this->view->getBricks('tab_control_display') ?? [];
 		$this->view->assign(
 			'emptyMessage',
 			isset($this->data['empty_message']) && is_scalar($this->data['empty_message'])
 				? (string) $this->data['empty_message']
-				: 'No administration displays are available.'
+				: (string)($tabTranslations['empty_message'] ?? '')
 		);
 
 		return $this->view->loadTemplate();
@@ -148,8 +151,11 @@ final class TabControlDisplay implements IDisplay {
 					'href' => $this->createHistoryUrl($entryName),
 					'display' => $displayName,
 					'label' => $this->readLabel($displayData, $entryName),
+					'description' => $this->readDescription($displayData),
 					'data' => $displayData['data'] ?? null,
-					'url' => $this->linkTargetService->getLink(
+					'url' => isset($displayData['url']) && is_string($displayData['url'])
+						? $displayData['url']
+						: $this->linkTargetService->getLink(
 						[
 							'name' => $displayName,
 							'out' => 'html',
@@ -169,6 +175,7 @@ final class TabControlDisplay implements IDisplay {
 			$tabs[] = [
 				'name' => $tabName,
 				'label' => $this->readLabel($tabData, $tabName),
+				'description' => $this->readDescription($tabData),
 				'displays' => $displays,
 			];
 
@@ -262,6 +269,12 @@ final class TabControlDisplay implements IDisplay {
 
 		$label = trim((string) $data['label']);
 		return $label !== '' ? $label : $fallback;
+	}
+
+	/** @param array<string,mixed> $data */
+	private function readDescription(array $data): string {
+		if (!isset($data['description']) || !is_string($data['description'])) return '';
+		return trim($data['description']);
 	}
 
 	private function createHistoryUrl(string $entryName): string {

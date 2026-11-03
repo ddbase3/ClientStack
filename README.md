@@ -424,3 +424,46 @@ The report is intended for technical review, including manual use in an AI assis
 ### Feature-gated diagnostics display
 
 `DiagnosticScopeDisplay` checks both `system/admin` and `feature/diagnosticreportsfeature` through the active `IAuthorizationService` before showing diagnostic results or servicing per-check AJAX requests. Host navigation must independently filter the corresponding tab; hiding a tab is not sufficient authorization. The display continues to execute checks in order and only keeps the report in the current browser view for JSON copying.
+
+## Settings navigation
+
+`ClientStack\Display\SettingsDisplay` displays settings for authenticated
+users and discovers `UiFoundation\Api\ISettingsTab` contributions through
+`IClassMap`. It filters child entries using each tab's feature decision, then
+sorts top-level groups and their children by `getOrder()` and `getName()`. Root
+groups have no content; the first permitted child becomes active. A group without
+permitted children is omitted.
+
+The existing `TabControlDisplay` remains the only two-level tab renderer. Its
+settings entry URLs address `SettingsDisplay` itself; it validates a selected
+entry again on each AJAX fragment request and applies the trusted
+`getDisplayData()` value. Its navigation URL does not provide an authorization
+context to the target. Direct `IDisplay` and API requests must independently
+check the same feature and the domain permissions relevant to their operations.
+The Jobs administrator now also requires a session-bound CSRF token and POST
+for changes; read-only list requests remain GET.
+
+ClientStack owns only its own settings contributions and its renderer texts in
+`ClientStack/lang/Settings/` and `ClientStack/lang/TabControl/`. Other plugins
+provide their own tabs and translations; no cross-plugin translation catalog is
+maintained here. The XRM page uses the `settingsdisplay` output name, not a
+static registry of other plugins' tabs.
+
+
+## BASE3 Features settings audience
+
+The `AuthorizationfeaturesSettingsTab` feature defaults to the code-defined
+`developer` BASE3 group. The actual Features display and backend continue
+to check the host's independent `system/admin` permission. This default
+cannot override a saved feature audience in the host configuration; empty
+stored expressions remain explicit denials. The definition of developer
+membership belongs to the project plugin, not to ClientStack.
+
+### Feature editor defaults
+
+The shared audience editor preserves the selected technical group name of a
+declared feature audience, including when the current host cannot list that
+group. An unavailable default group is presented visibly rather than as an
+empty required select. Group discovery and validation remain the host
+administration service's responsibility. The editor itself does not grant
+rights or persist feature rules.
