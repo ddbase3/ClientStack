@@ -50,50 +50,5 @@ class ClassicChatbotDisplayTest extends TestCase {
 	}
 }
 
-class FakeAssetResolver implements IAssetResolver {
-
-	public function resolve(string $path): string {
-		return '/resolved/' . $path;
-	}
-}
-
-class FakeMvcView implements IMvcView {
-
-	private ?string $lastPath = null;
-	private ?string $lastTemplate = null;
-	private array $assigned = [];
-
-	public function setPath(string $path = '.'): void {
-		$this->lastPath = $path;
-	}
-
-	public function assign(string $key, $value): void {
-		$this->assigned[$key] = $value;
-	}
-
-	public function setTemplate(string $template = 'default'): void {
-		$this->lastTemplate = $template;
-	}
-
-	public function loadTemplate(): string {
-		return 'FAKE_TEMPLATE_OUTPUT';
-	}
-
-	public function loadBricks(string $set, string $language = ''): void {}
-
-	public function getBricks(string $set): ?array {
-		return null;
-	}
-
-	public function getLastPath(): ?string {
-		return $this->lastPath;
-	}
-
-	public function getLastTemplate(): ?string {
-		return $this->lastTemplate;
-	}
-
-	public function getAssigned(string $tag): mixed {
-		return $this->assigned[$tag] ?? null;
-	}
-}
+require_once __DIR__ . '/FakeAssetResolver.php';
+require_once __DIR__ . '/FakeMvcView.php';

@@ -10,36 +10,7 @@ use PHPUnit\Framework\TestCase;
 final class GlobalChatbotLauncherSettingsTest extends TestCase {
 
 	public function testDefaultsPersistenceAndInvalidUpdates(): void {
-		$store = new class implements ISettingsStore {
-			private array $groups = [];
-			public bool $saved = false;
-
-			public function get(string $group, string $name, array $default = []): array {
-				return $this->groups[$group][$name] ?? $default;
-			}
-
-			public function set(string $group, string $name, array $settings): void {
-				$this->groups[$group][$name] = $settings;
-			}
-
-			public function has(string $group, string $name): bool {
-				return isset($this->groups[$group][$name]);
-			}
-
-			public function remove(string $group, string $name): void {
-				unset($this->groups[$group][$name]);
-			}
-
-			public function getGroup(string $group): array {
-				return $this->groups[$group] ?? [];
-			}
-
-			public function save(): void {
-				$this->saved = true;
-			}
-
-			public function reload(): void {}
-		};
+		$store = new GlobalChatbotLauncherSettingsTestDouble1();
 
 		self::assertSame(GlobalChatbotLauncherSettings::DEFAULTS, GlobalChatbotLauncherSettings::get($store));
 
@@ -63,3 +34,5 @@ final class GlobalChatbotLauncherSettingsTest extends TestCase {
 		}
 	}
 }
+
+require_once __DIR__ . '/GlobalChatbotLauncherSettingsTestDouble1.php';

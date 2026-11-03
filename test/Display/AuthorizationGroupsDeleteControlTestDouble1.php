@@ -1,0 +1,45 @@
+<?php declare(strict_types=1);
+
+namespace ClientStack\Test\Display;
+
+use PHPUnit\Framework\TestCase;
+
+final class AuthorizationGroupsDeleteControlTestDouble1 {
+			public array $_ = [
+				'entries' => [
+					[
+						'name' => 'temporary_group',
+						'description' => 'Temporary managed group',
+						'source' => 'managed',
+						'editable' => true,
+						'rows' => [],
+						'codeCriteria' => [],
+						'expression' => []
+					],
+					[
+						'name' => 'development',
+						'description' => 'Code-owned group',
+						'source' => 'code',
+						'editable' => true,
+						'rows' => [],
+						'codeCriteria' => ['criterion' => 'fixed'],
+						'expression' => []
+					]
+				],
+				'defaultGroup' => '',
+				'criterionOptions' => [],
+				'roleOptions' => [],
+				'translations' => [
+					'remove_group' => 'Delete group',
+					'remove_confirm' => 'Delete BASE3 group %s? This cannot be undone.'
+				],
+				'csrf' => 'test-csrf',
+				'endpoint' => '/admin/groups'
+			];
+
+			public function render(): string {
+				ob_start();
+				require __DIR__ . '/../../tpl/Display/AuthorizationGroupsDisplay.php';
+				return (string)ob_get_clean();
+			}
+		}

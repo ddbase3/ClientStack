@@ -17,7 +17,7 @@ use UiFoundation\Api\IAuthorizationAudienceAdministrationService;
 final class AuthorizationAudienceDisplaysTest extends TestCase {
 
 	public function testGroupDisplayDoesNotReadBackendWithoutSystemAdminDecision(): void {
-		$authorization = $this->createMock(IAuthorizationService::class);
+		$authorization = $this->createStub(IAuthorizationService::class);
 		$authorization->method('getDefaultAuthority')->willReturn('ilias');
 		$authorization->method('decide')->willReturn(AuthorizationDecision::deny());
 		$administration = $this->createMock(IAuthorizationAudienceAdministrationService::class);
@@ -25,21 +25,21 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 		$display = new AuthorizationGroupsDisplay(
 			$authorization,
 			$administration,
-			$this->createMock(IRequest::class),
-			$this->createMock(ISession::class),
-			$this->createMock(IMvcView::class),
-			$this->createMock(ILinkTargetService::class),
-			$this->createMock(IAssetResolver::class)
+			$this->createStub(IRequest::class),
+			$this->createStub(ISession::class),
+			$this->createStub(IMvcView::class),
+			$this->createStub(ILinkTargetService::class),
+			$this->createStub(IAssetResolver::class)
 		);
 		self::assertSame('', $display->getOutput());
 		self::assertSame(403, http_response_code());
 	}
 
 	public function testBadCsrfDoesNotModifyFeatureAudiences(): void {
-		$authorization = $this->createMock(IAuthorizationService::class);
+		$authorization = $this->createStub(IAuthorizationService::class);
 		$authorization->method('getDefaultAuthority')->willReturn('ilias');
 		$authorization->method('decide')->willReturn(AuthorizationDecision::allow());
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('post')->willReturnCallback(static function (string $key, $default = null) {
 			return match ($key) {
 				'base3_feature_action' => 'save',
@@ -48,24 +48,24 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 				default => $default
 			};
 		});
-		$session = $this->createMock(ISession::class);
+		$session = $this->createStub(ISession::class);
 		$session->method('get')->willReturn(str_repeat('a', 64));
 		$administration = $this->createMock(IAuthorizationAudienceAdministrationService::class);
 		$administration->expects(self::never())->method('replaceFeatureRules');
 		$display = new AuthorizationFeaturesDisplay(
 			$authorization, $administration, $request, $session,
-			$this->createMock(IMvcView::class),
-			$this->createMock(ILinkTargetService::class),
-			$this->createMock(IAssetResolver::class)
+			$this->createStub(IMvcView::class),
+			$this->createStub(ILinkTargetService::class),
+			$this->createStub(IAssetResolver::class)
 		);
 		self::assertStringContainsString('rejected', $display->getOutput());
 	}
 
 	public function testGroupMutationDelegatesToHostExactlyOnce(): void {
-		$authorization = $this->createMock(IAuthorizationService::class);
+		$authorization = $this->createStub(IAuthorizationService::class);
 		$authorization->method('getDefaultAuthority')->willReturn('ilias');
 		$authorization->method('decide')->willReturn(AuthorizationDecision::allow());
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('post')->willReturnCallback(static function (string $key, $default = null) {
 			return match ($key) {
 				'base3_group_action' => 'save',
@@ -75,18 +75,18 @@ final class AuthorizationAudienceDisplaysTest extends TestCase {
 				default => $default
 			};
 		});
-		$session = $this->createMock(ISession::class);
+		$session = $this->createStub(ISession::class);
 		$session->method('get')->willReturn(str_repeat('b', 64));
 		$session->method('started')->willReturn(true);
 		$administration = $this->createMock(IAuthorizationAudienceAdministrationService::class);
 		$administration->expects(self::once())->method('replaceGroupRules')->with(['example' => []], '');
 		$administration->method('getGroupView')->willReturn(['entries' => [], 'defaultGroup' => '', 'criterionOptions' => [], 'roleOptions' => [], 'roleHint' => '']);
-		$view = $this->createMock(IMvcView::class);
+		$view = $this->createStub(IMvcView::class);
 		$view->method('getBricks')->willReturn([]);
 		$view->method('loadTemplate')->willReturn('rendered');
-		$links = $this->createMock(ILinkTargetService::class);
+		$links = $this->createStub(ILinkTargetService::class);
 		$links->method('getLink')->willReturn('/admin');
-		$assets = $this->createMock(IAssetResolver::class);
+		$assets = $this->createStub(IAssetResolver::class);
 		$assets->method('resolve')->willReturnCallback(static fn(string $path): string => '/assets/' . $path);
 		$display = new AuthorizationGroupsDisplay($authorization, $administration, $request, $session, $view, $links, $assets);
 		self::assertSame('rendered', $display->getOutput());

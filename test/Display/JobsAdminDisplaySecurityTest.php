@@ -17,17 +17,17 @@ use PHPUnit\Framework\TestCase;
 final class JobsAdminDisplaySecurityTest extends TestCase {
 
 	private function createDisplay(IRequest $request, IConfiguration $configuration, ISession $session, bool $authorized = true): JobsAdminDisplay {
-		$authorization = $this->createMock(IAuthorizationService::class);
+		$authorization = $this->createStub(IAuthorizationService::class);
 		$authorization->method('getDefaultAuthority')->willReturn('base3');
 		$authorization->method('decide')->willReturn($authorized ? AuthorizationDecision::allow() : AuthorizationDecision::deny());
-		$translation = $this->createMock(ITranslation::class);
+		$translation = $this->createStub(ITranslation::class);
 		$translation->method('translate')->willReturn('Request rejected');
 		return new JobsAdminDisplay(
-			$this->createMock(IClassMap::class),
-			$this->createMock(IMvcView::class),
+			$this->createStub(IClassMap::class),
+			$this->createStub(IMvcView::class),
 			$request,
 			$configuration,
-			$this->createMock(ILinkTargetService::class),
+			$this->createStub(ILinkTargetService::class),
 			$authorization,
 			$session,
 			$translation
@@ -37,8 +37,8 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 	public function testUnauthenticatedAuthorizationDecisionBlocksJson(): void {
 		$config = $this->createMock(IConfiguration::class);
 		$config->expects(self::never())->method('persistValue');
-		$request = $this->createMock(IRequest::class);
-		$display = $this->createDisplay($request, $config, $this->createMock(ISession::class), false);
+		$request = $this->createStub(IRequest::class);
+		$display = $this->createDisplay($request, $config, $this->createStub(ISession::class), false);
 		self::assertSame('', $display->getOutput('json'));
 		self::assertSame(403, http_response_code());
 	}
@@ -47,7 +47,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 		$config = $this->createMock(IConfiguration::class);
 		$config->expects(self::never())->method('persistValue');
 		$config->expects(self::never())->method('setValue');
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('get')->willReturnCallback(static fn(string $key, $default = null) => match ($key) {
 			'action' => 'set_active',
 			'job' => 'job-one',
@@ -55,7 +55,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 			default => $default
 		});
 		$request->method('server')->willReturn('GET');
-		$display = $this->createDisplay($request, $config, $this->createMock(ISession::class));
+		$display = $this->createDisplay($request, $config, $this->createStub(ISession::class));
 		$json = json_decode($display->getOutput('json'), true, 512, JSON_THROW_ON_ERROR);
 		self::assertSame('error', $json['status']);
 		self::assertSame(403, http_response_code());
@@ -64,7 +64,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 	public function testPostWithWrongCsrfCannotWriteConfig(): void {
 		$config = $this->createMock(IConfiguration::class);
 		$config->expects(self::never())->method('persistValue');
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('get')->willReturn('');
 		$request->method('post')->willReturnCallback(static fn(string $key, $default = null) => match ($key) {
 			'action' => 'set_active',
@@ -74,7 +74,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 			default => $default
 		});
 		$request->method('server')->willReturn('POST');
-		$session = $this->createMock(ISession::class);
+		$session = $this->createStub(ISession::class);
 		$session->method('started')->willReturn(true);
 		$session->method('get')->willReturn(str_repeat('a', 64));
 		$display = $this->createDisplay($request, $config, $session);
@@ -86,7 +86,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 	public function testAuthorizedPostWithValidCsrfPersistsExactlyOnce(): void {
 		$config = $this->createMock(IConfiguration::class);
 		$config->expects(self::once())->method('persistValue')->with('job', 'job-one.active', '1')->willReturn(true);
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('get')->willReturn('');
 		$request->method('post')->willReturnCallback(static fn(string $key, $default = null) => match ($key) {
 			'action' => 'set_active',
@@ -96,7 +96,7 @@ final class JobsAdminDisplaySecurityTest extends TestCase {
 			default => $default
 		});
 		$request->method('server')->willReturn('POST');
-		$session = $this->createMock(ISession::class);
+		$session = $this->createStub(ISession::class);
 		$session->method('started')->willReturn(true);
 		$session->method('get')->willReturn(str_repeat('a', 64));
 		$display = $this->createDisplay($request, $config, $session);

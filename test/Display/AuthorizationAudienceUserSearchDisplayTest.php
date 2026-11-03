@@ -23,19 +23,20 @@ final class AuthorizationAudienceUserSearchDisplayTest extends TestCase {
 		array $post,
 		bool $authorized = true,
 		bool $hostAllowed = true,
-		string $method = 'POST'
+		string $method = 'POST',
+		?IAuthorizationAudienceAdministrationService $administration = null
 	): array {
-		$authorization = $this->createMock(IAuthorizationService::class);
+		$authorization = $this->createStub(IAuthorizationService::class);
 		$authorization->method('getDefaultAuthority')->willReturn('ilias');
 		$authorization->method('decide')->willReturn($authorized ? AuthorizationDecision::allow() : AuthorizationDecision::deny());
-		$administration = $this->createMock(IAuthorizationAudienceAdministrationService::class);
+		$administration ??= $this->createStub(IAuthorizationAudienceAdministrationService::class);
 		if (!$hostAllowed) {
 			$administration->method('assertCanAdminister')->willThrowException(new RuntimeException('Native access denied.'));
 		}
-		$request = $this->createMock(IRequest::class);
+		$request = $this->createStub(IRequest::class);
 		$request->method('server')->willReturnCallback(static fn(string $key, $default = null) => $key === 'REQUEST_METHOD' ? $method : $default);
 		$request->method('post')->willReturnCallback(static fn(string $key, $default = null) => $post[$key] ?? $default);
-		$session = $this->createMock(ISession::class);
+		$session = $this->createStub(ISession::class);
 		$session->method('started')->willReturn(true);
 		$session->method('get')->willReturnCallback(static fn(string $key) => in_array($key, ['authorization.groups.csrf', 'authorization.features.csrf'], true) ? self::TOKEN : null);
 		$users = $this->createMock(IUsermanager::class);
@@ -49,8 +50,9 @@ final class AuthorizationAudienceUserSearchDisplayTest extends TestCase {
 	}
 
 	public function testMissingSystemPermissionNeverQueriesUserDirectory(): void {
-		[$endpoint, $users, $administration] = $this->endpoint($this->requestData(), false);
+		$administration = $this->createMock(IAuthorizationAudienceAdministrationService::class);
 		$administration->expects(self::never())->method('assertCanAdminister');
+		[$endpoint, $users] = $this->endpoint($this->requestData(), false, administration: $administration);
 		$users->expects(self::never())->method('searchUsers');
 		self::assertSame(403, $this->captureEndpointResponseCode($endpoint));
 	}
@@ -115,7 +117,7 @@ final class AuthorizationAudienceUserSearchDisplayTest extends TestCase {
 
 	public function testBackendFailuresDoNotExposeInternalDetails(): void {
 		[$endpoint, $users] = $this->endpoint($this->requestData());
-		$users->method('searchUsers')->willThrowException(new RuntimeException('sensitive sql connection details'));
+		$users->expects(self::exactly(2))->method('searchUsers')->willThrowException(new RuntimeException('sensitive sql connection details'));
 		self::assertSame(500, $this->captureEndpointResponseCode($endpoint));
 		self::assertStringNotContainsString('sql connection', $endpoint->getOutput('json'));
 	}

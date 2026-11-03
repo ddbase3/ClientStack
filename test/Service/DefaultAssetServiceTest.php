@@ -30,16 +30,7 @@ class DefaultAssetServiceTest extends TestCase {
 		file_put_contents($this->testModuleDir . '/local/assets.json', json_encode($json, JSON_PRETTY_PRINT));
 
 		$modulePath = $this->testModuleDir;
-		$this->moduleRegistry = new class($modulePath) implements IModuleRegistry {
-			public function __construct(private readonly string $modulePath) {}
-			public function getModuleNames(): array { return ['ZzClientStackTestPlugin']; }
-			public function getModulePath(string $name): ?string { return $name === 'ZzClientStackTestPlugin' ? $this->modulePath : null; }
-			public function requireModulePath(string $name): string {
-				$path = $this->getModulePath($name);
-				if ($path === null) throw new \RuntimeException('Module not found: ' . $name);
-				return $path;
-			}
-		};
+		$this->moduleRegistry = new DefaultAssetServiceTestDouble1($modulePath);
 	}
 
 	protected function tearDown(): void {
@@ -98,3 +89,5 @@ class DefaultAssetServiceTest extends TestCase {
 		$this->assertCount(2, $asset->files);
 	}
 }
+
+require_once __DIR__ . '/DefaultAssetServiceTestDouble1.php';

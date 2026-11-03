@@ -7,33 +7,7 @@ use PHPUnit\Framework\TestCase;
 final class AuthorizationAudienceRoleLabelsTest extends TestCase {
 
 	private function render(string $display, array $rules, array $roles, array $criteria = [], array $translations = []): string {
-		$view = new class($display, $rules, $roles, $criteria, $translations) {
-			public array $_;
-			private string $display;
-
-			public function __construct(string $display, array $rules, array $roles, array $criteria, array $translations) {
-				$this->display = $display;
-				$this->_ = [
-					'endpoint' => '/authorization', 'csrf' => 'test-token', 'translations' => $translations,
-					'roleOptions' => $roles, 'criterionOptions' => $criteria, 'groups' => ['development'],
-					'rows' => [[
-						'name' => 'feature', 'label' => 'Feature', 'description' => 'Test',
-						'permissions' => [], 'rules' => $rules
-					]],
-					'entries' => [[
-						'name' => 'custom_group', 'source' => 'managed', 'description' => 'Test',
-						'codeCriteria' => [], 'editable' => true, 'rows' => $rules
-					]],
-					'defaultGroup' => ''
-				];
-			}
-
-			public function output(): string {
-				ob_start();
-				require __DIR__ . '/../../tpl/Display/' . $this->display . '.php';
-				return (string)ob_get_clean();
-			}
-		};
+		$view = new AuthorizationAudienceRoleLabelsTestDouble1($display, $rules, $roles, $criteria, $translations);
 		return $view->output();
 	}
 
@@ -179,3 +153,5 @@ final class AuthorizationAudienceRoleLabelsTest extends TestCase {
 	}
 
 }
+
+require_once __DIR__ . '/AuthorizationAudienceRoleLabelsTestDouble1.php';

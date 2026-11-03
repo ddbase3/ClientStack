@@ -11,8 +11,8 @@ final class SettingsFeatureDefaultTest extends TestCase {
 
 	public function testFeatureEditorDefaultsToDevelopmentAudienceOnly(): void {
 		$tab = new AuthorizationfeaturesSettingsTab(
-			$this->createMock(ITranslation::class),
-			$this->createMock(IAuthorizationService::class)
+			$this->createStub(ITranslation::class),
+			$this->createStub(IAuthorizationService::class)
 		);
 		self::assertSame(['group' => 'development'], $tab->getDefaultAudience());
 		self::assertSame('authorizationfeaturesdisplay', $tab->getDisplayName());

@@ -112,15 +112,18 @@ class ModularChatbotDisplayTest extends TestCase {
 		$this->assertSame('/chatbot/conversations/title', $view->getAssigned('conversationTitleUrl'));
 		$this->assertSame('Verläufe anzeigen', $view->getAssigned('strings')['showConversations'] ?? null);
 		$this->assertSame('Custom thinking', $view->getAssigned('strings')['thinking'] ?? null);
-		$this->assertSame(
-			'/resolved/plugin/ClientStack/assets/modularchatbot/index.js',
+		$this->assertMatchesRegularExpression(
+			'#^/resolved/plugin/ClientStack/assets/modularchatbot/index\.js\?v=[a-f0-9]+$#',
 			$view->getAssigned('moduleUrl')
 		);
-		$this->assertSame(
-			'/resolved/plugin/ClientStack/assets/modularchatbot/icons/edit.svg',
+		$this->assertMatchesRegularExpression(
+			'#^/resolved/plugin/ClientStack/assets/modularchatbot/icons/edit\.svg\?v=[a-f0-9]{12}$#',
 			$view->getAssigned('icons')['edit'] ?? null
 		);
-		$this->assertSame('/resolved/plugin/ClientStack/assets/modularchatbot/icons/info.svg', $view->getAssigned('icons')['info'] ?? null);
+		$this->assertMatchesRegularExpression(
+			'#^/resolved/plugin/ClientStack/assets/modularchatbot/icons/info\.svg\?v=[a-f0-9]{12}$#',
+			$view->getAssigned('icons')['info'] ?? null
+		);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/chat-list.svg', $view->getAssigned('icons')['list'] ?? null);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/new-chat.svg', $view->getAssigned('icons')['plus'] ?? null);
 		$this->assertSame('/resolved/plugin/Customer/assets/icons/microphone.svg', $view->getAssigned('icons')['microphone'] ?? null);
@@ -203,62 +206,5 @@ class ModularChatbotDisplayTest extends TestCase {
 	}
 }
 
-class ModularChatbotFakeAssetResolver implements IAssetResolver {
-
-	public function resolve(string $path): string {
-		return '/resolved/' . $path;
-	}
-}
-
-class ModularChatbotFakeMvcView implements IMvcView {
-
-	private ?string $lastPath = null;
-	private ?string $lastTemplate = null;
-	private ?string $loadedBrickSet = null;
-	private array $assigned = [];
-
-	/** @param array<string,string> $bricks */
-	public function __construct(
-		private readonly array $bricks = []
-	) {}
-
-	public function setPath(string $path = '.'): void {
-		$this->lastPath = $path;
-	}
-
-	public function assign(string $key, $value): void {
-		$this->assigned[$key] = $value;
-	}
-
-	public function setTemplate(string $template = 'default'): void {
-		$this->lastTemplate = $template;
-	}
-
-	public function loadTemplate(): string {
-		return 'FAKE_TEMPLATE_OUTPUT';
-	}
-
-	public function loadBricks(string $set, string $language = ''): void {
-		$this->loadedBrickSet = $set;
-	}
-
-	public function getBricks(string $set): ?array {
-		return $set === 'modularchatbot' ? $this->bricks : null;
-	}
-
-	public function getLastPath(): ?string {
-		return $this->lastPath;
-	}
-
-	public function getLastTemplate(): ?string {
-		return $this->lastTemplate;
-	}
-
-	public function getLoadedBrickSet(): ?string {
-		return $this->loadedBrickSet;
-	}
-
-	public function getAssigned(string $tag): mixed {
-		return $this->assigned[$tag] ?? null;
-	}
-}
+require_once __DIR__ . '/ModularChatbotFakeAssetResolver.php';
+require_once __DIR__ . '/ModularChatbotFakeMvcView.php';
