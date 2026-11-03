@@ -9,12 +9,12 @@ use PHPUnit\Framework\TestCase;
 
 final class SettingsFeatureDefaultTest extends TestCase {
 
-	public function testFeatureEditorDefaultsToDeveloperAudienceOnly(): void {
+	public function testFeatureEditorDefaultsToDevelopmentAudienceOnly(): void {
 		$tab = new AuthorizationfeaturesSettingsTab(
 			$this->createMock(ITranslation::class),
 			$this->createMock(IAuthorizationService::class)
 		);
-		self::assertSame(['group' => 'developer'], $tab->getDefaultAudience());
+		self::assertSame(['group' => 'development'], $tab->getDefaultAudience());
 		self::assertSame('authorizationfeaturesdisplay', $tab->getDisplayName());
 	}
 }

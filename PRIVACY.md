@@ -420,7 +420,7 @@ with a session-bound CSRF token, in addition to the feature check.
 
 ## Feature editor bootstrap audience (2026-11-03)
 
-The BASE3 Features Settings tab now declares `developer` as its code-owned
+The BASE3 Features Settings tab now declares `development` as its code-owned
 default audience instead of the previously missing `administration` group.
 `ClientStack` does not store developer identities or grant native roles.
 Membership and persisted audience overrides are evaluated by the active host

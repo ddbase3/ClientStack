@@ -19,6 +19,6 @@ final class AuthorizationfeaturesSettingsTab extends AbstractFeatureSettingsTab 
 	}
 
 	public function getDefaultAudience(): array {
-		return ['group' => 'developer'];
+		return ['group' => 'development'];
 	}
 }

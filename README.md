@@ -453,11 +453,11 @@ static registry of other plugins' tabs.
 ## BASE3 Features settings audience
 
 The `AuthorizationfeaturesSettingsTab` feature defaults to the code-defined
-`developer` BASE3 group. The actual Features display and backend continue
+`development` BASE3 group. The actual Features display and backend continue
 to check the host's independent `system/admin` permission. This default
 cannot override a saved feature audience in the host configuration; empty
-stored expressions remain explicit denials. The definition of developer
-membership belongs to the project plugin, not to ClientStack.
+stored expressions remain explicit denials. The definition of development
+membership belongs to the shared Base3Template plugin, not to ClientStack.
 
 ### Feature editor defaults
 
