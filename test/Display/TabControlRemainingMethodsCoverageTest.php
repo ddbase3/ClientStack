@@ -112,7 +112,7 @@ final class TabControlRemainingMethodsCoverageTest extends TestCase {
 	public function testHistoryUrlsPreserveUnrelatedArgumentsAndReplaceStaleTabSelection(): void {
 		$assigned = [];
 		$display = $this->buildControl($assigned);
-		$hadUri = array_key_exists('REQUEST_URI', $_SERVER);
+		$hadUri = is_array($_SERVER ?? null) && array_key_exists('REQUEST_URI', $_SERVER);
 		$oldUri = $_SERVER['REQUEST_URI'] ?? null;
 		try {
 			$_SERVER['REQUEST_URI'] = '/admin/settings?language=de&base3_tab=old&keep=value';
@@ -183,7 +183,7 @@ final class TabControlRemainingMethodsCoverageTest extends TestCase {
 		$child = $this->createStub(IDisplay::class);
 		$child->method('getOutput')->willReturn('child-html');
 		$display = $this->buildControl($assigned, $child);
-		$hadTab = array_key_exists('base3_tab', $_GET);
+		$hadTab = is_array($_GET ?? null) && array_key_exists('base3_tab', $_GET);
 		$oldTab = $_GET['base3_tab'] ?? null;
 		try {
 			$_GET['base3_tab'] = 'second';
