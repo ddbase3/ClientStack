@@ -7,10 +7,10 @@
 	$json = static fn(mixed $value): string => json_encode($value, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
 ?>
 <section id="<?php echo $esc($id); ?>" class="base3-diagnostic-suite" aria-label="<?php echo $esc($labels['areas_title']); ?>">
-	<header class="base3-diagnostic-header">
+	<div class="base3-diagnostic-header">
 		<h2><?php echo $esc($labels['areas_title']); ?></h2>
 		<p><?php echo $esc($labels['areas_intro']); ?></p>
-	</header>
+	</div>
 
 	<?php if($areas === []): ?>
 		<p class="base3-diagnostic-empty"><?php echo $esc($labels['no_scopes']); ?></p>
