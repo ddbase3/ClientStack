@@ -51,26 +51,19 @@ final class AuthorizationFeaturesDisplay implements IDisplay {
                         http_response_code(403);
                         return '<p role="alert">Access denied.</p>';
                 }
-                $step = 'assertCanAdminister';
                 try {
                         $this->administration->assertCanAdminister();
-                        $step = 'readAction';
                         $action = $this->request->post('base3_feature_action', '');
                         $message = '';
                         if ($action !== '') {
-                                $step = 'assertCsrf';
                                 $this->assertCsrf();
-                                $step = 'validateFeatureRules';
                                 if ($action !== 'save') throw new InvalidArgumentException('Invalid feature action.');
                                 $rows = $this->request->post('base3_feature_rules', []);
                                 if (!is_array($rows)) throw new InvalidArgumentException('Invalid feature rules.');
-                                $step = 'replaceFeatureRules';
                                 $this->administration->replaceFeatureRules($rows);
                                 $message = 'Feature audiences saved.';
                         }
-                        $step = 'getFeatureView';
                         $data = $this->administration->getFeatureView();
-                        $step = 'prepareView';
                         $this->view->setPath(dirname(__DIR__, 2));
                         $this->view->loadBricks('Display');
                         $this->view->setTemplate('Display/AuthorizationFeaturesDisplay.php');
@@ -79,27 +72,20 @@ final class AuthorizationFeaturesDisplay implements IDisplay {
                                 $this->view->getBricks('authorization_audience_editor') ?? []
                         ));
                         foreach ($data as $name => $value) $this->view->assign($name, $value);
-                        $step = 'csrfToken';
                         $this->view->assign('csrf', $this->csrfToken());
                         $this->view->assign('message', $message);
-                        $step = 'resolveLinks';
                         $this->view->assign('endpoint', $this->links->getLink(['name' => self::getName(), 'out' => 'html']));
                         $this->view->assign('userSearchEndpoint', $this->links->getLink([
                                 'name' => AuthorizationAudienceUserSearchDisplay::getName(), 'out' => 'json'
                         ]));
                         $this->view->assign('userSearchScope', 'features');
-                        $step = 'resolveAssets';
                         $this->view->assign('modularSelectModuleUrl', $this->assets->resolve('plugin/ClientStack/assets/modularselect/index.js'));
                         $this->view->assign('modularSelectCssUrl', $this->assets->resolve('plugin/ClientStack/assets/modularselect/styles/modularselect.css'));
-                        $step = 'loadTemplate';
                         return $this->view->loadTemplate();
                 } catch (Throwable $error) {
-                        http_response_code($step === 'assertCanAdminister'
-                                ? 403
-                                : ($error instanceof InvalidArgumentException ? 400 : 500));
-                        $details = $step . ': ' . $error::class . ': ' . $error->getMessage()
-                                . ' (' . basename($error->getFile()) . ':' . $error->getLine() . ')';
-                        return '<p role="alert">' . htmlspecialchars($details, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</p>';
+                        // The UI never discloses host authorization details or persisted audiences on failure.
+                        http_response_code(403);
+                        return '<p role="alert">Authorization administration is unavailable or the request was rejected.</p>';
                 }
         }
 

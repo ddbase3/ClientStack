@@ -299,6 +299,8 @@ restrict its route accordingly.
 
 The shared ClientStack screens do not create another persistence layer. ILIAS group identifiers, user and role criterion IDs, and feature audience expressions continue to be processed and stored solely by the configured ILIAS host services. Access is checked server-side; POST mutations require a session CSRF token. The new UiFoundation interface provides no storage. Retention and erasure continue to follow the host settings backend as previously documented.
 
+The group and feature administration displays return a generic error for rejected form requests; they do not include host exception messages, PHP file paths or line numbers in the browser response. This applies to the administration screens, not to deliberately separate diagnostic displays.
+
 ## ModularSelect deployment (2026-10-21)
 
 The new `assets/modularselect/` is a locally served copy of
