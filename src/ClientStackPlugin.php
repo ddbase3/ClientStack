@@ -42,12 +42,6 @@ class ClientStackPlugin implements IPlugin, ICheck {
 			->set(GlobalChatbotLauncherBootstrap::class, fn($c) => new GlobalChatbotLauncherBootstrap(
 				$c->get(IAssetResolver::class), $c->get(ISettingsStore::class), $c->get(IMvcView::class)
 			), IContainer::SHARED)
-			->set(FileManagerHttpService::class, fn($c) => new FileManagerHttpService(
-				$c->get(IManagedFileStorageService::class),
-				$c->get(FileUploadService::class),
-				$c->get(IRequest::class),
-				$c->get(ITranslation::class)
-			), IContainer::SHARED)
 			->set(IAssetService::class, fn($c) => new DefaultAssetService($c->get(IModuleRegistry::class)), IContainer::SHARED)
 			->set(
 				IRichTextEditorDisplay::class,

@@ -508,3 +508,8 @@ The existing `ClientStack\FileManager\FileManagerHttpService::buildEndpoints()`
 returns the endpoint data required by the standard FileManager browser adapter.
 Chat's settings tab passes this data unchanged to `ChatbotConfigDisplay`; the
 project decides which storage owner and route are authorized.
+
+
+## Games navigation
+
+The discoverable `GamesSettingsTab` groups independently installed game contributions without requiring either game. PulseCore and NeonDrift own their feature-backed child tabs and existing gameplay authorization. All tab discovery continues through `SettingsDisplay` and `IClassMap`; no host-specific games registry exists.

@@ -453,3 +453,7 @@ identity or permission database is created. The host still independently
 authorizes the HTML render request. A permitted launcher requests chatbot HTML
 from its same-origin host endpoint only when opened or when enabled reopening
 restores the panel; ClientStack's existing browser-storage behavior is unchanged.
+
+### Settings integration (November 2026)
+
+The Games settings group only contributes navigation; it does not collect or store gameplay data.
