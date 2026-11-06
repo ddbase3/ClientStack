@@ -435,3 +435,21 @@ decision. There is no new storage, network recipient or retention process.
 Classmap discovery can now expose the existing diagnostic scope display under Governance and the existing launcher configuration under Chatbot. These contributions add no extra user-data persistence. Diagnostics retain the framework diagnostic report feature plus the `system/admin` requirement; launcher configuration retains its existing settings store and requires both its Settings feature and `system/admin`. Access decisions are delegated to the configured `IAuthorizationService` and are not cached or copied by the Settings navigation.
 
 The Agent Flow viewer exposes plugin-local flow JSON metadata and contents only after an allow decision for `agentflowadminsettingstab`. It does not persist the inspected flow definitions.
+
+## Shared global launcher and FileManager HTTP protocol (2026-11-05)
+
+The server-rendered global launcher uses the existing `global-chatbot-launcher/default` settings dataset, browser `localStorage` for selected window mode/size and `sessionStorage` for reopening behavior. The host supplies the chat-render URL and any optional branding; ClientStack adds no ILIAS-specific icon and does not send data to a new third party. The host is responsible for authenticating and authorizing the chatbot content and services themselves. The `globalchatbotlauncherfeature` definition declares an audience; the actual `IAuthorizationService` decision remains host-owned.
+
+The shared `FileManagerHttpService` processes same-origin HTTP requests for directory metadata, file operations, downloads and resumable uploads. The authorized host passes the actual actor ID and fixed file owner to it. Upload session metadata includes actor ID, owner group/name, mode, target path, file name, file size, chunk count, MIME claim and creation time; upload chunks and resulting file bytes are stored by the host-selected local or other managed storage. The service itself is not a second storage backend. Downloads use `application/octet-stream`, `nosniff`, and `no-store`. Error bodies are generic and translated through ClientStack; host web-server access logs may still capture request paths or metadata.
+
+In standalone `chat.base3.de`, staging is below `DIR_USERFILES/filemanager/uploads`. Successfully finished and aborted uploads remove the corresponding staging session, but a failed or abandoned upload may leave temporary files, and no automated retention cleanup is added in this phase. The host/operator must configure an appropriate retention policy and secure cleanup before production. Browser same-origin AJAX headers and host-side permission checks are required; the host must also deny any direct web access to the file storage directory. At this stage no deployment privacy or accessibility guarantee is claimed without a browser/server test.
+
+
+## Phase 2 shared launcher permission (2026-11-05)
+
+`renderAuthorized()` obtains the host authority's allow/deny decision for the
+existing global launcher feature before generating browser markup. No new
+identity or permission database is created. The host still independently
+authorizes the HTML render request. A permitted launcher requests chatbot HTML
+from its same-origin host endpoint only when opened or when enabled reopening
+restores the panel; ClientStack's existing browser-storage behavior is unchanged.

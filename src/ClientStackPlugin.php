@@ -7,6 +7,13 @@ use Base3\Api\ICheck;
 use Base3\Api\IContainer;
 use Base3\Api\IMvcView;
 use Base3\Api\IModuleRegistry;
+use Base3\Api\IRequest;
+use ResourceFoundation\Api\IManagedFileStorageService;
+use ClientStack\FileManager\FileManagerHttpService;
+use ClientStack\FileManager\FileUploadService;
+use Base3\Settings\Api\ISettingsStore;
+use Base3\Translation\Api\ITranslation;
+use ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap;
 use Base3\Api\IPlugin;
 use Base3\Core\Check;
 use ClientStack\Api\IAssetService;
@@ -32,6 +39,15 @@ class ClientStackPlugin implements IPlugin, ICheck {
 	public function init() {
 		$this->container
 			->set(self::getName(), $this, IContainer::SHARED)
+			->set(GlobalChatbotLauncherBootstrap::class, fn($c) => new GlobalChatbotLauncherBootstrap(
+				$c->get(IAssetResolver::class), $c->get(ISettingsStore::class), $c->get(IMvcView::class)
+			), IContainer::SHARED)
+			->set(FileManagerHttpService::class, fn($c) => new FileManagerHttpService(
+				$c->get(IManagedFileStorageService::class),
+				$c->get(FileUploadService::class),
+				$c->get(IRequest::class),
+				$c->get(ITranslation::class)
+			), IContainer::SHARED)
 			->set(IAssetService::class, fn($c) => new DefaultAssetService($c->get(IModuleRegistry::class)), IContainer::SHARED)
 			->set(
 				IRichTextEditorDisplay::class,

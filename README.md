@@ -265,6 +265,15 @@ resized dimensions are kept in browser local storage. Window-open state is kept
 in session storage. Browser fullscreen requires a user gesture and is never
 entered automatically during restoration.
 
+When `data-dock-target="body"` is selected, the launcher makes the reduced
+body the real vertical scrollport while the dock is open and hides the root
+viewport scrollbar. It preserves the current vertical scroll position while
+switching between the body and document scrollports, including on close and
+mode changes. Hosts with a separate layout target retain the existing
+width/margin docking behavior. A host that uses the body as its dock target
+must keep its own footer in document flow during docking; Base3Template
+provides that rule for its standard page layout.
+
 
 ## ModularChatbot Markdown in AMD hosts
 
@@ -475,3 +484,27 @@ rights or persist feature rules.
 `GlobalChatbotLauncherSettingsTab` contributes ClientStack's launcher configuration below the `chatbotsettingstab` root supplied by the Chatbot plugin when installed. Its own feature and the existing `system/admin` requirement gate both the tab and direct display. All new ClientStack navigation labels are translated in `ClientStack/lang/Settings/`. The Settings renderer and tab control remain unchanged.
 
 The existing `AgentFlowAdminDisplay` is also exposed as a BASE3 Settings tab through `AgentflowadminSettingsTab`. Both its HTML and JSON endpoints check that feature before scanning plugin-local flow definitions.
+
+## Shared global launcher bootstrap and FileManager HTTP (2026-11-05)
+
+`ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap` is the single PHP renderer for the existing `assets/globalchatbotlauncher` ES module and CSS. It loads presentation flags from `GlobalChatbotLauncherSettings` (`global-chatbot-launcher/default`), produces escaped data attributes, and accepts an already-authorized host render URL, chatbot configuration identity, optional host appearance, and translated-label overrides. The launcher has no default icon. Host-specific branding belongs to its integration, not ClientStack. Use the same renderer in standalone BASE3 pages and, in the later ILIAS migration, the ILIAS UIHook. The host remains responsible for enforcing `GlobalChatbotLauncherFeature` at the launcher insertion and chatbot render endpoints.
+
+`ClientStack\FileManager\FileManagerHttpService` implements the existing `assets/filemanager/adapters/HttpFileManagerAdapter.js` protocol, including resumable chunk uploads through `FileUploadService`. The service never selects a native user, storage owner, or authorization authority from a request. The host must independently authorize the request and pass trusted actor and owner identifiers. Its injected `IManagedFileStorageService` chooses the backend. File upload staging directory is injected by the project. The AJAX adapter now sends the `X-Requested-With: XMLHttpRequest` header for POST requests; a host should reject requests that lack it. The `FileManagerHttpService::buildEndpoints()` helper generates action URLs for the existing browser adapter.
+
+For `chat.base3.de`, the project plugin binds FileBridge's `LocalManagedFileStorageService`, a shared `FileUploadService`, and the dedicated `ChatbotFileManagerOutput`. This initial phase supplies the shared runtime and protected HTTP endpoint. Enabling the resource section in the chatbot's automatic Settings tab and placing the launcher on all page templates are subsequent integration steps, not hidden alternative components.
+
+## Phase 2: Authorized launcher insertion (2026-11-05)
+
+`GlobalChatbotLauncherBootstrap::renderAuthorized()` checks the existing
+`IAuthorizationService` for `feature/globalchatbotlauncherfeature` before
+producing any launcher markup. It then uses the same `render()` implementation,
+settings and deployed browser assets as ILIAS. The host must check the same
+feature independently on its chatbot HTML endpoint. No UIHook icon or ILIAS
+layout selector is a ClientStack default. `render()` remains available to
+already-authorized host integrations; projects should use the explicit
+`renderAuthorized()` method for a page insertion.
+
+The existing `ClientStack\FileManager\FileManagerHttpService::buildEndpoints()`
+returns the endpoint data required by the standard FileManager browser adapter.
+Chat's settings tab passes this data unchanged to `ChatbotConfigDisplay`; the
+project decides which storage owner and route are authorized.

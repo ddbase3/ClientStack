@@ -34,6 +34,7 @@ export class HttpFileManagerAdapter extends FileManagerAdapter {
 			...(options.endpoints || {})
 		};
 		this.headers = {
+			'X-Requested-With': 'XMLHttpRequest',
 			...(options.headers || {})
 		};
 		this.credentials = options.credentials || 'same-origin';

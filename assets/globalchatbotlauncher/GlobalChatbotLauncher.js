@@ -814,14 +814,33 @@ function applyDockTarget(panel, width) {
 	var target = document.querySelector(panel.dockTarget);
 	if (!target) return;
 	if (!panel.originalDockStyles) {
+		var isDocumentBody = target === document.body;
 		panel.originalDockStyles = {
 			target: target,
 			width: target.style.width,
-			marginRight: target.style.marginRight
+			marginRight: target.style.marginRight,
+			isDocumentBody: isDocumentBody
 		};
+		if (isDocumentBody) {
+			var original = panel.originalDockStyles;
+			var scrollTop = window.scrollY;
+			original.scrollX = window.scrollX;
+			original.height = target.style.height;
+			original.boxSizing = target.style.boxSizing;
+			original.overflowY = target.style.overflowY;
+			original.rootOverflow = document.documentElement.style.overflow;
+			document.documentElement.style.overflow = 'hidden';
+			target.style.boxSizing = 'border-box';
+			target.style.height = '100dvh';
+			target.style.overflowY = 'auto';
+			window.scrollTo(0, 0);
+			target.scrollTop = scrollTop;
+		}
 	}
 	target.style.width = 'calc(100% - ' + width + 'px)';
-	target.style.marginRight = width + 'px';
+	if (!panel.originalDockStyles.isDocumentBody) {
+		target.style.marginRight = width + 'px';
+	}
 	if (panel.dockHeaderTarget && window.innerWidth >= 992) {
 		var header = document.querySelector(panel.dockHeaderTarget);
 		if (header) {
@@ -836,14 +855,21 @@ function applyDockTarget(panel, width) {
 			header.style.width = 'auto';
 		}
 	}
-
 }
 
 function restoreDockTarget(panel) {
 	if (panel.originalDockStyles) {
 		var original = panel.originalDockStyles;
+		var scrollTop = original.isDocumentBody ? original.target.scrollTop : 0;
 		original.target.style.width = original.width;
 		original.target.style.marginRight = original.marginRight;
+		if (original.isDocumentBody) {
+			original.target.style.height = original.height;
+			original.target.style.boxSizing = original.boxSizing;
+			original.target.style.overflowY = original.overflowY;
+			document.documentElement.style.overflow = original.rootOverflow;
+			window.scrollTo(original.scrollX, scrollTop);
+		}
 		panel.originalDockStyles = null;
 	}
 	if (panel.originalHeaderStyles) {
