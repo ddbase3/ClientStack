@@ -513,3 +513,9 @@ project decides which storage owner and route are authorized.
 ## Games navigation
 
 The discoverable `GamesSettingsTab` groups independently installed game contributions without requiring either game. PulseCore and NeonDrift own their feature-backed child tabs and existing gameplay authorization. All tab discovery continues through `SettingsDisplay` and `IClassMap`; no host-specific games registry exists.
+
+## Host-independent FileManager services
+
+`ClientStackPlugin` registers the existing `FileUploadService` and `FileManagerHttpService` as lazy, replaceable shared DI bindings. The upload session staging root is `DIR_TMP/filemanager-uploads`, outside the domain file store. A host or consumer output must authorize the authenticated actor, the owner identity and the requested action before invoking `FileManagerHttpService::handle()`. The service receives the real `IManagedFileStorageService` supplied by the active BASE3 host composition and never chooses an ILIAS backend itself.
+
+The new MissionBay agent resources use this existing service through their own agent-owner administration output. Other clients such as the existing ILIAS chatbot retain their current host-specific integrations. If a host does not provide `IManagedFileStorageService`, FileManager endpoints cannot operate and must not be advertised. Resumable upload sessions left by failed or abandoned transfers need a host-controlled cleanup policy; the service does not create a second persistence system or an automatic retention mechanism.

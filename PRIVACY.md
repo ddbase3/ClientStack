@@ -445,6 +445,10 @@ The shared `FileManagerHttpService` processes same-origin HTTP requests for dire
 In standalone `chat.base3.de`, staging is below `DIR_USERFILES/filemanager/uploads`. Successfully finished and aborted uploads remove the corresponding staging session, but a failed or abandoned upload may leave temporary files, and no automated retention cleanup is added in this phase. The host/operator must configure an appropriate retention policy and secure cleanup before production. Browser same-origin AJAX headers and host-side permission checks are required; the host must also deny any direct web access to the file storage directory. At this stage no deployment privacy or accessibility guarantee is claimed without a browser/server test.
 
 
+## Generic FileManager DI registration (November 2026)
+
+The shared FileManager services are now registered lazily by ClientStack so other BASE3 plugins can use the already implemented HTTP protocol without host-specific upload services. File upload sessions created through these bindings are staged in `DIR_TMP/filemanager-uploads`, keyed by a hash of the logical owner. Session metadata includes the owner group/name, uploader's trusted host ID, upload ID, target file name/path, size, type claim, creation time and chunk state. Completed and aborted sessions are removed by the existing `FileUploadService`; interrupted sessions have no new automated expiry and must be handled by host operations. The resulting bytes and their lifecycle remain in the configured `IManagedFileStorageService` backend. Neither ClientStack nor MissionBay changes authorization authority or invents an alternate storage backend. The host must protect the staging directory from direct web access and enforce its retention and secure-deletion policy.
+
 ## Phase 2 shared launcher permission (2026-11-05)
 
 `renderAuthorized()` obtains the host authority's allow/deny decision for the

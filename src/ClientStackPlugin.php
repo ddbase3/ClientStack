@@ -43,6 +43,16 @@ class ClientStackPlugin implements IPlugin, ICheck {
 				$c->get(IAssetResolver::class), $c->get(ISettingsStore::class), $c->get(IMvcView::class)
 			), IContainer::SHARED)
 			->set(IAssetService::class, fn($c) => new DefaultAssetService($c->get(IModuleRegistry::class)), IContainer::SHARED)
+			->set(FileUploadService::class, fn($c) => new FileUploadService(
+				$c->get(IManagedFileStorageService::class),
+				rtrim(DIR_TMP, '/\\') . DIRECTORY_SEPARATOR . 'filemanager-uploads'
+			), IContainer::SHARED | IContainer::NOOVERWRITE)
+			->set(FileManagerHttpService::class, fn($c) => new FileManagerHttpService(
+				$c->get(IManagedFileStorageService::class),
+				$c->get(FileUploadService::class),
+				$c->get(IRequest::class),
+				$c->get(ITranslation::class)
+			), IContainer::SHARED | IContainer::NOOVERWRITE)
 			->set(
 				IRichTextEditorDisplay::class,
 				fn($c) => new CkEditorRichTextEditorDisplay(
