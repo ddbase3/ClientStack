@@ -1,17 +1,32 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\Display;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Api\IDisplay;
-use Base3\Api\IMvcView;
-use Base3\Api\IRequest;
-use Base3\LinkTarget\Api\ILinkTargetService;
-use Base3\Settings\Api\ISettingsStore;
-use Base3\Usermanager\Permission;
-use Base3\Authorization\Api\IAuthorizationService;
-use Base3\Authorization\Dto\AuthorizationRequest;
-use ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherSettings;
-use ClientStack\SettingsTab\GlobalChatbotLauncherSettingsTab;
+namespace Base3\ClientStack\Display;
+
+use Base3\CoreFoundation\Api\IDisplay;
+use Base3\CoreFoundation\Api\IMvcView;
+use Base3\CoreFoundation\Api\IRequest;
+use Base3\CoreFoundation\LinkTarget\Api\ILinkTargetService;
+use Base3\CoreFoundation\Settings\Api\ISettingsStore;
+use Base3\CoreFoundation\Usermanager\Permission;
+use Base3\CoreFoundation\Authorization\Api\IAuthorizationService;
+use Base3\CoreFoundation\Authorization\Dto\AuthorizationRequest;
+use Base3\ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherSettings;
+use Base3\ClientStack\SettingsTab\GlobalChatbotLauncherSettingsTab;
 use Throwable;
 
 /**

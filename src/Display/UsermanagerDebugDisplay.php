@@ -1,17 +1,32 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\Display;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Api\IDisplay;
-use Base3\Api\IMvcView;
-use Base3\Api\IRequest;
-use Base3\LinkTarget\Api\ILinkTargetService;
-use Base3\Usermanager\Api\IUsermanager;
-use Base3\Usermanager\Permission;
-use Base3\Authorization\Api\IAuthorizationService;
-use Base3\Authorization\Dto\AuthorizationRequest;
-use Base3\Authorization\Dto\ResourceReference;
-use Base3\Usermanager\Role;
+namespace Base3\ClientStack\Display;
+
+use Base3\CoreFoundation\Api\IDisplay;
+use Base3\CoreFoundation\Api\IMvcView;
+use Base3\CoreFoundation\Api\IRequest;
+use Base3\CoreFoundation\LinkTarget\Api\ILinkTargetService;
+use Base3\CoreFoundation\Usermanager\Api\IUsermanager;
+use Base3\CoreFoundation\Usermanager\Permission;
+use Base3\CoreFoundation\Authorization\Api\IAuthorizationService;
+use Base3\CoreFoundation\Authorization\Dto\AuthorizationRequest;
+use Base3\CoreFoundation\Authorization\Dto\ResourceReference;
+use Base3\CoreFoundation\Usermanager\Role;
 use Throwable;
 
 final class UsermanagerDebugDisplay implements IDisplay {
@@ -59,7 +74,7 @@ final class UsermanagerDebugDisplay implements IDisplay {
 	public function getOutput(string $out = 'html', bool $final = false): string {
 		if (!$this->authorization->decide(new AuthorizationRequest(
 			$this->authorization->getDefaultAuthority(),
-			Permission::for('feature', \ClientStack\SettingsTab\UsermanagerdebugSettingsTab::getName())
+			Permission::for('feature', \Base3\ClientStack\SettingsTab\UsermanagerdebugSettingsTab::getName())
 		))->isAllowed()) {
 			http_response_code(403);
 			return '';

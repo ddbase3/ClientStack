@@ -141,7 +141,7 @@ Deploy the current repository source with:
 ./deploy-classic-chatbot.sh
 ```
 
-`ClientStack\Display\ClassicChatbotDisplay` implements `UiFoundation\Api\IChatbotDisplay`. `ClientStackPlugin` registers it as the replaceable default using `IContainer::NOOVERWRITE`.
+`Base3\ClientStack\Display\ClassicChatbotDisplay` implements `Base3\UiFoundation\Api\IChatbotDisplay`. `ClientStackPlugin` registers it as the replaceable default using `IContainer::NOOVERWRITE`.
 
 ## Modular Chatbot client
 
@@ -163,7 +163,7 @@ Deploy it with:
 ./deploy-modular-chatbot.sh
 ```
 
-`ClientStack\Display\ModularChatbotDisplay` is discoverable as `modularchatbotdisplay`. The active `IChatbotDisplay` binding remains the preserved classic client until a project explicitly selects the modular display.
+`Base3\ClientStack\Display\ModularChatbotDisplay` is discoverable as `modularchatbotdisplay`. The active `IChatbotDisplay` binding remains the preserved classic client until a project explicitly selects the modular display.
 
 The modular display supports Chatbot's server-backed Conversation API. `ConversationPlugin` registers the chat-list and new-chat controls before loading the last active chat, hydrates stored messages through the normal renderer, and provides accessible controls for creating, activating, renaming and deleting chats. Conversation ids and history are not generated or persisted in the browser. ClassicChatbot remains the non-multi-chat fallback.
 
@@ -225,13 +225,13 @@ The runtime asset is stored at:
 assets/mermaid/mermaid.min.js
 ```
 
-`ClientStack\Display\MermaidDisplay` is discoverable as `mermaiddisplay` and loads the bundle through the shared AssetLoader. Consumers must resolve Mermaid through ClientStack and do not require a separate Mermaid BASE3 plugin.
+`Base3\ClientStack\Display\MermaidDisplay` is discoverable as `mermaiddisplay` and loads the bundle through the shared AssetLoader. Consumers must resolve Mermaid through ClientStack and do not require a separate Mermaid BASE3 plugin.
 
 ## Display composition
 
-`ClientStack\Display\TabControlDisplay` treats a tab entry id (`name`) separately from its optional renderer (`display`). Existing entries without `display` continue to use their `name` as the renderer name, while multiple entries may now point to the same `IDisplay` implementation with different data.
+`Base3\ClientStack\Display\TabControlDisplay` treats a tab entry id (`name`) separately from its optional renderer (`display`). Existing entries without `display` continue to use their `name` as the renderer name, while multiple entries may now point to the same `IDisplay` implementation with different data.
 
-`ClientStack\Display\CompositeDisplay` composes multiple discoverable `IDisplay` instances into a responsive CSS grid. Each item has its own `id`, `display`, optional `data`, optional `title`, and optional `span`; the layout collapses to one column on small screens.
+`Base3\ClientStack\Display\CompositeDisplay` composes multiple discoverable `IDisplay` instances into a responsive CSS grid. Each item has its own `id`, `display`, optional `data`, optional `title`, and optional `span`; the layout collapses to one column on small screens.
 
 ## Documentation
 
@@ -292,7 +292,7 @@ invalidate the previous browser module cache. Test with `node test/MarkdownPlugi
 
 ## Shared authorization administration UI
 
-`AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` are cross-host interfaces rendered in ClientStack. They require `UiFoundation\Api\IAuthorizationAudienceAdministrationService`, and perform a fresh `IAuthorizationService::decide(system/admin)` check before accessing backend data or accepting mutations. The host backend performs additional native guards; an AJAX action is not trusted merely because its tab was visible. The shared native-resource `AuthorizationAdministrationDisplay` remains unchanged.
+`AuthorizationGroupsDisplay` and `AuthorizationFeaturesDisplay` are cross-host interfaces rendered in ClientStack. They require `Base3\UiFoundation\Api\IAuthorizationAudienceAdministrationService`, and perform a fresh `IAuthorizationService::decide(system/admin)` check before accessing backend data or accepting mutations. The host backend performs additional native guards; an AJAX action is not trusted merely because its tab was visible. The shared native-resource `AuthorizationAdministrationDisplay` remains unchanged.
 
 The Groups and Features displays share a responsive audience editor with compact inputs, criterion fields below the assignment selector, and an advanced JSON area shown only when applicable. Generic editor labels are translated in ClientStack; criterion-specific display titles and property titles come from the criterion schema supplied by its owning module. Host-specific identifiers and existing form names are not modified. The user picker below performs only authorized, on-demand native directory queries. It does not change permission decisions, persistence or feature evaluation.
 
@@ -436,8 +436,8 @@ The report is intended for technical review, including manual use in an AI assis
 
 ## Settings navigation
 
-`ClientStack\Display\SettingsDisplay` displays settings for authenticated
-users and discovers `UiFoundation\Api\ISettingsTab` contributions through
+`Base3\ClientStack\Display\SettingsDisplay` displays settings for authenticated
+users and discovers `Base3\UiFoundation\Api\ISettingsTab` contributions through
 `IClassMap`. It filters child entries using each tab's feature decision, then
 sorts top-level groups and their children by `getOrder()` and `getName()`. Root
 groups have no content; the first permitted child becomes active. A group without
@@ -487,9 +487,9 @@ The existing `AgentFlowAdminDisplay` is also exposed as a BASE3 Settings tab thr
 
 ## Shared global launcher bootstrap and FileManager HTTP (2026-11-05)
 
-`ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap` is the single PHP renderer for the existing `assets/globalchatbotlauncher` ES module and CSS. It loads presentation flags from `GlobalChatbotLauncherSettings` (`global-chatbot-launcher/default`), produces escaped data attributes, and accepts an already-authorized host render URL, chatbot configuration identity, optional host appearance, and translated-label overrides. The launcher has no default icon. Host-specific branding belongs to its integration, not ClientStack. Use the same renderer in standalone BASE3 pages and, in the later ILIAS migration, the ILIAS UIHook. The host remains responsible for enforcing `GlobalChatbotLauncherFeature` at the launcher insertion and chatbot render endpoints.
+`Base3\ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap` is the single PHP renderer for the existing `assets/globalchatbotlauncher` ES module and CSS. It loads presentation flags from `GlobalChatbotLauncherSettings` (`global-chatbot-launcher/default`), produces escaped data attributes, and accepts an already-authorized host render URL, chatbot configuration identity, optional host appearance, and translated-label overrides. The launcher has no default icon. Host-specific branding belongs to its integration, not ClientStack. Use the same renderer in standalone BASE3 pages and, in the later ILIAS migration, the ILIAS UIHook. The host remains responsible for enforcing `GlobalChatbotLauncherFeature` at the launcher insertion and chatbot render endpoints.
 
-`ClientStack\FileManager\FileManagerHttpService` implements the existing `assets/filemanager/adapters/HttpFileManagerAdapter.js` protocol, including resumable chunk uploads through `FileUploadService`. The service never selects a native user, storage owner, or authorization authority from a request. The host must independently authorize the request and pass trusted actor and owner identifiers. Its injected `IManagedFileStorageService` chooses the backend. File upload staging directory is injected by the project. The AJAX adapter now sends the `X-Requested-With: XMLHttpRequest` header for POST requests; a host should reject requests that lack it. The `FileManagerHttpService::buildEndpoints()` helper generates action URLs for the existing browser adapter.
+`Base3\ClientStack\FileManager\FileManagerHttpService` implements the existing `assets/filemanager/adapters/HttpFileManagerAdapter.js` protocol, including resumable chunk uploads through `FileUploadService`. The service never selects a native user, storage owner, or authorization authority from a request. The host must independently authorize the request and pass trusted actor and owner identifiers. Its injected `IManagedFileStorageService` chooses the backend. File upload staging directory is injected by the project. The AJAX adapter now sends the `X-Requested-With: XMLHttpRequest` header for POST requests; a host should reject requests that lack it. The `FileManagerHttpService::buildEndpoints()` helper generates action URLs for the existing browser adapter.
 
 For `chat.base3.de`, the project plugin binds FileBridge's `LocalManagedFileStorageService`, a shared `FileUploadService`, and the dedicated `ChatbotFileManagerOutput`. This initial phase supplies the shared runtime and protected HTTP endpoint. Enabling the resource section in the chatbot's automatic Settings tab and placing the launcher on all page templates are subsequent integration steps, not hidden alternative components.
 
@@ -504,7 +504,7 @@ layout selector is a ClientStack default. `render()` remains available to
 already-authorized host integrations; projects should use the explicit
 `renderAuthorized()` method for a page insertion.
 
-The existing `ClientStack\FileManager\FileManagerHttpService::buildEndpoints()`
+The existing `Base3\ClientStack\FileManager\FileManagerHttpService::buildEndpoints()`
 returns the endpoint data required by the standard FileManager browser adapter.
 Chat's settings tab passes this data unchanged to `ChatbotConfigDisplay`; the
 project decides which storage owner and route are authorized.

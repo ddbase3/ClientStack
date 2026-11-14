@@ -1,15 +1,30 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\Display;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Api\IClassMap;
-use Base3\Api\IDisplay;
-use Base3\Api\IRequest;
-use Base3\LinkTarget\Api\ILinkTargetService;
-use Base3\Translation\Api\ITranslation;
-use Base3\Usermanager\Api\IUsermanager;
+namespace Base3\ClientStack\Display;
+
+use Base3\CoreFoundation\Api\IClassMap;
+use Base3\CoreFoundation\Api\IDisplay;
+use Base3\CoreFoundation\Api\IRequest;
+use Base3\CoreFoundation\LinkTarget\Api\ILinkTargetService;
+use Base3\CoreFoundation\Translation\Api\ITranslation;
+use Base3\CoreFoundation\Usermanager\Api\IUsermanager;
 use Throwable;
-use UiFoundation\Api\ISettingsTab;
+use Base3\UiFoundation\Api\ISettingsTab;
 
 /** Discovers, filters and renders plugin-owned settings entries in two levels. */
 final class SettingsDisplay implements IDisplay {

@@ -1,14 +1,29 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\SettingsTab;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Authorization\Api\IAuthorizationService;
-use Base3\Authorization\Dto\AuthorizationRequest;
-use Base3\Diagnostics\Feature\DiagnosticReportsFeature;
-use Base3\Translation\Api\ITranslation;
-use Base3\Usermanager\Permission;
+namespace Base3\ClientStack\SettingsTab;
+
+use Base3\CoreFoundation\Authorization\Api\IAuthorizationService;
+use Base3\CoreFoundation\Authorization\Dto\AuthorizationRequest;
+use Base3\Core\Diagnostics\Feature\DiagnosticReportsFeature;
+use Base3\CoreFoundation\Translation\Api\ITranslation;
+use Base3\CoreFoundation\Usermanager\Permission;
 use Throwable;
-use UiFoundation\Settings\AbstractSettingsTab;
+use Base3\UiFoundation\Settings\AbstractSettingsTab;
 
 /** Reuses the Framework diagnostic feature; no competing feature definition. */
 final class DiagnosticscopeSettingsTab extends AbstractSettingsTab {

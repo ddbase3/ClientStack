@@ -1,12 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack\FileManager;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Api\IRequest;
-use Base3\Translation\Api\ITranslation;
+namespace Base3\ClientStack\FileManager;
+
+use Base3\CoreFoundation\Api\IRequest;
+use Base3\CoreFoundation\Translation\Api\ITranslation;
 use InvalidArgumentException;
-use ResourceFoundation\Api\IFileStorage;
-use ResourceFoundation\Api\IManagedFileStorageService;
+use Base3\ResourceFoundation\Api\IFileStorage;
+use Base3\ResourceFoundation\Api\IManagedFileStorageService;
 use RuntimeException;
 use Throwable;
 

@@ -83,7 +83,7 @@ It is build metadata, not runtime user data.
 
 ## How are logical assets represented?
 
-A logical asset is represented by `ClientStack\Dto\LogicalAsset`. It has:
+A logical asset is represented by `Base3\ClientStack\Dto\LogicalAsset`. It has:
 
 - a stable logical name,
 - one or more `AssetFile` entries,

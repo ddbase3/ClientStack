@@ -1,7 +1,7 @@
 {
 	"manifestVersion": 1,
 	"name": "ClientStack",
-	"namespace": "ClientStack",
+	"namespace": "Base3\\ClientStack",
 	"version": "4.23.0",
 	"description": "Centralized asset management and reusable browser UI components for BASE3.",
 	"license": "GPL-3.0-or-later",
@@ -14,7 +14,8 @@
 	],
 	"repository": "https://github.com/ddbase3/ClientStack",
 	"dependencies": {
-		"Base3Framework": ">=4.10.0",
+		"Core": ">=4.10.0",
+		"CoreFoundation": ">=4.10.0",
 		"UiFoundation": ">=4.3.0"
 	}
 }

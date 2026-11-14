@@ -1,28 +1,43 @@
 <?php declare(strict_types=1);
 
-namespace ClientStack;
+/***********************************************************************
+ * This file is part of ClientStack for BASE3 Framework.
+ *
+ * ClientStack manages browser assets for modular BASE3 applications.
+ * It provides reusable JavaScript and CSS library registrations.
+ * Logical asset identifiers are resolved to deployment-specific URLs.
+ *
+ * Developed by Daniel Dahme
+ * Licensed under GPL-3.0
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * https://base3.de
+ * https://github.com/ddbase3/ClientStack
+ **********************************************************************/
 
-use Base3\Api\IAssetResolver;
-use Base3\Api\ICheck;
-use Base3\Api\IContainer;
-use Base3\Api\IMvcView;
-use Base3\Api\IModuleRegistry;
-use Base3\Api\IRequest;
-use ResourceFoundation\Api\IManagedFileStorageService;
-use ClientStack\FileManager\FileManagerHttpService;
-use ClientStack\FileManager\FileUploadService;
-use Base3\Settings\Api\ISettingsStore;
-use Base3\Translation\Api\ITranslation;
-use ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap;
-use Base3\Api\IPlugin;
+namespace Base3\ClientStack;
+
+use Base3\CoreFoundation\Api\IAssetResolver;
+use Base3\CoreFoundation\Api\ICheck;
+use Base3\CoreFoundation\Api\IContainer;
+use Base3\CoreFoundation\Api\IMvcView;
+use Base3\CoreFoundation\Api\IModuleRegistry;
+use Base3\CoreFoundation\Api\IRequest;
+use Base3\ResourceFoundation\Api\IManagedFileStorageService;
+use Base3\ClientStack\FileManager\FileManagerHttpService;
+use Base3\ClientStack\FileManager\FileUploadService;
+use Base3\CoreFoundation\Settings\Api\ISettingsStore;
+use Base3\CoreFoundation\Translation\Api\ITranslation;
+use Base3\ClientStack\GlobalChatbotLauncher\GlobalChatbotLauncherBootstrap;
+use Base3\CoreFoundation\Api\IPlugin;
 use Base3\Core\Check;
-use ClientStack\Api\IAssetService;
-use ClientStack\Display\CkEditorRichTextEditorDisplay;
-use ClientStack\Display\ClassicChatbotDisplay;
-use ClientStack\Service\DefaultAssetService;
-use ClientStack\Display\ModularChatbotDisplay;
-use UiFoundation\Api\IChatbotDisplay;
-use UiFoundation\Api\IRichTextEditorDisplay;
+use Base3\ClientStack\Api\IAssetService;
+use Base3\ClientStack\Display\CkEditorRichTextEditorDisplay;
+use Base3\ClientStack\Display\ClassicChatbotDisplay;
+use Base3\ClientStack\Service\DefaultAssetService;
+use Base3\ClientStack\Display\ModularChatbotDisplay;
+use Base3\UiFoundation\Api\IChatbotDisplay;
+use Base3\UiFoundation\Api\IRichTextEditorDisplay;
 
 class ClientStackPlugin implements IPlugin, ICheck {
 
