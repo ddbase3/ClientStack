@@ -75,6 +75,8 @@ final class ModularChatbotDisplay implements IChatbotDisplay {
 		'riskMedium' => 'Medium',
 		'riskHigh' => 'High',
 		'approve' => 'Approve',
+		'approveConversation' => 'Always approve this tool in this chat',
+		'submitDecisions' => 'Submit decisions',
 		'deny' => 'Cancel',
 		'yesLabel' => 'Yes',
 		'noLabel' => 'No',

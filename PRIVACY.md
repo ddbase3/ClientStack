@@ -461,3 +461,7 @@ restores the panel; ClientStack's existing browser-storage behavior is unchanged
 ### Settings integration (November 2026)
 
 The Games settings group only contributes navigation; it does not collect or store gameplay data.
+
+## Phase 5: Modular chatbot reusable consent
+
+The modular chatbot's active approval card allows a user to explicitly select chat-scoped future consent per tool approval, including when several independent requests are pending. A grouped request requires an explicit decision for each tool before submission, and only individually selected reusable approvals carry `metadata.approval_scope=conversation` in the existing `resume_responses` payload. No reusable approval is saved by ClientStack. MissionBay stores the authenticated conversation/tool fingerprint record in its existing `IStateStore` with a 90-day TTL and revokes it on supported conversation deletion. Chat-scoped consent does not bypass current native authorization, tool-input validation or mutation commit guards. All visible UI labels use the module-owned translation catalogs. Deployment storage, backup deletion, and consent scope for anonymous host deployments require verification by the host operator.
